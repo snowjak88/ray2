@@ -18,6 +18,7 @@ import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.PointLight;
 import org.snowjak.rays.light.model.FogDecoratingLightingModel;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
+import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Sphere;
 import org.snowjak.rays.shape.csg.Union;
@@ -130,29 +131,10 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
-		org.snowjak.rays.shape.Group group = new org.snowjak.rays.shape.Group();
-		Union union = new Union();
-
-		Sphere sphere1, sphere2;
-		sphere1 = new Sphere();
-		sphere1.getTransformers().add(new Translation(-0.5, 0d, 0d));
-		sphere1.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
-		sphere1.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
-
-		sphere2 = new Sphere();
-		sphere2.getTransformers().add(new Translation(0.5, 0d, 0d));
-		sphere2.setAmbientColorScheme(new SimpleColorScheme(Color.RED));
-		sphere2.setDiffuseColorScheme(new SimpleColorScheme(Color.RED));
-		
-		group.getChildren().add(sphere1);
-		group.getChildren().add(sphere2);
-		group.getTransformers().add(new Translation(-2d, 1d, 0d));
-		world.getShapes().add(group);
-		
-		union.getChildren().add(sphere1);
-		union.getChildren().add(sphere2);
-		union.getTransformers().add(new Translation(2d, 1d, 0d));
-		world.getShapes().add(union);
+		Cube cube = new Cube();
+		cube.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
+		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
+		world.getShapes().add(cube);
 
 		Plane plane = new Plane();
 		ColorScheme planeColoring = new CheckerboardColorScheme(1d, Color.GREEN, Color.SADDLEBROWN);
