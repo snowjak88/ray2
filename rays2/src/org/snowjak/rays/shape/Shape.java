@@ -15,6 +15,8 @@ import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
 
+import javafx.scene.paint.Color;
+
 /**
  * Represents an "object" in a 3D space. Something susceptible of being placed,
  * transformed, and intersected with {@link Ray}s.
@@ -34,7 +36,7 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	 * Create a new Shape.
 	 */
 	public Shape() {
-		this(new SimpleColorScheme());
+		this(new SimpleColorScheme(Color.HOTPINK));
 	}
 
 	/**
