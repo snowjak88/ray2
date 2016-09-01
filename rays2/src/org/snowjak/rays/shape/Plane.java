@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
@@ -65,9 +66,13 @@ public class Plane extends Shape {
 			//
 			double t = -(transformedRay.getOrigin().getY() / transformedRay.getVector().getY());
 			if (Double.compare(t, 0d) >= 0) {
-				Vector3D intersectionPoint = transformedRay.getOrigin().add(transformedRay.getVector().normalize().scalarMultiply(t));
+				Vector3D intersectionPoint = transformedRay.getOrigin()
+						.add(transformedRay.getVector().normalize().scalarMultiply(t));
+				Vector3D normal = Vector3D.PLUS_J
+						.scalarMultiply(FastMath.signum(transformedRay.getVector().negate().dotProduct(Vector3D.PLUS_J)));
 
-				results.add(localToWorld(new Intersection<Shape>(intersectionPoint, Vector3D.PLUS_J, transformedRay, this)));
+				results.add(localToWorld(
+						new Intersection<Shape>(intersectionPoint, normal, transformedRay, this)));
 			}
 		}
 
