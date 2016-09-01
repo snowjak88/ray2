@@ -66,6 +66,9 @@ public class Group extends Shape {
 		for (Shape child : children)
 			results.addAll(child.getIntersections(transformedRay));
 
+		results = results.stream().map(i -> localToWorld(i)).collect(LinkedList::new, LinkedList::add,
+				LinkedList::addAll);
+
 		Collections.sort(results,
 				(i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()));
 
