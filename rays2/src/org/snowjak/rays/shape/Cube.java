@@ -5,7 +5,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Translation;
@@ -65,8 +67,14 @@ public class Cube extends Shape {
 		List<Intersection<Shape>> results = planes.parallelStream()
 				.map(p -> p.getIntersections(transformedRay))
 				.flatMap(li -> li.parallelStream())
-				.filter(i -> i.getPoint().getX() >= 0d && i.getPoint().getY() >= 0d && i.getPoint().getZ() >= 0d)
-				.filter(i -> i.getPoint().getX() <= 1d && i.getPoint().getY() <= 1d && i.getPoint().getZ() <= 1d)
+				.filter(i -> Double.compare(i.getPoint().getX(), -World.DOUBLE_ERROR) >= 0
+						&& Double.compare(i.getPoint().getY(), -World.DOUBLE_ERROR) >= 0
+						&& Double.compare(i.getPoint().getZ(), -World.DOUBLE_ERROR) >= 0)
+
+				.filter(i -> Double.compare(i.getPoint().getX() - 1d, World.DOUBLE_ERROR) <= 0
+						&& Double.compare(i.getPoint().getY() - 1d, World.DOUBLE_ERROR) <= 0
+						&& Double.compare(i.getPoint().getZ() - 1d, World.DOUBLE_ERROR) <= 0)
+
 				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this))
 				.map(i -> localToWorld(i))
 				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);

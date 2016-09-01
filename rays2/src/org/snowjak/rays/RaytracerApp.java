@@ -23,6 +23,7 @@ import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Sphere;
 import org.snowjak.rays.shape.csg.Union;
 import org.snowjak.rays.transform.Rotation;
+import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.BasicScreen;
 import org.snowjak.rays.ui.Screen;
@@ -131,10 +132,23 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
+		org.snowjak.rays.shape.Group group = new org.snowjak.rays.shape.Group();
+		
 		Cube cube = new Cube();
 		cube.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
 		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
-		world.getShapes().add(cube);
+		cube.getTransformers().add(new Translation(-0.5, 0d, -0.5));
+		cube.getTransformers().add(new Scale(1.75d, 2d, 1.75d));
+		group.getChildren().add(cube);
+
+		Sphere sphere = new Sphere();
+		sphere.setAmbientColorScheme(new SimpleColorScheme(Color.CORAL));
+		sphere.setDiffuseColorScheme(new SimpleColorScheme(Color.CORAL));
+		sphere.getTransformers().add(new Translation(0d, 2d, 0d));
+		group.getChildren().add(sphere);
+		
+		group.getTransformers().add(new Rotation(0d, 30d, 0d));
+		world.getShapes().add(group);
 
 		Plane plane = new Plane();
 		ColorScheme planeColoring = new CheckerboardColorScheme(1d, Color.GREEN, Color.SADDLEBROWN);
@@ -144,18 +158,18 @@ public class RaytracerApp extends Application {
 		plane.setReflectivity(0d);
 		world.getShapes().add(plane);
 
-		for (int x = -6; x <= 6; x += 6) {
-			for (int z = -6; z <= 6; z += 6) {
+		for (int x = -6; x <= 6; x += 12) {
+			for (int z = -6; z <= 6; z += 12) {
 				Light pointLight;
-				pointLight = new PointLight(new RawColor(0.01, 0.01, 0.01), new RawColor(.3, .3, .3),
+				pointLight = new PointLight(new RawColor(0.05, 0.05, 0.05), new RawColor(.75, .75, .75),
 						new RawColor(1d, 1d, 1d));
-				pointLight.getTransformers().add(new Translation(x, 5d, z));
+				pointLight.getTransformers().add(new Translation(x, 100d, z));
 				world.getLights().add(pointLight);
 			}
 		}
 
 		Camera camera = new BasicCamera(2.0, 45.0);
-		camera.getTransformers().add(new Translation(0d, 0d, -6d));
+		camera.getTransformers().add(new Translation(0d, 3d, -10d));
 		camera.getTransformers().add(new Rotation(-15d, 0d, 0d));
 		world.setCamera(camera);
 
