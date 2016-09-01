@@ -21,7 +21,7 @@ public class Plane extends Shape {
 	@Override
 	public List<Intersection<Shape>> getIntersections(Ray ray) {
 
-		ray = worldToLocal(ray);
+		Ray transformedRay = worldToLocal(ray);
 
 		LinkedList<Intersection<Shape>> results = new LinkedList<>();
 
@@ -39,13 +39,13 @@ public class Plane extends Shape {
 		//
 		// First: check for the trivial case: where the vector is parallel to
 		// the plane.
-		if (Double.compare(ray.getVector().getY(), World.DOUBLE_ERROR) == 0) {
+		if (Double.compare(transformedRay.getVector().getY(), World.DOUBLE_ERROR) == 0) {
 			//
 			// Is P.y == 0?
 			// If so, then this ray lies entirely within the plane.
 			// If not, then this ray will never intersect.
-			if (Double.compare(ray.getOrigin().getY(), World.DOUBLE_ERROR) == 0)
-				results.add(new Intersection<Shape>(ray.getOrigin(), Vector3D.PLUS_J, ray, this));
+			if (Double.compare(transformedRay.getOrigin().getY(), World.DOUBLE_ERROR) == 0)
+				results.add(new Intersection<Shape>(transformedRay.getOrigin(), Vector3D.PLUS_J, transformedRay, this));
 
 			else
 				return Collections.emptyList();
@@ -63,11 +63,11 @@ public class Plane extends Shape {
 			// If t < 0, then this ray is heading the wrong way! and will not
 			// intersect.
 			//
-			double t = -(ray.getOrigin().getY() / ray.getVector().getY());
-			if (Double.compare(t, World.DOUBLE_ERROR) >= 0) {
-				Vector3D intersectionPoint = ray.getOrigin().add(ray.getVector().normalize().scalarMultiply(t));
+			double t = -(transformedRay.getOrigin().getY() / transformedRay.getVector().getY());
+			if (Double.compare(t, 0d) >= 0) {
+				Vector3D intersectionPoint = transformedRay.getOrigin().add(transformedRay.getVector().normalize().scalarMultiply(t));
 
-				results.add(localToWorld(new Intersection<Shape>(intersectionPoint, Vector3D.PLUS_J, ray, this)));
+				results.add(localToWorld(new Intersection<Shape>(intersectionPoint, Vector3D.PLUS_J, transformedRay, this)));
 			}
 		}
 

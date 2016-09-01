@@ -52,27 +52,29 @@ public class Scale implements Transformer {
 	@Override
 	public Ray localToWorld(Ray ray) {
 
-		return new Ray(localToWorld(ray.getOrigin()), ray.getVector(), ray.getRecursiveLevel());
+		return new Ray(localToWorld(ray.getOrigin()), localToWorld(ray.getVector()).normalize(), ray.getRecursiveLevel());
 	}
 
 	@Override
 	public Ray worldToLocal(Ray ray) {
 
-		return new Ray(worldToLocal(ray.getOrigin()), ray.getVector(), ray.getRecursiveLevel());
+		return new Ray(worldToLocal(ray.getOrigin()), worldToLocal(ray.getVector()).normalize(), ray.getRecursiveLevel());
 	}
 
 	@Override
 	public <S extends Intersectable> Intersection<S> localToWorld(Intersection<S> intersection) {
 
-		return new Intersection<S>(localToWorld(intersection.getPoint()), intersection.getNormal(),
-				localToWorld(intersection.getRay()), intersection.getIntersected());
+		return new Intersection<S>(localToWorld(intersection.getPoint()),
+				localToWorld(intersection.getNormal()).normalize(), localToWorld(intersection.getRay()),
+				intersection.getIntersected());
 	}
 
 	@Override
 	public <S extends Intersectable> Intersection<S> worldToLocal(Intersection<S> intersection) {
 
-		return new Intersection<S>(worldToLocal(intersection.getPoint()), intersection.getNormal(),
-				worldToLocal(intersection.getRay()), intersection.getIntersected());
+		return new Intersection<S>(worldToLocal(intersection.getPoint()),
+				worldToLocal(intersection.getNormal()).normalize(), worldToLocal(intersection.getRay()),
+				intersection.getIntersected());
 	}
 
 	@Override

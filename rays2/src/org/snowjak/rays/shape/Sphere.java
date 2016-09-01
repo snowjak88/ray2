@@ -43,6 +43,7 @@ public class Sphere extends Shape {
 	@Override
 	public List<Intersection<Shape>> getIntersections(Ray ray) {
 
+		Ray transformedRay = worldToLocal(ray);
 		//
 		// O = sphere origin
 		// P = ray origin
@@ -50,14 +51,14 @@ public class Sphere extends Shape {
 		//
 		// L = O - P
 		//
-		Vector3D L = getLocation().subtract(ray.getOrigin());
+		Vector3D L = worldToLocal(getLocation()).subtract(transformedRay.getOrigin());
 		//
 		// v = ray vector (normalized)
 		//
 		// t_ca = v dot-product L
 		//
 		// t_ca = v . L
-		double t_ca = ray.getVector().normalize().dotProduct(L);
+		double t_ca = transformedRay.getVector().normalize().dotProduct(L);
 		//
 		// d = shortest distance from center of sphere to ray
 		//
@@ -107,23 +108,23 @@ public class Sphere extends Shape {
 		List<Intersection<Shape>> results = new LinkedList<>();
 
 		if (Double.compare(intersectionDistance1, World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere1 = ray.getVector()
+			Vector3D intersectPointOnSphere1 = transformedRay.getVector()
 					.normalize()
 					.scalarMultiply(intersectionDistance1)
-					.add(ray.getOrigin());
+					.add(transformedRay.getOrigin());
 
-			Vector3D normal1 = intersectPointOnSphere1.subtract(getLocation()).normalize();
-			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, ray, this)));
+			Vector3D normal1 = intersectPointOnSphere1.subtract(worldToLocal(getLocation())).normalize();
+			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, transformedRay, this)));
 		}
 
 		if (Double.compare(intersectionDistance2, World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere2 = ray.getVector()
+			Vector3D intersectPointOnSphere2 = transformedRay.getVector()
 					.normalize()
 					.scalarMultiply(intersectionDistance2)
-					.add(ray.getOrigin());
+					.add(transformedRay.getOrigin());
 
-			Vector3D normal2 = intersectPointOnSphere2.subtract(getLocation()).normalize();
-			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, ray, this)));
+			Vector3D normal2 = intersectPointOnSphere2.subtract(worldToLocal(getLocation())).normalize();
+			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this)));
 		}
 
 		return results;

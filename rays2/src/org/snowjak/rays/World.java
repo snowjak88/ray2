@@ -84,7 +84,6 @@ public class World {
 
 		return intersections.stream()
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				// .map(i -> i.getIntersected().localToWorld(i))
 				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
 	}
 

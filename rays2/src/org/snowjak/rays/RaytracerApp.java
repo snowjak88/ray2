@@ -58,7 +58,7 @@ public class RaytracerApp extends Application {
 
 		World world = buildWorld();
 
-		WritableImage image = new WritableImage(400, 300);
+		WritableImage image = new WritableImage(800, 500);
 		Screen screen = new BasicScreen(image, world.getCamera());
 
 		ImageView imageView = new ImageView(image);
@@ -138,7 +138,7 @@ public class RaytracerApp extends Application {
 		cube.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
 		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
 		cube.getTransformers().add(new Translation(-0.5, 0d, -0.5));
-		cube.getTransformers().add(new Scale(1.75d, 2d, 1.75d));
+		cube.getTransformers().add(new Scale(1.5d, 2d, 1.5d));
 		group.getChildren().add(cube);
 
 		Sphere sphere = new Sphere();
@@ -154,8 +154,6 @@ public class RaytracerApp extends Application {
 		ColorScheme planeColoring = new CheckerboardColorScheme(1d, Color.GREEN, Color.SADDLEBROWN);
 		plane.setAmbientColorScheme(planeColoring);
 		plane.setDiffuseColorScheme(planeColoring);
-		plane.setShininess(1e10);
-		plane.setReflectivity(0d);
 		world.getShapes().add(plane);
 
 		for (int x = -6; x <= 6; x += 12) {
@@ -163,7 +161,7 @@ public class RaytracerApp extends Application {
 				Light pointLight;
 				pointLight = new PointLight(new RawColor(0.05, 0.05, 0.05), new RawColor(.75, .75, .75),
 						new RawColor(1d, 1d, 1d));
-				pointLight.getTransformers().add(new Translation(x, 100d, z));
+				pointLight.getTransformers().add(new Translation(x, 6d, z));
 				world.getLights().add(pointLight);
 			}
 		}
