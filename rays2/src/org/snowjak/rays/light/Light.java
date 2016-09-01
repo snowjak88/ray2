@@ -158,7 +158,6 @@ public class Light implements Transformable, Locatable {
 	public RawColor getDiffuseIntensity(Ray ray) {
 
 		Ray localRay = worldToLocal(ray);
-
 		return diffuseIntensityFunction.apply(localRay);
 	}
 
@@ -173,7 +172,6 @@ public class Light implements Transformable, Locatable {
 	public RawColor getSpecularIntensity(Ray ray) {
 
 		Ray localRay = worldToLocal(ray);
-
 		return specularIntensityFunction.apply(localRay);
 	}
 
@@ -189,8 +187,9 @@ public class Light implements Transformable, Locatable {
 	 *         Intersection
 	 */
 	public double getExposure(Intersection<Shape> intersection) {
-
-		return exposureFunction.apply(this, intersection);
+		
+		Intersection<Shape> localIntersection = worldToLocal(intersection);
+		return exposureFunction.apply(this, localIntersection);
 	}
 
 	@Override
@@ -234,7 +233,7 @@ public class Light implements Transformable, Locatable {
 	 */
 	public static BiFunction<Light, Intersection<Shape>, Double> DEFAULT_EXPOSURE_FUNCTION() {
 
-		return (l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal());
+		return (l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal().normalize());
 	}
 
 }
