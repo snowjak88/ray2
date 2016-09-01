@@ -20,6 +20,7 @@ import org.snowjak.rays.light.model.FogDecoratingLightingModel;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Sphere;
+import org.snowjak.rays.shape.csg.Union;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.BasicScreen;
@@ -55,7 +56,7 @@ public class RaytracerApp extends Application {
 
 		World world = buildWorld();
 
-		WritableImage image = new WritableImage(960, 600);
+		WritableImage image = new WritableImage(400, 300);
 		Screen screen = new BasicScreen(image, world.getCamera());
 
 		ImageView imageView = new ImageView(image);
@@ -129,26 +130,36 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
-		for (int x = -6; x <= 6; x += 2) {
-			for (int z = -6; z <= 6; z += 2) {
-				Sphere sphere = new Sphere(1d);
-				sphere.getTransformers().add(new Translation(x, 1d, z));
-				ColorScheme sphereColoring = new SimpleColorScheme(Color.hsb(360d * (x + z + 10d) / 20d, 1d, 1d));
-				sphere.setAmbientColorScheme(sphereColoring);
-				sphere.setDiffuseColorScheme(sphereColoring);
-				sphere.setSpecularColorScheme(new SimpleColorScheme(Color.WHITE));
-				sphere.setShininess(100d);
-				sphere.setReflectivity(0.75);
-				world.getShapes().add(sphere);
-			}
-		}
+		org.snowjak.rays.shape.Group group = new org.snowjak.rays.shape.Group();
+		Union union = new Union();
+
+		Sphere sphere1, sphere2;
+		sphere1 = new Sphere();
+		sphere1.getTransformers().add(new Translation(-0.5, 0d, 0d));
+		sphere1.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
+		sphere1.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
+
+		sphere2 = new Sphere();
+		sphere2.getTransformers().add(new Translation(0.5, 0d, 0d));
+		sphere2.setAmbientColorScheme(new SimpleColorScheme(Color.RED));
+		sphere2.setDiffuseColorScheme(new SimpleColorScheme(Color.RED));
+		
+		group.getChildren().add(sphere1);
+		group.getChildren().add(sphere2);
+		group.getTransformers().add(new Translation(-2d, 1d, 0d));
+		world.getShapes().add(group);
+		
+		union.getChildren().add(sphere1);
+		union.getChildren().add(sphere2);
+		union.getTransformers().add(new Translation(2d, 1d, 0d));
+		world.getShapes().add(union);
 
 		Plane plane = new Plane();
 		ColorScheme planeColoring = new CheckerboardColorScheme(1d, Color.GREEN, Color.SADDLEBROWN);
 		plane.setAmbientColorScheme(planeColoring);
 		plane.setDiffuseColorScheme(planeColoring);
 		plane.setShininess(1e10);
-		plane.setReflectivity(0.75);
+		plane.setReflectivity(0d);
 		world.getShapes().add(plane);
 
 		for (int x = -6; x <= 6; x += 6) {
@@ -162,7 +173,7 @@ public class RaytracerApp extends Application {
 		}
 
 		Camera camera = new BasicCamera(2.0, 45.0);
-		camera.getTransformers().add(new Translation(0d, 0d, -12d));
+		camera.getTransformers().add(new Translation(0d, 0d, -6d));
 		camera.getTransformers().add(new Rotation(-15d, 0d, 0d));
 		world.setCamera(camera);
 
