@@ -46,7 +46,7 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	 * @param colorScheme
 	 */
 	public Shape(ColorScheme colorScheme) {
-		this(colorScheme, colorScheme, new SimpleColorScheme(Color.WHITE), new SimpleColorScheme(), 1e5, 0d);
+		this(colorScheme, colorScheme, new SimpleColorScheme(Color.WHITE), new SimpleColorScheme(), 1e5, -1d);
 	}
 
 	/**
