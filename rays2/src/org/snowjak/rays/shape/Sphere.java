@@ -113,7 +113,7 @@ public class Sphere extends Shape {
 					.add(ray.getOrigin());
 
 			Vector3D normal1 = intersectPointOnSphere1.subtract(getLocation()).normalize();
-			results.add(new Intersection<Shape>(intersectPointOnSphere1, normal1, ray, this));
+			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, ray, this)));
 		}
 
 		if (Double.compare(intersectionDistance2, World.DOUBLE_ERROR) >= 0) {
@@ -123,7 +123,7 @@ public class Sphere extends Shape {
 					.add(ray.getOrigin());
 
 			Vector3D normal2 = intersectPointOnSphere2.subtract(getLocation()).normalize();
-			results.add(new Intersection<Shape>(intersectPointOnSphere2, normal2, ray, this));
+			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, ray, this)));
 		}
 
 		return results;
