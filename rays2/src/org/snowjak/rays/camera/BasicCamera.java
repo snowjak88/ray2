@@ -23,11 +23,10 @@ public class BasicCamera extends Camera {
 	 * Construct a new BasicCamera.
 	 * 
 	 * @param cameraFrameWidth
-	 * @param cameraFrameHeight
 	 * @param fieldOfView
 	 */
-	public BasicCamera(double cameraFrameWidth, double cameraFrameHeight, double fieldOfView) {
-		super(cameraFrameWidth, cameraFrameHeight, fieldOfView);
+	public BasicCamera(double cameraFrameWidth, double fieldOfView) {
+		super(cameraFrameWidth, fieldOfView);
 	}
 
 	@Override

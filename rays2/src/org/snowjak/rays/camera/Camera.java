@@ -27,7 +27,7 @@ import org.snowjak.rays.ui.Screen;
  */
 public abstract class Camera implements Transformable {
 
-	private double cameraFrameWidth, cameraFrameHeight, cameraDepth, cameraFieldOfView;
+	private double cameraFrameSideLength, cameraDepth, cameraFieldOfView;
 
 	private final Vector3D eyeLocation;
 
@@ -37,15 +37,13 @@ public abstract class Camera implements Transformable {
 	 * Create a new Camera of the given dimensions (in world units).
 	 * 
 	 * @param cameraFrameWidth
-	 * @param cameraFrameHeight
 	 * @param fieldOfView
 	 *            camera FOV, expressed in degrees
 	 */
-	public Camera(double cameraFrameWidth, double cameraFrameHeight, double fieldOfView) {
-		this.cameraFrameWidth = cameraFrameWidth;
-		this.cameraFrameHeight = cameraFrameHeight;
+	public Camera(double cameraFrameWidth, double fieldOfView) {
+		this.cameraFrameSideLength = cameraFrameWidth;
 		this.cameraFieldOfView = fieldOfView;
-		this.cameraDepth = (cameraFrameWidth / 2d) / sin(toRadians(fieldOfView));
+		this.cameraDepth = (cameraFrameSideLength / 2d) / sin(toRadians(fieldOfView));
 
 		this.eyeLocation = new Vector3D(0.0, 0.0, -cameraDepth);
 	}
@@ -66,19 +64,11 @@ public abstract class Camera implements Transformable {
 	}
 
 	/**
-	 * @return this Camera's width (in world units)
+	 * @return this Camera's size (in world units)
 	 */
-	public double getCameraFrameWidth() {
+	public double getCameraFrameSideLength() {
 
-		return cameraFrameWidth;
-	}
-
-	/**
-	 * @return this Camera's height (in world units)
-	 */
-	public double getCameraFrameHeight() {
-
-		return cameraFrameHeight;
+		return cameraFrameSideLength;
 	}
 
 	/**

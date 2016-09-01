@@ -23,6 +23,8 @@ public abstract class Screen {
 
 	private int screenMinX, screenMinY, screenMaxX, screenMaxY;
 
+	private double aspectRatio;
+
 	/**
 	 * Create a new Screen with the given extent.
 	 * 
@@ -59,6 +61,8 @@ public abstract class Screen {
 		this.screenMinY = screenMinY;
 		this.screenMaxX = screenMaxX;
 		this.screenMaxY = screemMaxY;
+
+		this.aspectRatio = (double) (screenMaxX - screenMinX) / (double) (screenMaxY - screenMinY);
 
 		setCamera(camera);
 	}
@@ -130,8 +134,8 @@ public abstract class Screen {
 		if (camera != null) {
 			this.cameraOffsetX = (screenMaxX - screenMinX) / 2.0 + screenMinX;
 			this.cameraOffsetY = (screenMaxY - screenMinY) / 2.0 + screenMinY;
-			this.cameraScaleX = camera.getCameraFrameWidth() / (screenMaxX - screenMinX);
-			this.cameraScaleY = camera.getCameraFrameHeight() / (screenMaxY - screenMinY);
+			this.cameraScaleX = camera.getCameraFrameSideLength() / (screenMaxX - screenMinX);
+			this.cameraScaleY = camera.getCameraFrameSideLength() / (screenMaxY - screenMinY) / aspectRatio;
 		} else {
 			this.cameraOffsetX = 0;
 			this.cameraOffsetY = 0;
