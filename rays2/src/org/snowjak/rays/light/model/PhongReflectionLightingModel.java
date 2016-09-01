@@ -23,14 +23,13 @@ public class PhongReflectionLightingModel implements LightingModel {
 		Intersection<Shape> intersect = intersections.get(0);
 		Shape shape = intersect.getIntersected();
 		RawColor shapeAmbientColor = shape.getAmbient(shape.worldToLocal(intersect.getPoint()));
-		RawColor shapeDiffuseColor = getReflectiveShapeDiffuseColor(intersect);
+		RawColor shapeDiffuseColor = shape.getDiffuse(shape.worldToLocal(intersect.getPoint()));
+		Optional<RawColor> shapeReflectionColor = getReflectiveShapeDiffuseColor(intersect);
 		RawColor shapeSpecularColor = shape.getSpecular(shape.worldToLocal(intersect.getPoint()));
 		RawColor shapeEmissiveColor = shape.getEmissive(shape.worldToLocal(intersect.getPoint()));
 
-		RawColor totalAmbient = new RawColor(), totalDiffuse = new RawColor(), totalSpecular = new RawColor(),
-				totalEmissive = new RawColor();
-
-		// totalDiffuse.add(shapeReflectedDiffuseColor);
+		RawColor totalAmbient = new RawColor(), totalReflection = new RawColor(), totalDiffuse = new RawColor(),
+				totalSpecular = new RawColor(), totalEmissive = new RawColor();
 
 		for (Light light : World.getSingleton().getLights()) {
 
@@ -51,12 +50,9 @@ public class PhongReflectionLightingModel implements LightingModel {
 			// Calculate the ambient light the current Light contributes to this
 			// ray
 			RawColor lightAmbientIntensity = light.getAmbientIntensity(toLightRay);
-
 			totalAmbient = totalAmbient.add(lightAmbientIntensity.multiply(shapeAmbientColor));
 
 			if (lightIsVisible) {
-				// if (true) {
-
 				//
 				//
 				// Calculate the diffuse light the current Light contributes to
@@ -70,11 +66,9 @@ public class PhongReflectionLightingModel implements LightingModel {
 					//
 					//
 					// Calculate the specular light the current Light
-					// contributes to
-					// this ray
+					// contributes to this ray
 					Vector3D reflectedLightVector = getReflection(toLightVector, intersect.getNormal()).normalize();
 					double specularDotProduct = reflectedLightVector.dotProduct(toEyeVector.normalize());
-
 					if (Double.compare(specularDotProduct, 0d) > 0) {
 						double specularIntensity = FastMath.pow(specularDotProduct, shape.getShininess());
 						RawColor lightSpecularIntensity = light.getSpecularIntensity(toLightRay)
@@ -85,26 +79,29 @@ public class PhongReflectionLightingModel implements LightingModel {
 				}
 
 			}
+		}
 
+		if (shapeReflectionColor.isPresent()) {
+			totalDiffuse = totalDiffuse.multiplyScalar(1d - shape.getReflectivity());
+			totalReflection = totalReflection.add(shapeReflectionColor.get());
 		}
 
 		totalEmissive = shapeEmissiveColor;
 
-		RawColor totalColor = totalAmbient.add(totalDiffuse).add(totalSpecular).add(totalEmissive);
+		RawColor totalColor = totalAmbient.add(totalReflection).add(totalDiffuse).add(totalSpecular).add(totalEmissive);
 
 		return Optional.of(totalColor);
 	}
 
-	private RawColor getReflectiveShapeDiffuseColor(Intersection<Shape> intersection) {
+	private Optional<RawColor> getReflectiveShapeDiffuseColor(Intersection<Shape> intersection) {
 
 		Shape shape = intersection.getIntersected();
-		RawColor shapeColor = shape.getDiffuse(shape.worldToLocal(intersection.getPoint()));
 		double shapeReflectivity = shape.getReflectivity();
 
 		Ray originalRay = intersection.getRay();
 
 		if (originalRay.getRecursiveLevel() >= World.MAX_RAY_RECURSION || Double.compare(shapeReflectivity, 0d) <= 0)
-			return new RawColor();
+			return Optional.empty();
 
 		Vector3D intersectPoint = intersection.getPoint();
 		Vector3D eyeVector = intersection.getRay().getOrigin().subtract(intersectPoint);
@@ -120,7 +117,7 @@ public class PhongReflectionLightingModel implements LightingModel {
 		if (reflection.isPresent())
 			reflectedColor = reflection.get().multiplyScalar(shapeReflectivity);
 
-		return reflectedColor.add(shapeColor.multiplyScalar(1d - shapeReflectivity));
+		return Optional.of(reflectedColor);
 	}
 
 	private Vector3D getReflection(Vector3D v, Vector3D normal) {
