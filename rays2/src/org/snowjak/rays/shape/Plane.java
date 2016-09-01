@@ -1,5 +1,6 @@
 package org.snowjak.rays.shape;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -46,6 +47,9 @@ public class Plane extends Shape {
 			if (Double.compare(ray.getOrigin().getY(), World.DOUBLE_ERROR) == 0)
 				results.add(new Intersection<Shape>(ray.getOrigin(), Vector3D.PLUS_J, ray, this));
 
+			else
+				return Collections.emptyList();
+
 		} else {
 			//
 			// Not parallel.
@@ -68,6 +72,14 @@ public class Plane extends Shape {
 		}
 
 		return results;
+	}
+
+	/**
+	 * @return this Plane's normal vector, in global coordinates
+	 */
+	public Vector3D getNormal() {
+
+		return localToWorld(new Ray(Vector3D.ZERO, Vector3D.PLUS_J)).getVector();
 	}
 
 }
