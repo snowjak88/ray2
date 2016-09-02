@@ -44,6 +44,8 @@ public class PhongReflectionLightingModel implements LightingModel {
 		RawColor shapeDiffuseColor = shape.getDiffuse(shape.worldToLocal(intersect.getPoint()));
 		RawColor shapeSpecularColor = shape.getSpecular(shape.worldToLocal(intersect.getPoint()));
 		RawColor shapeEmissiveColor = shape.getEmissive(shape.worldToLocal(intersect.getPoint()));
+		double shininess = shape.getDiffuseColorScheme().getShininess(shape.worldToLocal(intersect.getPoint()));
+		double reflectivity = shape.getDiffuseColorScheme().getReflectivity(shape.worldToLocal(intersect.getPoint()));
 
 		//
 		// totalX = total light of type X seen by this Ray
@@ -126,7 +128,7 @@ public class PhongReflectionLightingModel implements LightingModel {
 
 					double specularDotProduct = reflectedLightVector.dotProduct(fromEyeVector.normalize());
 					if (Double.compare(specularDotProduct, 0d) > 0) {
-						double specularIntensity = FastMath.pow(specularDotProduct, shape.getShininess());
+						double specularIntensity = FastMath.pow(specularDotProduct, shininess);
 						RawColor lightSpecularIntensity = light.getSpecularIntensity(toLightRay)
 								.multiplyScalar(specularIntensity);
 
@@ -144,7 +146,7 @@ public class PhongReflectionLightingModel implements LightingModel {
 		Optional<RawColor> shapeReflectionColor = getReflectiveShapeDiffuseColor(intersect);
 
 		if (shapeReflectionColor.isPresent()) {
-			totalDiffuse = totalDiffuse.multiplyScalar(1d - shape.getReflectivity());
+			totalDiffuse = totalDiffuse.multiplyScalar(1d - reflectivity);
 			totalReflection = totalReflection.add(shapeReflectionColor.get());
 		}
 
@@ -165,7 +167,8 @@ public class PhongReflectionLightingModel implements LightingModel {
 	private Optional<RawColor> getReflectiveShapeDiffuseColor(Intersection<Shape> intersection) {
 
 		Shape shape = intersection.getIntersected();
-		double shapeReflectivity = shape.getReflectivity();
+		double shapeReflectivity = shape.getDiffuseColorScheme()
+				.getReflectivity(shape.worldToLocal(intersection.getPoint()));
 
 		Ray originalRay = intersection.getRay();
 

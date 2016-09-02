@@ -130,40 +130,40 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
-		for (int x = -4; x <= 4; x += 4) {
-			for (int z = -4; z <= 4; z += 4) {
+		ColorScheme colorScheme1 = new SimpleColorScheme(Color.WHITE);
+		colorScheme1.setReflectivity(-1d);
+		ColorScheme colorScheme2 = new SimpleColorScheme(Color.CORAL);
+		colorScheme2.setReflectivity(0.95);
+		ColorScheme sphereColorScheme = new CheckerboardColorScheme(colorScheme1, colorScheme2);
+
+		for (int x = -30; x <= 30; x += 3) {
+			for (int z = -15; z <= 45; z += 3) {
 				Sphere sphere = new Sphere();
-				sphere.setAmbientColorScheme(new SimpleColorScheme(Color.RED));
-				sphere.setDiffuseColorScheme(new SimpleColorScheme(Color.RED));
+				sphere.setAmbientColorScheme(sphereColorScheme);
+				sphere.setDiffuseColorScheme(sphereColorScheme);
 				sphere.getTransformers().add(new Translation(x, 0d, z));
 				world.getShapes().add(sphere);
 			}
 		}
 
+		ColorScheme planeColorScheme = new SimpleColorScheme(new RawColor(Color.BROWN).multiplyScalar(0.2));
 		Plane plane = new Plane();
-		plane.setAmbientColorScheme(new SimpleColorScheme(Color.WHITE));
-		plane.setDiffuseColorScheme(new SimpleColorScheme(Color.WHITE));
-		plane.setReflectivity(0.9);
-		plane.getTransformers().add(new Translation(0d, -6d, 0d));
+		plane.setAmbientColorScheme(planeColorScheme);
+		plane.setDiffuseColorScheme(planeColorScheme);
+		plane.getTransformers().add(new Translation(0d, -1d, 0d));
 		world.getShapes().add(plane);
 
-		for (int x = -6; x <= 6; x += 12) {
-			for (int z = -6; z <= 6; z += 12) {
-				Light pointLight;
-				pointLight = new PointLight(new RawColor(0.05, 0.05, 0.05), new RawColor(.75, .75, .75),
-						new RawColor(1d, 1d, 1d));
-				pointLight.getTransformers().add(new Translation(x, -1d, z));
-				world.getLights().add(pointLight);
-			}
-		}
+		Light pointLight;
+		pointLight = new PointLight(new RawColor(0.1, 0.1, 0.1), new RawColor(1d, 1d, 1d), new RawColor(1d, 1d, 1d));
+		pointLight.getTransformers().add(new Translation(0d, 5d, 0d));
+		world.getLights().add(pointLight);
 
 		Camera camera = new BasicCamera(4.0, 75.0);
-		camera.getTransformers().add(new Rotation(-30d, 0d, 0d));
-		camera.getTransformers().add(new Translation(0d, 0d, -14d));
+		camera.getTransformers().add(new Translation(0d, 1.5d, -14d));
+		camera.getTransformers().add(new Rotation(-20d, 0d, 0d));
 		world.setCamera(camera);
 
-		world.setLightingModel(
-				new FogDecoratingLightingModel(50d, new RawColor(Color.GREY), new PhongReflectionLightingModel()));
+		world.setLightingModel(new PhongReflectionLightingModel());
 
 		return world;
 	}

@@ -138,27 +138,5 @@ public interface HasColorScheme {
 	 */
 	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme);
 
-	/**
-	 * @return this object's "shininess" exponent
-	 */
-	public double getShininess();
-
-	/**
-	 * Set this object's "shininess" exponent
-	 * 
-	 * @param shininess
-	 */
-	public void setShininess(double shininess);
-
-	/**
-	 * @return this object's "reflectivity" fraction
-	 */
-	public double getReflectivity();
-
-	/**
-	 * Set this object's "reflectivity" fraction
-	 * 
-	 * @param reflectivity
-	 */
-	public void setReflectivity(double reflectivity);
+	
 }

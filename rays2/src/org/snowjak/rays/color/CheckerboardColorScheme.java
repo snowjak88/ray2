@@ -1,5 +1,6 @@
 package org.snowjak.rays.color;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 
 import javafx.scene.paint.Color;
@@ -69,17 +70,46 @@ public class CheckerboardColorScheme extends ColorScheme {
 		this.color2 = color2;
 	}
 
-	@Override
-	public RawColor getColor(double x, double y, double z) {
+	private ColorScheme getColorSchemeByCoordinate(double x, double y, double z) {
 
 		long xPart = (long) FastMath.round(x / cubeSize);
 		long yPart = (long) FastMath.round(y / cubeSize);
 		long zPart = (long) FastMath.round(z / cubeSize);
 
 		if ((xPart + yPart + zPart) % 2 == 0)
-			return color1.getColor(x, y, z);
+			return color1;
 		else
-			return color2.getColor(x, y, z);
+			return color2;
+	}
+
+	@Override
+	public RawColor getColor(double x, double y, double z) {
+
+		return getColorSchemeByCoordinate(x, y, z).getColorForWorld(x, y, z);
+	}
+
+	@Override
+	public double getShininess(double x, double y, double z) {
+
+		return getColorSchemeByCoordinate(x, y, z).getShininess();
+	}
+
+	@Override
+	public double getShininess(Vector3D coord) {
+
+		return getShininess(coord.getX(), coord.getY(), coord.getZ());
+	}
+
+	@Override
+	public double getReflectivity(double x, double y, double z) {
+
+		return getColorSchemeByCoordinate(x, y, z).getReflectivity(x, y, z);
+	}
+
+	@Override
+	public double getReflectivity(Vector3D coord) {
+
+		return getReflectivity(coord.getX(), coord.getY(), coord.getZ());
 	}
 
 	/**

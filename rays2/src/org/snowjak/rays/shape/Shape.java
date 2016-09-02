@@ -30,8 +30,6 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 
 	private ColorScheme ambientColorScheme, diffuseColorScheme, specularColorScheme, emissiveColorScheme;
 
-	private double shininess, reflectivity;
-
 	/**
 	 * Create a new Shape.
 	 */
@@ -46,7 +44,7 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	 * @param colorScheme
 	 */
 	public Shape(ColorScheme colorScheme) {
-		this(colorScheme, colorScheme, new SimpleColorScheme(Color.WHITE), new SimpleColorScheme(), 1e5, -1d);
+		this(colorScheme, colorScheme, new SimpleColorScheme(Color.WHITE), new SimpleColorScheme());
 	}
 
 	/**
@@ -60,13 +58,11 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	 * @param reflectivity
 	 */
 	public Shape(ColorScheme ambientColorScheme, ColorScheme diffuseColorScheme, ColorScheme specularColorScheme,
-			ColorScheme emissiveColorScheme, double shininess, double reflectivity) {
+			ColorScheme emissiveColorScheme) {
 		this.ambientColorScheme = ambientColorScheme;
 		this.diffuseColorScheme = diffuseColorScheme;
 		this.specularColorScheme = specularColorScheme;
 		this.emissiveColorScheme = emissiveColorScheme;
-		this.shininess = shininess;
-		this.reflectivity = reflectivity;
 	}
 
 	@Override
@@ -118,18 +114,6 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	}
 
 	@Override
-	public double getShininess() {
-
-		return shininess;
-	}
-
-	@Override
-	public void setShininess(double shininess) {
-
-		this.shininess = shininess;
-	}
-
-	@Override
 	public ColorScheme getEmissiveColorScheme() {
 
 		return emissiveColorScheme;
@@ -139,16 +123,6 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme) {
 
 		this.emissiveColorScheme = emissiveColorScheme;
-	}
-
-	public double getReflectivity() {
-
-		return reflectivity;
-	}
-
-	public void setReflectivity(double reflectivity) {
-
-		this.reflectivity = reflectivity;
 	}
 
 }

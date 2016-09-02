@@ -17,6 +17,8 @@ public abstract class ColorScheme implements Transformable {
 
 	private Deque<Transformer> transformers = new LinkedList<>();
 
+	private double shininess = 1e5, reflectivity = -1d;
+
 	/**
 	 * Determine which color to use for the object, given the provided
 	 * object-local coordinates.
@@ -65,6 +67,86 @@ public abstract class ColorScheme implements Transformable {
 
 		Vector3D localCoord = worldToLocal(worldCoord);
 		return getColor(localCoord.getX(), localCoord.getY(), localCoord.getZ());
+	}
+
+	/**
+	 * @return this color scheme's "shininess" exponent
+	 */
+	public double getShininess() {
+
+		return shininess;
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return this color scheme's "shininess" exponent for the given point in
+	 *         object-local coordinates
+	 */
+	public double getShininess(double x, double y, double z) {
+
+		return getShininess();
+	}
+
+	/**
+	 * @param coord
+	 * @return this color scheme's "shininess" exponent for the given point in
+	 *         object-local coordinates
+	 */
+	public double getShininess(Vector3D coord) {
+
+		return getShininess(coord.getX(), coord.getY(), coord.getZ());
+	}
+
+	/**
+	 * Set this color scheme's "shininess" exponent
+	 * 
+	 * @param shininess
+	 */
+	public void setShininess(double shininess) {
+
+		this.shininess = shininess;
+	}
+
+	/**
+	 * @return this color scheme's "reflectivity" fraction
+	 */
+	public double getReflectivity() {
+
+		return reflectivity;
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return this color scheme's "reflectivity" fraction for the given point
+	 *         in object-local coordinates
+	 */
+	public double getReflectivity(double x, double y, double z) {
+
+		return getReflectivity();
+	}
+
+	/**
+	 * @param coord
+	 * @return this color scheme's "reflectivity" fraction for the given point
+	 *         in object-local coordinates
+	 */
+	public double getReflectivity(Vector3D coord) {
+
+		return getReflectivity(coord.getX(), coord.getY(), coord.getZ());
+	}
+
+	/**
+	 * Set this color scheme's "reflectivity" fraction
+	 * 
+	 * @param reflectivity
+	 */
+	public void setReflectivity(double reflectivity) {
+
+		this.reflectivity = reflectivity;
 	}
 
 	@Override
