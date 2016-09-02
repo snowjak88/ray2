@@ -34,6 +34,7 @@ public class Ray {
 	public Ray(Vector3D origin, Vector3D vector, int recursiveLevel) {
 		this.point = origin;
 		this.vector = vector;
+		this.recursiveLevel = recursiveLevel;
 	}
 
 	/**
