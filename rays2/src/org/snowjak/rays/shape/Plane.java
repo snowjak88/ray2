@@ -40,16 +40,16 @@ public class Plane extends Shape {
 		//
 		// First: check for the trivial case: where the vector is parallel to
 		// the plane.
-		if (Double.compare(transformedRay.getVector().getY(), World.DOUBLE_ERROR) == 0) {
+		if (Double.compare(FastMath.abs(transformedRay.getVector().getY()), World.DOUBLE_ERROR) <= 0) {
 			//
-			// Is P.y == 0?
-			// If so, then this ray lies entirely within the plane.
-			// If not, then this ray will never intersect.
-			if (Double.compare(transformedRay.getOrigin().getY(), World.DOUBLE_ERROR) == 0)
-				results.add(new Intersection<Shape>(transformedRay.getOrigin(), Vector3D.PLUS_J, transformedRay, this));
-
-			else
-				return Collections.emptyList();
+			// This ray is entirely parallel to the plane.
+			// In the past, we tried giving an intersection at 0 distance from
+			// the ray origin if
+			// the ray was entirely within the plane -- but that led to all
+			// kinds of problems with trying to normalize zero-length vectors.
+			// It's easier to say that, if a ray is entirely parallel to the
+			// plane, then it's treated across the board as non-intersecting.
+			return Collections.emptyList();
 
 		} else {
 			//
@@ -64,15 +64,15 @@ public class Plane extends Shape {
 			// If t < 0, then this ray is heading the wrong way! and will not
 			// intersect.
 			//
-			double t = -(transformedRay.getOrigin().getY() / transformedRay.getVector().getY());
-			if (Double.compare(t, 0d) >= 0) {
+			double t = -transformedRay.getOrigin().getY() / transformedRay.getVector().getY();
+			if (Double.compare(t, World.DOUBLE_ERROR) >= 0) {
+
 				Vector3D intersectionPoint = transformedRay.getOrigin()
 						.add(transformedRay.getVector().normalize().scalarMultiply(t));
-				Vector3D normal = Vector3D.PLUS_J
-						.scalarMultiply(FastMath.signum(transformedRay.getVector().negate().dotProduct(Vector3D.PLUS_J)));
+				Vector3D normal = Vector3D.PLUS_J.scalarMultiply(
+						FastMath.signum(transformedRay.getVector().negate().dotProduct(Vector3D.PLUS_J)));
 
-				results.add(localToWorld(
-						new Intersection<Shape>(intersectionPoint, normal, transformedRay, this)));
+				results.add(localToWorld(new Intersection<Shape>(intersectionPoint, normal, transformedRay, this)));
 			}
 		}
 
