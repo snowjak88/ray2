@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageOutputStream;
 
 import org.snowjak.rays.camera.BasicCamera;
 import org.snowjak.rays.camera.Camera;
@@ -21,7 +20,6 @@ import org.snowjak.rays.light.model.PhongReflectionLightingModel;
 import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Sphere;
-import org.snowjak.rays.shape.csg.Union;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
@@ -132,28 +130,21 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
-		org.snowjak.rays.shape.Group group = new org.snowjak.rays.shape.Group();
-		
-		Cube cube = new Cube();
-		cube.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
-		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
-		cube.getTransformers().add(new Translation(-0.5, 0d, -0.5));
-		cube.getTransformers().add(new Scale(1.5d, 2d, 1.5d));
-		group.getChildren().add(cube);
-
-		Sphere sphere = new Sphere();
-		sphere.setAmbientColorScheme(new SimpleColorScheme(Color.CORAL));
-		sphere.setDiffuseColorScheme(new SimpleColorScheme(Color.CORAL));
-		sphere.getTransformers().add(new Translation(0d, 2d, 0d));
-		group.getChildren().add(sphere);
-		
-		group.getTransformers().add(new Rotation(0d, 30d, 0d));
-		world.getShapes().add(group);
+		for (int x = -4; x <= 4; x += 4) {
+			for (int z = -4; z <= 4; z += 4) {
+				Sphere sphere = new Sphere();
+				sphere.setAmbientColorScheme(new SimpleColorScheme(Color.RED));
+				sphere.setDiffuseColorScheme(new SimpleColorScheme(Color.RED));
+				sphere.getTransformers().add(new Translation(x, 0d, z));
+				world.getShapes().add(sphere);
+			}
+		}
 
 		Plane plane = new Plane();
-		ColorScheme planeColoring = new CheckerboardColorScheme(1d, Color.GREEN, Color.SADDLEBROWN);
-		plane.setAmbientColorScheme(planeColoring);
-		plane.setDiffuseColorScheme(planeColoring);
+		plane.setAmbientColorScheme(new SimpleColorScheme(Color.WHITE));
+		plane.setDiffuseColorScheme(new SimpleColorScheme(Color.WHITE));
+		plane.setReflectivity(0.9);
+		plane.getTransformers().add(new Translation(0d, -6d, 0d));
 		world.getShapes().add(plane);
 
 		for (int x = -6; x <= 6; x += 12) {
@@ -161,14 +152,14 @@ public class RaytracerApp extends Application {
 				Light pointLight;
 				pointLight = new PointLight(new RawColor(0.05, 0.05, 0.05), new RawColor(.75, .75, .75),
 						new RawColor(1d, 1d, 1d));
-				pointLight.getTransformers().add(new Translation(x, 6d, z));
+				pointLight.getTransformers().add(new Translation(x, -1d, z));
 				world.getLights().add(pointLight);
 			}
 		}
 
-		Camera camera = new BasicCamera(2.0, 45.0);
-		camera.getTransformers().add(new Translation(0d, 3d, -10d));
-		camera.getTransformers().add(new Rotation(-15d, 0d, 0d));
+		Camera camera = new BasicCamera(4.0, 75.0);
+		camera.getTransformers().add(new Rotation(-30d, 0d, 0d));
+		camera.getTransformers().add(new Translation(0d, 0d, -14d));
 		world.setCamera(camera);
 
 		world.setLightingModel(
