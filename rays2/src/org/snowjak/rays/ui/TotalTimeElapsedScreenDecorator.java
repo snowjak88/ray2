@@ -85,7 +85,8 @@ public class TotalTimeElapsedScreenDecorator implements DrawsEntireScreen {
 		}, timeUpdateInterval, timeUpdateInterval, intervalUnit);
 
 		child.draw();
-
+		
+		timeUpdateThread.shutdown();
 	}
 
 	@Override
