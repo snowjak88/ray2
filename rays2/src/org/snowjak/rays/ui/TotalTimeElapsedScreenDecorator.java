@@ -7,11 +7,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.snowjak.rays.color.RawColor;
-
 import javafx.application.Platform;
 import javafx.stage.Stage;
 
+/**
+ * Decorator for an existing DrawsEntireScreen implementation, that sets and
+ * updates the render-window title with the total time-elapsed over the render.
+ * 
+ * @author rr247200
+ *
+ */
 public class TotalTimeElapsedScreenDecorator implements DrawsEntireScreen {
 
 	private DrawsEntireScreen child;
@@ -20,14 +25,42 @@ public class TotalTimeElapsedScreenDecorator implements DrawsEntireScreen {
 
 	private int timeUpdateInterval;
 
+	private TimeUnit intervalUnit;
+
 	private ScheduledExecutorService timeUpdateThread;
 
-	public TotalTimeElapsedScreenDecorator(Stage screenStage, DrawsEntireScreen decoratedScreen,
-			int timeUpdateInterval) {
+	/**
+	 * Create a new TotalTimeElapsedScreenDecorator, with the default
+	 * update-interval of 1 second.
+	 * 
+	 * @param screenStage
+	 *            the {@link Stage} containing the render screen
+	 * @param decoratedScreen
+	 *            the {@link DrawsEntireScreen} implementation to decorate
+	 */
+	public TotalTimeElapsedScreenDecorator(Stage screenStage, DrawsEntireScreen decoratedScreen) {
+		this(screenStage, decoratedScreen, 1, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * Create a new TotalTimeElapsedScreenDecorator.
+	 * 
+	 * @param screenStage
+	 *            the {@link Stage} containing the render screen
+	 * @param decoratedScreen
+	 *            the {@link DrawsEntireScreen} implementation to decorate
+	 * @param timeUpdateInterval
+	 *            the number of time-units to wait between timer-display updates
+	 * @param intervalUnit
+	 *            the {@link TimeUnit} in which the above interval is expressed
+	 */
+	public TotalTimeElapsedScreenDecorator(Stage screenStage, DrawsEntireScreen decoratedScreen, int timeUpdateInterval,
+			TimeUnit intervalUnit) {
 
 		this.child = decoratedScreen;
 		this.screenStage = screenStage;
 		this.timeUpdateInterval = timeUpdateInterval;
+		this.intervalUnit = intervalUnit;
 		this.timeUpdateThread = Executors.newSingleThreadScheduledExecutor();
 	}
 
@@ -49,7 +82,7 @@ public class TotalTimeElapsedScreenDecorator implements DrawsEntireScreen {
 				screenStage.setTitle(newTitle);
 			});
 
-		}, timeUpdateInterval, timeUpdateInterval, TimeUnit.SECONDS);
+		}, timeUpdateInterval, timeUpdateInterval, intervalUnit);
 
 		child.draw();
 

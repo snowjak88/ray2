@@ -19,13 +19,13 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 	/**
 	 * Create a new {@link MultithreadedScreenDecorator} using the default
 	 * number of threads (i.e.,
-	 * {@code Runtime.getRuntime().availableProcessors() - 2}).
+	 * {@code Runtime.getRuntime().availableProcessors() - 1}).
 	 * 
 	 * @param child
 	 */
 	public MultithreadedScreenDecorator(DrawsScreenPixel child) {
 
-		this(child, FastMath.max(Runtime.getRuntime().availableProcessors(), 1));
+		this(child, FastMath.max(Runtime.getRuntime().availableProcessors() - 1, 1));
 	}
 
 	/**
@@ -50,9 +50,9 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 	@Override
 	public void shutdown() {
 
-		child.shutdown();
 		if (!this.renderingThreadPool.shutdownNow().isEmpty())
 			System.out.println("Shutting down rendering tasks ...");
+		child.shutdown();
 	}
 
 	@SuppressWarnings("javadoc")
