@@ -15,15 +15,11 @@ import javafx.scene.paint.Color;
  * @author rr247200
  *
  */
-public abstract class Screen {
+public abstract class Screen implements DrawsEntireScreen, DrawsScreenPixel {
 
 	private Camera camera;
 
-	private double cameraOffsetX, cameraOffsetY, cameraScaleX, cameraScaleY;
-
 	private int screenMinX, screenMinY, screenMaxX, screenMaxY;
-
-	private double aspectRatio;
 
 	/**
 	 * Create a new Screen with the given extent.
@@ -62,8 +58,6 @@ public abstract class Screen {
 		this.screenMaxX = screenMaxX;
 		this.screenMaxY = screemMaxY;
 
-		this.aspectRatio = (double) (screenMaxX - screenMinX) / (double) (screenMaxY - screenMinY);
-
 		setCamera(camera);
 	}
 
@@ -72,12 +66,13 @@ public abstract class Screen {
 	 * screenMinY) - (screenMaxX, screenMaxY) is iterated across; the Camera is
 	 * queried for each, and {@link #drawPixel(int, int, Color)} executed.
 	 */
+	@Override
 	public void draw() {
 
 		if (camera != null)
 			for (int x = screenMinX; x <= screenMaxX; x++)
 				for (int y = screenMinY; y <= screenMaxY; y++) {
-					Optional<RawColor> color = camera.shootRay(getCameraX(x), getCameraY(y));
+					Optional<RawColor> color = getRayColor(x, y);
 					if (color.isPresent())
 						drawPixel(x, screenMaxY - y + screenMinY, color.get());
 				}
@@ -86,22 +81,14 @@ public abstract class Screen {
 
 	/**
 	 * @param screenX
-	 * @return the given pixel X-coordinate translated into an equivalent
-	 *         coordinate within the frame of the current {@link Camera}
-	 */
-	public double getCameraX(int screenX) {
-
-		return ((double) screenX - cameraOffsetX) * cameraScaleX;
-	}
-
-	/**
 	 * @param screenY
-	 * @return the given pixel Y-coordinate translated into an equivalent
-	 *         coordinate within the frame of the current {@link Camera}
+	 * @return the computed RawColor, if present, for the corresponding screen
+	 *         location
 	 */
-	public double getCameraY(int screenY) {
+	@Override
+	public Optional<RawColor> getRayColor(int screenX, int screenY) {
 
-		return ((double) screenY - cameraOffsetY) * cameraScaleY;
+		return camera.shootRay(getCameraX(screenX), getCameraY(screenY));
 	}
 
 	/**
@@ -118,6 +105,7 @@ public abstract class Screen {
 	 * as a hook to shut down any rendering-related tasks -- e.g., killing
 	 * render-worker threads.
 	 */
+	@Override
 	public void shutdown() {
 
 	}
@@ -130,23 +118,12 @@ public abstract class Screen {
 	public void setCamera(Camera camera) {
 
 		this.camera = camera;
-
-		if (camera != null) {
-			this.cameraOffsetX = (screenMaxX - screenMinX) / 2.0 + screenMinX;
-			this.cameraOffsetY = (screenMaxY - screenMinY) / 2.0 + screenMinY;
-			this.cameraScaleX = camera.getCameraFrameSideLength() / (screenMaxX - screenMinX);
-			this.cameraScaleY = camera.getCameraFrameSideLength() / (screenMaxY - screenMinY) / aspectRatio;
-		} else {
-			this.cameraOffsetX = 0;
-			this.cameraOffsetY = 0;
-			this.cameraScaleX = 0;
-			this.cameraScaleY = 0;
-		}
 	}
 
 	/**
 	 * @return this Screen's current Camera
 	 */
+	@Override
 	public Camera getCamera() {
 
 		return camera;
@@ -155,6 +132,7 @@ public abstract class Screen {
 	/**
 	 * @return the screen's minimum X-coordinate
 	 */
+	@Override
 	public int getScreenMinX() {
 
 		return screenMinX;
@@ -163,6 +141,7 @@ public abstract class Screen {
 	/**
 	 * @return the screen's minimum Y-coordinate
 	 */
+	@Override
 	public int getScreenMinY() {
 
 		return screenMinY;
@@ -171,6 +150,7 @@ public abstract class Screen {
 	/**
 	 * @return the screen's maximum X-coordinate
 	 */
+	@Override
 	public int getScreenMaxX() {
 
 		return screenMaxX;
@@ -179,6 +159,7 @@ public abstract class Screen {
 	/**
 	 * @return the screen's maximum Y-coordinate
 	 */
+	@Override
 	public int getScreenMaxY() {
 
 		return screenMaxY;

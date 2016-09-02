@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.camera.BasicCamera;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.CheckerboardColorScheme;
@@ -15,16 +16,16 @@ import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.color.SimpleColorScheme;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.PointLight;
-import org.snowjak.rays.light.model.FogDecoratingLightingModel;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
-import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Sphere;
 import org.snowjak.rays.transform.Rotation;
-import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
+import org.snowjak.rays.ui.AntialiasingScreenDecorator;
 import org.snowjak.rays.ui.BasicScreen;
-import org.snowjak.rays.ui.Screen;
+import org.snowjak.rays.ui.DrawsEntireScreen;
+import org.snowjak.rays.ui.MultithreadedScreenDecorator;
+import org.snowjak.rays.ui.TotalTimeElapsedScreenDecorator;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -56,8 +57,11 @@ public class RaytracerApp extends Application {
 
 		World world = buildWorld();
 
-		WritableImage image = new WritableImage(800, 500);
-		Screen screen = new BasicScreen(primaryStage, image, world.getCamera());
+		WritableImage image = new WritableImage(400, 250);
+		DrawsEntireScreen screen = new TotalTimeElapsedScreenDecorator(primaryStage,
+				new MultithreadedScreenDecorator(new AntialiasingScreenDecorator(
+						new BasicScreen(primaryStage, image, world.getCamera()), 1d, 4), 4),
+				1);
 
 		ImageView imageView = new ImageView(image);
 		Group root = new Group(imageView);
