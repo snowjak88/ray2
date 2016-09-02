@@ -1,15 +1,23 @@
 package org.snowjak.rays.ui;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 
 import javafx.application.Platform;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import javafx.stage.Stage;
 
 /**
  * A basic implementation of Screen which writes to a JavaFX
@@ -20,35 +28,62 @@ import javafx.scene.image.WritableImage;
  */
 public class BasicScreen extends Screen {
 
+	private Stage screenStage;
+
 	private PixelWriter pixels;
 
 	private ExecutorService renderingThreadPool;
 
+	private ScheduledExecutorService timeUpdateThread;
+
 	/**
 	 * Create a new BasicScreen attached to the given {@link WritableImage}.
 	 * 
+	 * @param screenStage
+	 * 
 	 * @param image
 	 */
-	public BasicScreen(WritableImage image) {
-		this(image, null);
+	public BasicScreen(Stage screenStage, WritableImage image) {
+		this(screenStage, image, null);
 	}
 
 	/**
 	 * Create a new BasicScreen attached to the given {@link WritableImage} and
 	 * {@link Camera}.
 	 * 
+	 * @param screenStage
 	 * @param image
 	 * @param camera
 	 */
-	public BasicScreen(WritableImage image, Camera camera) {
+	public BasicScreen(Stage screenStage, WritableImage image, Camera camera) {
 		super(camera, (int) image.getWidth() - 1, (int) image.getHeight() - 1);
 
+		this.screenStage = screenStage;
 		this.pixels = image.getPixelWriter();
-		this.renderingThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+		this.renderingThreadPool = Executors
+				.newFixedThreadPool(FastMath.max(Runtime.getRuntime().availableProcessors() - 2, 1));
+		this.timeUpdateThread = Executors.newSingleThreadScheduledExecutor();
 	}
 
 	@Override
 	public void draw() {
+
+		AtomicReference<Instant> startedRunning = new AtomicReference<Instant>(Instant.now());
+
+		timeUpdateThread.scheduleAtFixedRate(() -> {
+
+			final Instant endInstant = Instant.now();
+			final long totalSeconds = Duration.between(startedRunning.get(), endInstant).getSeconds();
+			final long hours = totalSeconds / 3600;
+			final long minutes = (totalSeconds % 3600) / 60;
+			final long seconds = totalSeconds % 60;
+			final String newTitle = String.format("Render: %d:%02d:%02d", hours, minutes, seconds);
+
+			Platform.runLater(() -> {
+				screenStage.setTitle(newTitle);
+			});
+
+		}, 1, 1, TimeUnit.SECONDS);
 
 		for (int column = getScreenMinX(); column <= getScreenMaxX(); column++)
 			renderingThreadPool.submit(new ColumnRenderTask(column));
@@ -59,6 +94,7 @@ public class BasicScreen extends Screen {
 	public void shutdown() {
 
 		super.shutdown();
+		timeUpdateThread.shutdownNow();
 		if (!this.renderingThreadPool.shutdownNow().isEmpty())
 			System.out.println("Shutting down rendering tasks ...");
 	}

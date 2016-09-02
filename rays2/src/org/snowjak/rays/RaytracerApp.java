@@ -57,7 +57,7 @@ public class RaytracerApp extends Application {
 		World world = buildWorld();
 
 		WritableImage image = new WritableImage(800, 500);
-		Screen screen = new BasicScreen(image, world.getCamera());
+		Screen screen = new BasicScreen(primaryStage, image, world.getCamera());
 
 		ImageView imageView = new ImageView(image);
 		Group root = new Group(imageView);
