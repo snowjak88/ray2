@@ -57,11 +57,9 @@ public class RaytracerApp extends Application {
 
 		World world = buildWorld();
 
-		WritableImage image = new WritableImage(400, 250);
-		DrawsEntireScreen screen = new TotalTimeElapsedScreenDecorator(primaryStage,
-				new MultithreadedScreenDecorator(new AntialiasingScreenDecorator(
-						new BasicScreen(primaryStage, image, world.getCamera()), 1d, 4), 4),
-				1);
+		WritableImage image = new WritableImage(800, 500);
+		DrawsEntireScreen screen = new TotalTimeElapsedScreenDecorator(primaryStage, new MultithreadedScreenDecorator(
+				new AntialiasingScreenDecorator(new BasicScreen(primaryStage, image, world.getCamera()))));
 
 		ImageView imageView = new ImageView(image);
 		Group root = new Group(imageView);

@@ -2,6 +2,8 @@ package org.snowjak.rays.ui;
 
 import java.util.Optional;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
@@ -27,6 +29,8 @@ import org.snowjak.rays.color.RawColor;
  */
 public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 
+	private RealDistribution distribution;
+
 	private DrawsScreenPixel child;
 
 	private double coordinateDelta;
@@ -35,27 +39,37 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 
 	/**
 	 * Create a new AntialiasingScreenDecorator on top of an existing
+	 * {@link DrawsScreenPixel} instance, taking 9x9 samples centered around
+	 * each pixel.
+	 * 
+	 * @param decoratedScreen
+	 *            the existing screen to decorate
+	 */
+	public AntialiasingScreenDecorator(DrawsScreenPixel decoratedScreen) {
+		this(decoratedScreen, 9);
+	}
+
+	/**
+	 * Create a new AntialiasingScreenDecorator on top of an existing
 	 * {@link DrawsScreenPixel} instance.
 	 * 
 	 * @param decoratedScreen
 	 *            the existing screen to decorate
-	 * @param filterSpan
-	 *            the side-length of the antialiasing box-filter
-	 * @param sampleCount
-	 *            a count of the points sampled within the antialiasing box.
-	 *            Always rounded up to N^2 + 1
+	 * @param sampleSpan
+	 *            number of samples per side of the antialiasing box-filter.
+	 *            Default value is 9.
 	 */
-	public AntialiasingScreenDecorator(DrawsScreenPixel decoratedScreen, double filterSpan, int sampleCount) {
+	public AntialiasingScreenDecorator(DrawsScreenPixel decoratedScreen, int sampleSpan) {
 
 		this.child = decoratedScreen;
-		this.filterSpan = filterSpan;
-		this.coordinateDelta = filterSpan / ((double) FastMath.rint(FastMath.ceil(FastMath.sqrt(sampleCount))) + 1d);
+		this.filterSpan = 1;
+		this.coordinateDelta = filterSpan / ((double) (sampleSpan / 2));
+
+		this.distribution = new NormalDistribution(0d, 0.5);
 	}
 
 	@Override
 	public Optional<RawColor> getRayColor(int screenX, int screenY) {
-
-		double centralX = getCameraX(screenX), centralY = getCameraY(screenY);
 
 		RawColor totalColor = new RawColor();
 		double totalScale = 0d;
@@ -63,9 +77,8 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 		for (double dx = -(filterSpan / 2d); dx <= (filterSpan / 2d); dx += coordinateDelta) {
 			for (double dy = -(filterSpan / 2d); dy <= (filterSpan / 2d); dy += coordinateDelta) {
 
-				double x = centralX + dx, y = centralY + dy;
-				// double dxpi = dx * FastMath.PI, dypi = dy * FastMath.PI;
-				double scale = 10d * (FastMath.sin(dx) / (dx)) * (FastMath.sin(dy) / (dy));
+				double x = getCameraX(screenX + dx), y = getCameraY(screenY + dy);
+				double scale = distribution.density(FastMath.sqrt(FastMath.pow(dx, 2d) + FastMath.pow(dy, 2d)));
 
 				totalScale += scale;
 				Optional<RawColor> color = child.getCamera().shootRay(x, y);

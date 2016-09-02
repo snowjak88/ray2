@@ -69,6 +69,17 @@ public interface DrawsScreenPixel extends CanBeShutdown {
 	}
 
 	/**
+	 * @param screenX
+	 * @return the given pixel X-coordinate translated into an equivalent
+	 *         coordinate within the frame of the current {@link Camera}
+	 */
+	public default double getCameraX(double screenX) {
+
+		double cameraScaleX = getCamera().getCameraFrameSideLength() / (double) (getScreenMaxX() - getScreenMinX());
+		return (screenX - (double) (getScreenMaxX() - getScreenMinX()) / 2d + getScreenMinX()) * cameraScaleX;
+	}
+
+	/**
 	 * @param screenY
 	 * @return the given pixel Y-coordinate translated into an equivalent
 	 *         coordinate within the frame of the current {@link Camera}
@@ -80,5 +91,19 @@ public interface DrawsScreenPixel extends CanBeShutdown {
 		double cameraScaleY = getCamera().getCameraFrameSideLength() / (getScreenMaxY() - getScreenMinY())
 				/ aspectRatio;
 		return ((double) screenY - (getScreenMaxY() - getScreenMinY()) / 2.0 + getScreenMinY()) * cameraScaleY;
+	}
+
+	/**
+	 * @param screenY
+	 * @return the given pixel Y-coordinate translated into an equivalent
+	 *         coordinate within the frame of the current {@link Camera}
+	 */
+	public default double getCameraY(double screenY) {
+
+		double aspectRatio = (double) (getScreenMaxX() - getScreenMinX())
+				/ (double) (getScreenMaxY() - getScreenMinY());
+		double cameraScaleY = getCamera().getCameraFrameSideLength() / (getScreenMaxY() - getScreenMinY())
+				/ aspectRatio;
+		return ((double) screenY - (getScreenMaxY() - getScreenMinY()) / 2d + getScreenMinY()) * cameraScaleY;
 	}
 }
