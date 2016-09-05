@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Group;
 import org.snowjak.rays.shape.Shape;
@@ -69,6 +70,10 @@ public class Union extends Shape {
 	public Union(Collection<Shape> children) {
 		super();
 		this.children.addAll(children);
+		setAmbientColorScheme(null);
+		setDiffuseColorScheme(null);
+		setSpecularColorScheme(null);
+		setEmissiveColorScheme(null);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -127,13 +132,27 @@ public class Union extends Shape {
 
 		//
 		//
+
+		//
+		//
 		// Finally, we need to convert each result Intersection so that
 		// the reported intersected-Shape is this Union, not the child Shape.
-		return results.stream().sequential()
-				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
-						i.getAmbientColorScheme(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
-						i.getEmissiveColorScheme()))
-				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
+		return results.stream().sequential().map(i -> {
+			//
+			// Has this Union been given its own definitive ColorSchemes, which
+			// will override those of its children?
+			ColorScheme ambient = (this.getAmbientColorScheme() != null) ? this.getAmbientColorScheme()
+					: i.getAmbientColorScheme();
+			ColorScheme diffuse = (this.getDiffuseColorScheme() != null) ? this.getDiffuseColorScheme()
+					: i.getDiffuseColorScheme();
+			ColorScheme specular = (this.getSpecularColorScheme() != null) ? this.getSpecularColorScheme()
+					: i.getSpecularColorScheme();
+			ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
+					: i.getEmissiveColorScheme();
+
+			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, ambient, diffuse, specular,
+					emissive);
+		}).collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
 	}
 
 	/**

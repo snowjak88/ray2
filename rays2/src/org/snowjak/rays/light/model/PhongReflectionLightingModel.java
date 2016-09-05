@@ -35,16 +35,14 @@ public class PhongReflectionLightingModel implements LightingModel {
 		// too close.
 		Intersection<Shape> intersect = intersections.stream()
 				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) > 0).findFirst().get();
-		Shape shape = intersect.getIntersected();
 		//
 		// What are the configured colors for this shape?
-		Vector3D localIntersectPoint = shape.worldToLocal(intersect.getPoint());
-		RawColor shapeAmbientColor = intersect.getAmbient(localIntersectPoint);
-		RawColor shapeDiffuseColor = intersect.getDiffuse(localIntersectPoint);
-		RawColor shapeSpecularColor = intersect.getSpecular(localIntersectPoint);
-		RawColor shapeEmissiveColor = intersect.getEmissive(localIntersectPoint);
-		double shininess = intersect.getDiffuseColorScheme().getShininess(localIntersectPoint);
-		double reflectivity = intersect.getDiffuseColorScheme().getReflectivity(localIntersectPoint);
+		RawColor intersectAmbientColor = intersect.getAmbient(intersect.getPoint());
+		RawColor intersectDiffuseColor = intersect.getDiffuse(intersect.getPoint());
+		RawColor intersectSpecularColor = intersect.getSpecular(intersect.getPoint());
+		RawColor intersectEmissiveColor = intersect.getEmissive(intersect.getPoint());
+		double shininess = intersect.getDiffuseColorScheme().getShininess(intersect.getPoint());
+		double reflectivity = intersect.getDiffuseColorScheme().getReflectivity(intersect.getPoint());
 
 		//
 		// totalX = total light of type X seen by this Ray
@@ -97,7 +95,7 @@ public class PhongReflectionLightingModel implements LightingModel {
 			// Calculate the ambient light the current Light contributes to this
 			// ray
 			RawColor lightAmbientIntensity = light.getAmbientIntensity(toLightRay);
-			totalAmbient = totalAmbient.add(lightAmbientIntensity.multiply(shapeAmbientColor));
+			totalAmbient = totalAmbient.add(lightAmbientIntensity.multiply(intersectAmbientColor));
 
 			if (lightIsVisible) {
 				//
@@ -108,7 +106,7 @@ public class PhongReflectionLightingModel implements LightingModel {
 				if (Double.compare(lightExposure, 0d) > 0) {
 					RawColor lightDiffuseIntensity = light.getDiffuseIntensity(toLightRay);
 					totalDiffuse = totalDiffuse
-							.add(lightDiffuseIntensity.multiply(shapeDiffuseColor).multiplyScalar(lightExposure));
+							.add(lightDiffuseIntensity.multiply(intersectDiffuseColor).multiplyScalar(lightExposure));
 
 					//
 					//
@@ -131,7 +129,7 @@ public class PhongReflectionLightingModel implements LightingModel {
 						RawColor lightSpecularIntensity = light.getSpecularIntensity(toLightRay)
 								.multiplyScalar(specularIntensity);
 
-						totalSpecular = totalSpecular.add(shapeSpecularColor.multiply(lightSpecularIntensity));
+						totalSpecular = totalSpecular.add(intersectSpecularColor.multiply(lightSpecularIntensity));
 					}
 				}
 
@@ -152,7 +150,7 @@ public class PhongReflectionLightingModel implements LightingModel {
 		//
 		// If a shape is giving off emissive light, then that emissive light is
 		// simply added to everything else.
-		totalEmissive = shapeEmissiveColor;
+		totalEmissive = intersectEmissiveColor;
 
 		//
 		//
@@ -165,9 +163,7 @@ public class PhongReflectionLightingModel implements LightingModel {
 
 	private Optional<RawColor> getReflectiveShapeDiffuseColor(Intersection<Shape> intersection) {
 
-		Shape shape = intersection.getIntersected();
-		double shapeReflectivity = shape.getDiffuseColorScheme()
-				.getReflectivity(shape.worldToLocal(intersection.getPoint()));
+		double shapeReflectivity = intersection.getDiffuseColorScheme().getReflectivity(intersection.getPoint());
 
 		Ray originalRay = intersection.getRay();
 
