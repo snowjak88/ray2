@@ -18,7 +18,7 @@ import org.snowjak.rays.light.PointLight;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Sphere;
-import org.snowjak.rays.shape.csg.Union;
+import org.snowjak.rays.shape.csg.Intersect;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.AntialiasingScreenDecorator;
@@ -149,9 +149,9 @@ public class RaytracerApp extends Application {
 		sphere2.setDiffuseColorScheme(colorScheme2);
 		sphere2.getTransformers().add(new Translation(0.75, 0d, 0d));
 
-		Union union = new Union(sphere1, sphere2);
-		union.getTransformers().add(new Rotation(0d, -15d, 0d));
-		world.getShapes().add(union);
+		Intersect intersect = new Intersect(sphere1, sphere2);
+		intersect.getTransformers().add(new Rotation(0d, -15d, 0d));
+		world.getShapes().add(intersect);
 
 		ColorScheme planeColorScheme = new SimpleColorScheme(new RawColor(Color.BROWN).multiplyScalar(0.2));
 		Plane plane = new Plane();
