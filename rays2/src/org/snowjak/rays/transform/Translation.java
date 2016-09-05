@@ -36,20 +36,12 @@ public class Translation implements Transformer {
 	 */
 	public Translation(double dX, double dY, double dZ) {
 
-		//@formatter:off
-		matrix = new BlockRealMatrix(new double[][]
-				{	{ 1d, 0d, 0d, dX },
-					{ 0d, 1d, 0d, dY },
-					{ 0d, 0d, 1d, dZ },
-					{ 0d, 0d, 0d, 1d }
-				});
-		inverseMatrix = new BlockRealMatrix(new double[][]
-				{	{ 1d, 0d, 0d, -dX },
-					{ 0d, 1d, 0d, -dY },
-					{ 0d, 0d, 1d, -dZ },
-					{ 0d, 0d, 0d, 1d }
-				});
-		//@formatter:on
+		// @formatter:off
+		matrix = new BlockRealMatrix(
+				new double[][] { { 1d, 0d, 0d, dX }, { 0d, 1d, 0d, dY }, { 0d, 0d, 1d, dZ }, { 0d, 0d, 0d, 1d } });
+		inverseMatrix = new BlockRealMatrix(
+				new double[][] { { 1d, 0d, 0d, -dX }, { 0d, 1d, 0d, -dY }, { 0d, 0d, 1d, -dZ }, { 0d, 0d, 0d, 1d } });
+		// @formatter:on
 	}
 
 	@Override
@@ -68,14 +60,18 @@ public class Translation implements Transformer {
 	public <S extends Intersectable> Intersection<S> localToWorld(Intersection<S> intersection) {
 
 		return new Intersection<S>(localToWorld(intersection.getPoint()), intersection.getNormal(),
-				localToWorld(intersection.getRay()), intersection.getIntersected());
+				localToWorld(intersection.getRay()), intersection.getIntersected(),
+				intersection.getAmbientColorScheme(), intersection.getDiffuseColorScheme(),
+				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
 	}
 
 	@Override
 	public <S extends Intersectable> Intersection<S> worldToLocal(Intersection<S> intersection) {
 
 		return new Intersection<S>(worldToLocal(intersection.getPoint()), intersection.getNormal(),
-				worldToLocal(intersection.getRay()), intersection.getIntersected());
+				worldToLocal(intersection.getRay()), intersection.getIntersected(),
+				intersection.getAmbientColorScheme(), intersection.getDiffuseColorScheme(),
+				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
 	}
 
 	@Override

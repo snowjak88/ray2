@@ -108,23 +108,23 @@ public class Sphere extends Shape {
 		List<Intersection<Shape>> results = new LinkedList<>();
 
 		if (Double.compare(intersectionDistance1, World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere1 = transformedRay.getVector()
-					.normalize()
-					.scalarMultiply(intersectionDistance1)
-					.add(transformedRay.getOrigin());
+			Vector3D intersectPointOnSphere1 = transformedRay.getVector().normalize()
+					.scalarMultiply(intersectionDistance1).add(transformedRay.getOrigin());
 
 			Vector3D normal1 = intersectPointOnSphere1.subtract(worldToLocal(getLocation())).normalize();
-			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, transformedRay, this)));
+			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, transformedRay, this,
+					this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
+					this.getEmissiveColorScheme())));
 		}
 
 		if (Double.compare(intersectionDistance2, World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere2 = transformedRay.getVector()
-					.normalize()
-					.scalarMultiply(intersectionDistance2)
-					.add(transformedRay.getOrigin());
+			Vector3D intersectPointOnSphere2 = transformedRay.getVector().normalize()
+					.scalarMultiply(intersectionDistance2).add(transformedRay.getOrigin());
 
 			Vector3D normal2 = intersectPointOnSphere2.subtract(worldToLocal(getLocation())).normalize();
-			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this)));
+			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this,
+					this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
+					this.getEmissiveColorScheme())));
 		}
 
 		return results;

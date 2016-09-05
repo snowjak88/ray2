@@ -48,23 +48,14 @@ public class Rotation implements Transformer {
 		double yR = toRadians(yaw);
 		double zR = toRadians(roll);
 
-		//@formatter:off
-		RealMatrix xRotation = new BlockRealMatrix(new double[][]
-				{	{ 1d, 0d, 0d, 0d },
-					{ 0d, cos(xR), sin(xR), 0d },
-					{ 0d, -sin(xR), cos(xR), 0d },
-					{ 0d, 0d, 0d, 1d }	});
-		RealMatrix yRotation = new BlockRealMatrix(new double[][]
-				{	{ cos(yR), 0d, -sin(yR), 0d },
-					{ 0d, 1d, 0d, 0d },
-					{ sin(yR), 0d, cos(yR), 0d },
-					{ 0d, 0d, 0d, 1d }	});
-		RealMatrix zRotation = new BlockRealMatrix(new double[][]
-				{	{ cos(zR), sin(zR), 0d, 0d },
-					{ -sin(zR), cos(zR), 0d, 0d },
-					{ 0d, 0d, 1d, 0d },
-					{ 0d, 0d, 0d, 1d }	});
-		//@formatter:on
+		// @formatter:off
+		RealMatrix xRotation = new BlockRealMatrix(new double[][] { { 1d, 0d, 0d, 0d }, { 0d, cos(xR), sin(xR), 0d },
+				{ 0d, -sin(xR), cos(xR), 0d }, { 0d, 0d, 0d, 1d } });
+		RealMatrix yRotation = new BlockRealMatrix(new double[][] { { cos(yR), 0d, -sin(yR), 0d }, { 0d, 1d, 0d, 0d },
+				{ sin(yR), 0d, cos(yR), 0d }, { 0d, 0d, 0d, 1d } });
+		RealMatrix zRotation = new BlockRealMatrix(new double[][] { { cos(zR), sin(zR), 0d, 0d },
+				{ -sin(zR), cos(zR), 0d, 0d }, { 0d, 0d, 1d, 0d }, { 0d, 0d, 0d, 1d } });
+		// @formatter:on
 		this.matrix = xRotation.multiply(yRotation).multiply(zRotation);
 		this.inverseMatrix = matrix.transpose();
 	}
@@ -85,14 +76,18 @@ public class Rotation implements Transformer {
 	public <S extends Intersectable> Intersection<S> localToWorld(Intersection<S> intersection) {
 
 		return new Intersection<S>(localToWorld(intersection.getPoint()), localToWorld(intersection.getNormal()),
-				localToWorld(intersection.getRay()), intersection.getIntersected());
+				localToWorld(intersection.getRay()), intersection.getIntersected(),
+				intersection.getAmbientColorScheme(), intersection.getDiffuseColorScheme(),
+				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
 	}
 
 	@Override
 	public <S extends Intersectable> Intersection<S> worldToLocal(Intersection<S> intersection) {
 
 		return new Intersection<S>(worldToLocal(intersection.getPoint()), worldToLocal(intersection.getNormal()),
-				worldToLocal(intersection.getRay()), intersection.getIntersected());
+				worldToLocal(intersection.getRay()), intersection.getIntersected(),
+				intersection.getAmbientColorScheme(), intersection.getDiffuseColorScheme(),
+				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
 	}
 
 	@Override

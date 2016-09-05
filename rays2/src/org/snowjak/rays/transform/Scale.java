@@ -35,30 +35,26 @@ public class Scale implements Transformer {
 	 * 
 	 */
 	public Scale(double scaleX, double scaleY, double scaleZ) {
-		//@formatter:off
-		this.matrix = new BlockRealMatrix(new double[][]
-				{	{ scaleX, 0d, 0d, 0d },
-					{ 0d, scaleY, 0d, 0d },
-					{ 0d, 0d, scaleZ, 0d },
-					{ 0d, 0d, 0d, 1d }	});
-		this.inverseMatrix = new BlockRealMatrix(new double[][]
-				{	{ 1d/scaleX, 0d, 0d, 0d },
-					{ 0d, 1d/scaleY, 0d, 0d },
-					{ 0d, 0d, 1d/scaleZ, 0d },
-					{ 0d, 0d, 0d, 1d }	});
-		//@formatter:on
+		// @formatter:off
+		this.matrix = new BlockRealMatrix(new double[][] { { scaleX, 0d, 0d, 0d }, { 0d, scaleY, 0d, 0d },
+				{ 0d, 0d, scaleZ, 0d }, { 0d, 0d, 0d, 1d } });
+		this.inverseMatrix = new BlockRealMatrix(new double[][] { { 1d / scaleX, 0d, 0d, 0d },
+				{ 0d, 1d / scaleY, 0d, 0d }, { 0d, 0d, 1d / scaleZ, 0d }, { 0d, 0d, 0d, 1d } });
+		// @formatter:on
 	}
 
 	@Override
 	public Ray localToWorld(Ray ray) {
 
-		return new Ray(localToWorld(ray.getOrigin()), localToWorld(ray.getVector()).normalize(), ray.getRecursiveLevel());
+		return new Ray(localToWorld(ray.getOrigin()), localToWorld(ray.getVector()).normalize(),
+				ray.getRecursiveLevel());
 	}
 
 	@Override
 	public Ray worldToLocal(Ray ray) {
 
-		return new Ray(worldToLocal(ray.getOrigin()), worldToLocal(ray.getVector()).normalize(), ray.getRecursiveLevel());
+		return new Ray(worldToLocal(ray.getOrigin()), worldToLocal(ray.getVector()).normalize(),
+				ray.getRecursiveLevel());
 	}
 
 	@Override
@@ -66,7 +62,9 @@ public class Scale implements Transformer {
 
 		return new Intersection<S>(localToWorld(intersection.getPoint()),
 				localToWorld(intersection.getNormal()).normalize(), localToWorld(intersection.getRay()),
-				intersection.getIntersected());
+				intersection.getIntersected(), intersection.getAmbientColorScheme(),
+				intersection.getDiffuseColorScheme(), intersection.getSpecularColorScheme(),
+				intersection.getEmissiveColorScheme());
 	}
 
 	@Override
@@ -74,7 +72,9 @@ public class Scale implements Transformer {
 
 		return new Intersection<S>(worldToLocal(intersection.getPoint()),
 				worldToLocal(intersection.getNormal()).normalize(), worldToLocal(intersection.getRay()),
-				intersection.getIntersected());
+				intersection.getIntersected(),
+				intersection.getAmbientColorScheme(), intersection.getDiffuseColorScheme(),
+				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
 	}
 
 	@Override

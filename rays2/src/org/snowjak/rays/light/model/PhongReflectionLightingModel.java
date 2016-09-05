@@ -34,18 +34,17 @@ public class PhongReflectionLightingModel implements LightingModel {
 		// And we only care about the first (closest) intersection that isn't
 		// too close.
 		Intersection<Shape> intersect = intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) > 0)
-				.findFirst()
-				.get();
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) > 0).findFirst().get();
 		Shape shape = intersect.getIntersected();
 		//
 		// What are the configured colors for this shape?
-		RawColor shapeAmbientColor = shape.getAmbient(shape.worldToLocal(intersect.getPoint()));
-		RawColor shapeDiffuseColor = shape.getDiffuse(shape.worldToLocal(intersect.getPoint()));
-		RawColor shapeSpecularColor = shape.getSpecular(shape.worldToLocal(intersect.getPoint()));
-		RawColor shapeEmissiveColor = shape.getEmissive(shape.worldToLocal(intersect.getPoint()));
-		double shininess = shape.getDiffuseColorScheme().getShininess(shape.worldToLocal(intersect.getPoint()));
-		double reflectivity = shape.getDiffuseColorScheme().getReflectivity(shape.worldToLocal(intersect.getPoint()));
+		Vector3D localIntersectPoint = shape.worldToLocal(intersect.getPoint());
+		RawColor shapeAmbientColor = intersect.getAmbient(localIntersectPoint);
+		RawColor shapeDiffuseColor = intersect.getDiffuse(localIntersectPoint);
+		RawColor shapeSpecularColor = intersect.getSpecular(localIntersectPoint);
+		RawColor shapeEmissiveColor = intersect.getEmissive(localIntersectPoint);
+		double shininess = intersect.getDiffuseColorScheme().getShininess(localIntersectPoint);
+		double reflectivity = intersect.getDiffuseColorScheme().getReflectivity(localIntersectPoint);
 
 		//
 		// totalX = total light of type X seen by this Ray

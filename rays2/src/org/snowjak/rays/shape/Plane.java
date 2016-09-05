@@ -72,7 +72,9 @@ public class Plane extends Shape {
 				double normalSign = FastMath.signum(transformedRay.getVector().negate().dotProduct(Vector3D.PLUS_J));
 				Vector3D normal = Vector3D.PLUS_J.scalarMultiply(normalSign);
 
-				results.add(localToWorld(new Intersection<Shape>(intersectionPoint, normal, transformedRay, this)));
+				results.add(localToWorld(new Intersection<Shape>(intersectionPoint, normal, transformedRay, this,
+						this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
+						this.getEmissiveColorScheme())));
 			}
 		}
 
