@@ -19,6 +19,7 @@ import org.snowjak.rays.light.PointLight;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Sphere;
+import org.snowjak.rays.shape.csg.Union;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.AntialiasingScreenDecorator;
@@ -136,17 +137,21 @@ public class RaytracerApp extends Application {
 		colorScheme1.setReflectivity(-1d);
 		ColorScheme colorScheme2 = new SimpleColorScheme(Color.CORAL);
 		colorScheme2.setReflectivity(0.95);
-		ColorScheme sphereColorScheme = new CheckerboardColorScheme(colorScheme1, colorScheme2);
+		ColorScheme sphereColorScheme = new CheckerboardColorScheme(0.5, colorScheme1, colorScheme2);
 
-		for (int x = -30; x <= 30; x += 3) {
-			for (int z = -15; z <= 45; z += 3) {
-				Sphere sphere = new Sphere();
-				sphere.setAmbientColorScheme(sphereColorScheme);
-				sphere.setDiffuseColorScheme(sphereColorScheme);
-				sphere.getTransformers().add(new Translation(x, 0d, z));
-				world.getShapes().add(sphere);
-			}
-		}
+		Sphere sphere1 = new Sphere();
+		sphere1.setAmbientColorScheme(sphereColorScheme);
+		sphere1.setDiffuseColorScheme(sphereColorScheme);
+		sphere1.getTransformers().add(new Translation(-0.75, 0d, 0d));
+
+		Sphere sphere2 = new Sphere();
+		sphere2.setAmbientColorScheme(colorScheme2);
+		sphere2.setDiffuseColorScheme(colorScheme2);
+		sphere2.getTransformers().add(new Translation(0.75, 0d, 0d));
+
+		Union union = new Union(sphere1, sphere2);
+		union.getTransformers().add(new Rotation(0d, -30d, 0d));
+		world.getShapes().add(union);
 
 		ColorScheme planeColorScheme = new SimpleColorScheme(new RawColor(Color.BROWN).multiplyScalar(0.2));
 		Plane plane = new Plane();
@@ -161,7 +166,7 @@ public class RaytracerApp extends Application {
 		world.getLights().add(pointLight);
 
 		Camera camera = new BasicCamera(4.0, 75.0);
-		camera.getTransformers().add(new Translation(0d, 1.5d, -14d));
+		camera.getTransformers().add(new Translation(0d, 1d, -6d));
 		camera.getTransformers().add(new Rotation(-20d, 0d, 0d));
 		world.setCamera(camera);
 

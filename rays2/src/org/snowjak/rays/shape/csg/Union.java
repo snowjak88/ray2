@@ -3,9 +3,10 @@ package org.snowjak.rays.shape.csg;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.intersect.Intersection;
@@ -21,8 +22,8 @@ import org.snowjak.rays.shape.Shape;
  * <ul>
  * <li>a Union will give you only the start- and end-Intersections for all the
  * overlapping Shapes considered together</li>
- * <li>a Group will give you start- and end-Intersections for each Shape in
- * turn</li>
+ * <li>a Group will give you start- and end-Intersections for each Shape in turn
+ * </li>
  * </ul>
  * </p>
  * <p>
@@ -76,19 +77,63 @@ public class Union extends Shape {
 
 		Ray transformedRay = worldToLocal(ray);
 
-		Deque<Intersection<Shape>> intersections = children.parallelStream()
-				.map(s -> s.getIntersections(transformedRay))
-				.flatMap(l -> l.parallelStream())
-				.map(i -> localToWorld(i))
-				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this))
-				.sequential()
+		//
+		// Get the intersections reported by each child Shape,
+		// flatten that list of lists into a single list of intersections,
+		// and sort it by distance.
+		List<Intersection<Shape>> intersections = children.parallelStream().map(s -> s.getIntersections(transformedRay))
+				.flatMap(l -> l.parallelStream()).map(i -> localToWorld(i)).sequential()
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
 
 		if (intersections.isEmpty())
 			return (List<Intersection<Shape>>) intersections;
 
-		return Arrays.asList(intersections.getFirst(), intersections.getLast());
+		//
+		//
+		// Scan through the list of Intersections.
+		// We are interested in those corresponding to overlapping Shapes --
+		// specifically, we want to get the Intersections at the beginning and
+		// end of each overlapping group.
+		List<Intersection<Shape>> results = new LinkedList<>();
+		Set<Shape> currentlyIn = new HashSet<>();
+		for (Intersection<Shape> currentIntersect : intersections) {
+
+			//
+			// Each Intersection represents a point at which we cross a Shape
+			// boundary.
+			//
+			// At each point: are we crossing *into* or *out of* that Shape?
+			if (currentlyIn.contains(currentIntersect.getIntersected())) {
+				//
+				// We are in this Shape, so we're leaving it now.
+				currentlyIn.remove(currentIntersect.getIntersected());
+				//
+				// Does this mean that we've left all Shapes behind? So we're
+				// out of the overlapping group?
+				if (currentlyIn.isEmpty())
+					results.add(currentIntersect);
+
+			} else {
+				//
+				// We are not yet in this Shape, crossing into it now.
+				//
+				// Are we just starting an overlapping group?
+				if (currentlyIn.isEmpty())
+					results.add(currentIntersect);
+				currentlyIn.add(currentIntersect.getIntersected());
+			}
+		}
+
+		//
+		//
+		// Finally, we need to convert each result Intersection so that
+		// the reported intersected-Shape is this Union, not the child Shape.
+		return results.stream().sequential()
+				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
+						i.getAmbientColorScheme(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
+						i.getEmissiveColorScheme()))
+				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
 	}
 
 	/**
