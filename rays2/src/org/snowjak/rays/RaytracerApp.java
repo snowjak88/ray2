@@ -7,7 +7,6 @@ import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.camera.BasicCamera;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.CheckerboardColorScheme;
@@ -58,7 +57,7 @@ public class RaytracerApp extends Application {
 
 		World world = buildWorld();
 
-		WritableImage image = new WritableImage(400, 250);
+		WritableImage image = new WritableImage(800, 500);
 		DrawsEntireScreen screen = new TotalTimeElapsedScreenDecorator(primaryStage, new MultithreadedScreenDecorator(
 				new AntialiasingScreenDecorator(new BasicScreen(primaryStage, image, world.getCamera()), 5)));
 
@@ -138,6 +137,7 @@ public class RaytracerApp extends Application {
 		ColorScheme colorScheme2 = new SimpleColorScheme(Color.CORAL);
 		colorScheme2.setReflectivity(0.95);
 		ColorScheme sphereColorScheme = new CheckerboardColorScheme(0.5, colorScheme1, colorScheme2);
+		sphereColorScheme.getTransformers().add(new Rotation(0d, 0d, 45d));
 
 		Sphere sphere1 = new Sphere();
 		sphere1.setAmbientColorScheme(sphereColorScheme);
@@ -150,7 +150,7 @@ public class RaytracerApp extends Application {
 		sphere2.getTransformers().add(new Translation(0.75, 0d, 0d));
 
 		Union union = new Union(sphere1, sphere2);
-		union.getTransformers().add(new Rotation(0d, -30d, 0d));
+		union.getTransformers().add(new Rotation(0d, -15d, 0d));
 		world.getShapes().add(union);
 
 		ColorScheme planeColorScheme = new SimpleColorScheme(new RawColor(Color.BROWN).multiplyScalar(0.2));

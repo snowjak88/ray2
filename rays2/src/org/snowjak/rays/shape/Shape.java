@@ -26,44 +26,23 @@ import javafx.scene.paint.Color;
  */
 public abstract class Shape implements Transformable, Locatable, Intersectable, HasColorScheme {
 
+	/**
+	 * By default, the ambient and diffuse color-schemes will take this value.
+	 */
+	public static final ColorScheme DEFAULT_COLOR_SCHEME = new SimpleColorScheme(Color.HOTPINK);
+	/**
+	 * By default, the specular color-scheme will take this value.
+	 */
+	public static final ColorScheme DEFAULT_SPECULAR_COLOR_SCHEME = new SimpleColorScheme(Color.WHITE);
+	/**
+	 * By default, the emissive color-scheme will take this value.
+	 */
+	public static final ColorScheme DEFAULT_EMISSIVE_COLOR_SCHEME = new SimpleColorScheme(Color.BLACK);
+
 	private Deque<Transformer> transformers = new LinkedList<>();
 
-	private ColorScheme ambientColorScheme, diffuseColorScheme, specularColorScheme, emissiveColorScheme;
-
-	/**
-	 * Create a new Shape.
-	 */
-	public Shape() {
-		this(new SimpleColorScheme(Color.HOTPINK));
-	}
-
-	/**
-	 * Create a new Shape, setting both the ambient and diffuse color-schemes to
-	 * use the same {@link ColorScheme}.
-	 * 
-	 * @param colorScheme
-	 */
-	public Shape(ColorScheme colorScheme) {
-		this(colorScheme, colorScheme, new SimpleColorScheme(Color.WHITE), new SimpleColorScheme());
-	}
-
-	/**
-	 * Create a new Shape, using the provided {@link ColorScheme}s.
-	 * 
-	 * @param ambientColorScheme
-	 * @param diffuseColorScheme
-	 * @param specularColorScheme
-	 * @param emissiveColorScheme
-	 * @param shininess
-	 * @param reflectivity
-	 */
-	public Shape(ColorScheme ambientColorScheme, ColorScheme diffuseColorScheme, ColorScheme specularColorScheme,
-			ColorScheme emissiveColorScheme) {
-		this.ambientColorScheme = ambientColorScheme;
-		this.diffuseColorScheme = diffuseColorScheme;
-		this.specularColorScheme = specularColorScheme;
-		this.emissiveColorScheme = emissiveColorScheme;
-	}
+	private ColorScheme ambientColorScheme = DEFAULT_COLOR_SCHEME, diffuseColorScheme = DEFAULT_COLOR_SCHEME,
+			specularColorScheme = DEFAULT_SPECULAR_COLOR_SCHEME, emissiveColorScheme = DEFAULT_EMISSIVE_COLOR_SCHEME;
 
 	@Override
 	public Deque<Transformer> getTransformers() {

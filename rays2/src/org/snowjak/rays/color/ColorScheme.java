@@ -82,21 +82,21 @@ public abstract class ColorScheme implements Transformable {
 	 * @param y
 	 * @param z
 	 * @return this color scheme's "shininess" exponent for the given point in
-	 *         object-local coordinates
+	 *         global coordinates
 	 */
 	public double getShininess(double x, double y, double z) {
 
-		return getShininess();
+		return getShininess(new Vector3D(x, y, z));
 	}
 
 	/**
 	 * @param coord
 	 * @return this color scheme's "shininess" exponent for the given point in
-	 *         object-local coordinates
+	 *         global coordinates
 	 */
 	public double getShininess(Vector3D coord) {
 
-		return getShininess(coord.getX(), coord.getY(), coord.getZ());
+		return getShininess();
 	}
 
 	/**
@@ -122,21 +122,21 @@ public abstract class ColorScheme implements Transformable {
 	 * @param y
 	 * @param z
 	 * @return this color scheme's "reflectivity" fraction for the given point
-	 *         in object-local coordinates
+	 *         in global coordinates
 	 */
 	public double getReflectivity(double x, double y, double z) {
 
-		return getReflectivity();
+		return getReflectivity(new Vector3D(x, y, z));
 	}
 
 	/**
 	 * @param coord
 	 * @return this color scheme's "reflectivity" fraction for the given point
-	 *         in object-local coordinates
+	 *         in global coordinates
 	 */
 	public double getReflectivity(Vector3D coord) {
 
-		return getReflectivity(coord.getX(), coord.getY(), coord.getZ());
+		return getReflectivity();
 	}
 
 	/**

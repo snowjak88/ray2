@@ -85,31 +85,36 @@ public class CheckerboardColorScheme extends ColorScheme {
 	@Override
 	public RawColor getColor(double x, double y, double z) {
 
-		return getColorSchemeByCoordinate(x, y, z).getColorForWorld(x, y, z);
+		return getColorSchemeByCoordinate(x, y, z).getColor(x, y, z);
 	}
 
 	@Override
 	public double getShininess(double x, double y, double z) {
 
-		return getColorSchemeByCoordinate(x, y, z).getShininess();
+		return getShininess(new Vector3D(x, y, z));
 	}
 
 	@Override
 	public double getShininess(Vector3D coord) {
 
-		return getShininess(coord.getX(), coord.getY(), coord.getZ());
+		Vector3D localCoord = worldToLocal(coord);
+		return getColorSchemeByCoordinate(localCoord.getX(), localCoord.getY(), localCoord.getZ())
+				.getShininess(localCoord);
 	}
 
 	@Override
 	public double getReflectivity(double x, double y, double z) {
 
-		return getColorSchemeByCoordinate(x, y, z).getReflectivity(x, y, z);
+		return getReflectivity(new Vector3D(x, y, z));
 	}
 
 	@Override
 	public double getReflectivity(Vector3D coord) {
 
-		return getReflectivity(coord.getX(), coord.getY(), coord.getZ());
+		Vector3D localCoord = worldToLocal(coord);
+
+		return getColorSchemeByCoordinate(localCoord.getX(), localCoord.getY(), localCoord.getZ())
+				.getReflectivity(localCoord);
 	}
 
 	/**
