@@ -66,7 +66,7 @@ public class Sphere extends Shape {
 		//
 		// d^2 = |L|^2 - t_ca^2
 		//
-		double d2 = pow(L.getNorm(), 2d) - pow(t_ca, 2d);
+		double d2 = L.getNormSq() - pow(t_ca, 2d);
 		//
 		// r = sphere's radius
 		//

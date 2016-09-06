@@ -7,22 +7,18 @@ import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.camera.BasicCamera;
 import org.snowjak.rays.camera.Camera;
-import org.snowjak.rays.color.CheckerboardColorScheme;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.color.SimpleColorScheme;
-import org.snowjak.rays.light.DirectionalLight;
 import org.snowjak.rays.light.Light;
+import org.snowjak.rays.light.PointLight;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
-import org.snowjak.rays.shape.Cube;
+import org.snowjak.rays.shape.Cylinder;
 import org.snowjak.rays.shape.Plane;
-import org.snowjak.rays.shape.Sphere;
-import org.snowjak.rays.shape.csg.Minus;
+import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.transform.Rotation;
-import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.AntialiasingScreenDecorator;
 import org.snowjak.rays.ui.BasicScreen;
@@ -135,43 +131,26 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
-		ColorScheme colorScheme1 = new SimpleColorScheme(Color.WHITE);
-		colorScheme1.setReflectivity(-1d);
-		ColorScheme colorScheme2 = new SimpleColorScheme(Color.CORAL);
-		colorScheme2.setReflectivity(0.95);
-		ColorScheme sphereColorScheme = new CheckerboardColorScheme(0.5, colorScheme1, colorScheme2);
-		sphereColorScheme.getTransformers().add(new Rotation(0d, 0d, 45d));
-
-		Sphere sphere1 = new Sphere();
-		sphere1.setAmbientColorScheme(sphereColorScheme);
-		sphere1.setDiffuseColorScheme(sphereColorScheme);
-
-		Cube cube1 = new Cube();
-		cube1.setAmbientColorScheme(new SimpleColorScheme(Color.YELLOW));
-		cube1.setDiffuseColorScheme(new SimpleColorScheme(Color.YELLOW));
-		cube1.getTransformers().add(new Scale(2d, 2d, 2d));
-		cube1.getTransformers().add(new Translation(-2.5d, -1d, -1d));
-
-		Cube cube2 = new Cube();
-		cube2.setAmbientColorScheme(new SimpleColorScheme(Color.GREEN));
-		cube2.setDiffuseColorScheme(new SimpleColorScheme(Color.GREEN));
-		cube2.getTransformers().add(new Scale(2d, 2d, 2d));
-		cube2.getTransformers().add(new Translation(0.5d, -1d, -1d));
-
-		Minus minus = new Minus(sphere1, cube1, cube2);
-		minus.getTransformers().add(new Translation(0d, 1d, 0d));
-		minus.getTransformers().add(new Rotation(0d, -30d, 0d));
-		world.getShapes().add(minus);
+		Shape cylinder = new Cylinder(false);
+		cylinder.setAmbientColorScheme(new SimpleColorScheme(Color.YELLOW));
+		cylinder.setDiffuseColorScheme(new SimpleColorScheme(Color.YELLOW));
+		cylinder.getTransformers().add(new Rotation(-45d, 0d, 0d));
+		world.getShapes().add(cylinder);
 
 		ColorScheme planeColorScheme = new SimpleColorScheme(new RawColor(Color.BROWN).multiplyScalar(0.2));
 		Plane plane = new Plane();
 		plane.setAmbientColorScheme(planeColorScheme);
 		plane.setDiffuseColorScheme(planeColorScheme);
 		plane.getTransformers().add(new Translation(0d, -1d, 0d));
-		world.getShapes().add(plane);
+		// world.getShapes().add(plane);
 
-		Light light = new DirectionalLight(new Vector3D(0d, -1d, 0d), new RawColor(0.1, 0.1, 0.1),
-				new RawColor(Color.WHITE), new RawColor(Color.WHITE));
+		Light light = new PointLight(new RawColor(0.1, 0.1, 0.1), new RawColor(Color.WHITE), new RawColor(Color.WHITE));
+		light.getTransformers().add(new Translation(5d, 0d, 0d));
+		world.getLights().add(light);
+
+		light = new PointLight(new RawColor(0.1, 0.1, 0.1), new RawColor(Color.RED).multiplyScalar(0.4),
+				new RawColor(Color.RED).multiplyScalar(0.4));
+		light.getTransformers().add(new Translation(0d, 0d, 0d));
 		world.getLights().add(light);
 
 		Camera camera = new BasicCamera(4.0, 35.0);
