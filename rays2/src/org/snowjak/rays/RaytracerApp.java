@@ -16,10 +16,12 @@ import org.snowjak.rays.color.SimpleColorScheme;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.PointLight;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
+import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Sphere;
 import org.snowjak.rays.shape.csg.Intersect;
 import org.snowjak.rays.transform.Rotation;
+import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.AntialiasingScreenDecorator;
 import org.snowjak.rays.ui.BasicScreen;
@@ -59,7 +61,7 @@ public class RaytracerApp extends Application {
 
 		WritableImage image = new WritableImage(800, 500);
 		DrawsEntireScreen screen = new TotalTimeElapsedScreenDecorator(primaryStage, new MultithreadedScreenDecorator(
-				new AntialiasingScreenDecorator(new BasicScreen(primaryStage, image, world.getCamera()), 5)));
+				new AntialiasingScreenDecorator(new BasicScreen(primaryStage, image, world.getCamera()), 3)));
 
 		ImageView imageView = new ImageView(image);
 		Group root = new Group(imageView);
@@ -140,17 +142,18 @@ public class RaytracerApp extends Application {
 		sphereColorScheme.getTransformers().add(new Rotation(0d, 0d, 45d));
 
 		Sphere sphere1 = new Sphere();
-		sphere1.setAmbientColorScheme(sphereColorScheme);
-		sphere1.setDiffuseColorScheme(sphereColorScheme);
-		sphere1.getTransformers().add(new Translation(-0.75, 0d, 0d));
+		sphere1.setAmbientColorScheme(new SimpleColorScheme(Color.YELLOW));
+		sphere1.setDiffuseColorScheme(new SimpleColorScheme(Color.YELLOW));
+		sphere1.getTransformers().add(new Translation(-0.5, 0d, 0d));
 
-		Sphere sphere2 = new Sphere();
-		sphere2.setAmbientColorScheme(colorScheme2);
-		sphere2.setDiffuseColorScheme(colorScheme2);
-		sphere2.getTransformers().add(new Translation(0.75, 0d, 0d));
-
-		Intersect intersect = new Intersect(sphere1, sphere2);
-		intersect.getTransformers().add(new Rotation(0d, -15d, 0d));
+		Cube cube1 = new Cube();
+		cube1.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
+		cube1.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
+		cube1.getTransformers().add(new Scale(2d, 2d, 2d));
+		cube1.getTransformers().add(new Translation(-0.5d, -1d, -0.5d));
+		
+		Intersect intersect = new Intersect(sphere1, cube1);
+		//intersect.getTransformers().add(new Rotation(0d, -15d, 0d));
 		world.getShapes().add(intersect);
 
 		ColorScheme planeColorScheme = new SimpleColorScheme(new RawColor(Color.BROWN).multiplyScalar(0.2));
@@ -165,9 +168,9 @@ public class RaytracerApp extends Application {
 		pointLight.getTransformers().add(new Translation(0d, 5d, 0d));
 		world.getLights().add(pointLight);
 
-		Camera camera = new BasicCamera(4.0, 75.0);
+		Camera camera = new BasicCamera(4.0, 35.0);
 		camera.getTransformers().add(new Translation(0d, 1d, -6d));
-		camera.getTransformers().add(new Rotation(-20d, 0d, 0d));
+		camera.getTransformers().add(new Rotation(-10d, 0d, 0d));
 		world.setCamera(camera);
 
 		world.setLightingModel(new PhongReflectionLightingModel());

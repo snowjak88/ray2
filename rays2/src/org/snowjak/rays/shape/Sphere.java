@@ -1,15 +1,15 @@
 package org.snowjak.rays.shape;
 
+import static org.apache.commons.math3.util.FastMath.pow;
+import static org.apache.commons.math3.util.FastMath.sqrt;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
-
-import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Represents a Sphere, centered on (0,0,0) (absent any transformations you may
@@ -41,7 +41,7 @@ public class Sphere extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersections(Ray ray) {
+	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
 
 		Ray transformedRay = worldToLocal(ray);
 		//
@@ -107,25 +107,21 @@ public class Sphere extends Shape {
 
 		List<Intersection<Shape>> results = new LinkedList<>();
 
-		if (Double.compare(intersectionDistance1, World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere1 = transformedRay.getVector().normalize()
-					.scalarMultiply(intersectionDistance1).add(transformedRay.getOrigin());
+		Vector3D intersectPointOnSphere1 = transformedRay.getVector().normalize().scalarMultiply(intersectionDistance1)
+				.add(transformedRay.getOrigin());
 
-			Vector3D normal1 = intersectPointOnSphere1.subtract(worldToLocal(getLocation())).normalize();
-			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, transformedRay, this,
-					this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
-					this.getEmissiveColorScheme())));
-		}
+		Vector3D normal1 = intersectPointOnSphere1.subtract(worldToLocal(getLocation())).normalize();
+		results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, transformedRay, this,
+				this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
+				this.getEmissiveColorScheme())));
 
-		if (Double.compare(intersectionDistance2, World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere2 = transformedRay.getVector().normalize()
-					.scalarMultiply(intersectionDistance2).add(transformedRay.getOrigin());
+		Vector3D intersectPointOnSphere2 = transformedRay.getVector().normalize().scalarMultiply(intersectionDistance2)
+				.add(transformedRay.getOrigin());
 
-			Vector3D normal2 = intersectPointOnSphere2.subtract(worldToLocal(getLocation())).normalize();
-			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this,
-					this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
-					this.getEmissiveColorScheme())));
-		}
+		Vector3D normal2 = intersectPointOnSphere2.subtract(worldToLocal(getLocation())).normalize();
+		results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this,
+				this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
+				this.getEmissiveColorScheme())));
 
 		return results;
 	}

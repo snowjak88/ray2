@@ -58,7 +58,14 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public abstract List<Intersection<Shape>> getIntersections(Ray ray);
+	public List<Intersection<Shape>> getIntersections(Ray ray) {
+		return getIntersectionsIncludingBehind(ray).stream().sequential()
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), 0d) >= 0)
+				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
+	}
+
+	@Override
+	public abstract List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray);
 
 	public ColorScheme getAmbientColorScheme() {
 

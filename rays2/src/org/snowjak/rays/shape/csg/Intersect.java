@@ -7,8 +7,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
@@ -42,7 +45,7 @@ public class Intersect extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersections(Ray ray) {
+	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
 
 		//
 		//
@@ -52,11 +55,12 @@ public class Intersect extends Shape {
 		// Literally: get the list of Intersections for each child Shape,
 		// flat-map those lists into a single list of Intersections, sort the
 		// Intersections by distance, and collect into a new list.
+		Ray localRay = worldToLocal(ray);
 		List<Intersection<Shape>> childIntersections = children.parallelStream()
-				.map(s -> s.getIntersections(worldToLocal(ray))).flatMap(li -> li.stream()).map(i -> localToWorld(i))
-				.map(i -> localToWorld(i)).sequential()
+				.map(s -> s.getIntersectionsIncludingBehind(localRay)).flatMap(li -> li.stream())
+				.map(i -> localToWorld(i))
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
+				.collect(Collectors.toCollection(LinkedList::new));
 
 		//
 		//

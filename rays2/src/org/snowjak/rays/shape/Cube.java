@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
@@ -60,13 +59,12 @@ public class Cube extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersections(Ray ray) {
+	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
 
 		Ray transformedRay = worldToLocal(ray);
 
 		List<Intersection<Shape>> results = planes.parallelStream()
-				.map(p -> p.getIntersections(transformedRay))
-				.flatMap(li -> li.parallelStream())
+				.map(p -> p.getIntersectionsIncludingBehind(transformedRay)).flatMap(li -> li.parallelStream())
 				.filter(i -> Double.compare(i.getPoint().getX(), -World.DOUBLE_ERROR) >= 0
 						&& Double.compare(i.getPoint().getY(), -World.DOUBLE_ERROR) >= 0
 						&& Double.compare(i.getPoint().getZ(), -World.DOUBLE_ERROR) >= 0)
@@ -75,9 +73,10 @@ public class Cube extends Shape {
 						&& Double.compare(i.getPoint().getY() - 1d, World.DOUBLE_ERROR) <= 0
 						&& Double.compare(i.getPoint().getZ() - 1d, World.DOUBLE_ERROR) <= 0)
 
-				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this))
-				.map(i -> localToWorld(i))
-				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
+				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
+						getAmbientColorScheme(), getDiffuseColorScheme(), getSpecularColorScheme(),
+						getEmissiveColorScheme()))
+				.map(i -> localToWorld(i)).collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
 
 		return results;
 	}

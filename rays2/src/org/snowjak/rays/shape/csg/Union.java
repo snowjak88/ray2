@@ -8,7 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Group;
@@ -78,7 +80,7 @@ public class Union extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersections(Ray ray) {
+	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
 
 		Ray transformedRay = worldToLocal(ray);
 
@@ -86,8 +88,9 @@ public class Union extends Shape {
 		// Get the intersections reported by each child Shape,
 		// flatten that list of lists into a single list of intersections,
 		// and sort it by distance.
-		List<Intersection<Shape>> intersections = children.parallelStream().map(s -> s.getIntersections(transformedRay))
-				.flatMap(l -> l.parallelStream()).map(i -> localToWorld(i)).sequential()
+		List<Intersection<Shape>> intersections = children.parallelStream()
+				.map(s -> s.getIntersectionsIncludingBehind(transformedRay)).flatMap(l -> l.parallelStream())
+				.map(i -> localToWorld(i))
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
 

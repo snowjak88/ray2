@@ -22,4 +22,14 @@ public interface Intersectable {
 	 *         object, sorted by distance from the ray's origin
 	 */
 	public <S extends Intersectable> List<Intersection<S>> getIntersections(Ray ray);
+
+	/**
+	 * Determine where the given {@link Ray} (expressed in global coordinates)
+	 * would intersect this object. Include even those intersection-points
+	 * "behind" the Ray.
+	 * 
+	 * @param ray
+	 * @return
+	 */
+	public <S extends Intersectable> List<Intersection<S>> getIntersectionsIncludingBehind(Ray ray);
 }
