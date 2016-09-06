@@ -20,7 +20,7 @@ import org.snowjak.rays.light.model.PhongReflectionLightingModel;
 import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Sphere;
-import org.snowjak.rays.shape.csg.Intersect;
+import org.snowjak.rays.shape.csg.Minus;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
@@ -143,19 +143,25 @@ public class RaytracerApp extends Application {
 		sphereColorScheme.getTransformers().add(new Rotation(0d, 0d, 45d));
 
 		Sphere sphere1 = new Sphere();
-		sphere1.setAmbientColorScheme(new SimpleColorScheme(Color.YELLOW));
-		sphere1.setDiffuseColorScheme(new SimpleColorScheme(Color.YELLOW));
+		sphere1.setAmbientColorScheme(sphereColorScheme);
+		sphere1.setDiffuseColorScheme(sphereColorScheme);
 
 		Cube cube1 = new Cube();
-		cube1.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
-		cube1.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
+		cube1.setAmbientColorScheme(new SimpleColorScheme(Color.YELLOW));
+		cube1.setDiffuseColorScheme(new SimpleColorScheme(Color.YELLOW));
 		cube1.getTransformers().add(new Scale(2d, 2d, 2d));
-		cube1.getTransformers().add(new Translation(-1d, -1d, -1d));
+		cube1.getTransformers().add(new Translation(-2.5d, -1d, -1d));
 
-		Intersect intersect = new Intersect(sphere1, cube1);
-//		intersect.getTransformers().add(new Translation(0d, 0d, 0d));
-		intersect.getTransformers().add(new Rotation(0d, -75d, 0d));
-		world.getShapes().add(intersect);
+		Cube cube2 = new Cube();
+		cube2.setAmbientColorScheme(new SimpleColorScheme(Color.GREEN));
+		cube2.setDiffuseColorScheme(new SimpleColorScheme(Color.GREEN));
+		cube2.getTransformers().add(new Scale(2d, 2d, 2d));
+		cube2.getTransformers().add(new Translation(0.5d, -1d, -1d));
+
+		Minus minus = new Minus(sphere1, cube1, cube2);
+		minus.getTransformers().add(new Translation(0d, 1d, 0d));
+		minus.getTransformers().add(new Rotation(0d, -30d, 0d));
+		world.getShapes().add(minus);
 
 		ColorScheme planeColorScheme = new SimpleColorScheme(new RawColor(Color.BROWN).multiplyScalar(0.2));
 		Plane plane = new Plane();
@@ -164,7 +170,7 @@ public class RaytracerApp extends Application {
 		plane.getTransformers().add(new Translation(0d, -1d, 0d));
 		world.getShapes().add(plane);
 
-		Light light = new DirectionalLight(new Vector3D(0d, -1d, 0d), new RawColor(0.05, 0.05, 0.05),
+		Light light = new DirectionalLight(new Vector3D(0d, -1d, 0d), new RawColor(0.1, 0.1, 0.1),
 				new RawColor(Color.WHITE), new RawColor(Color.WHITE));
 		world.getLights().add(light);
 
