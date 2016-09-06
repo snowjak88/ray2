@@ -7,14 +7,15 @@ import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.camera.BasicCamera;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.CheckerboardColorScheme;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.color.SimpleColorScheme;
+import org.snowjak.rays.light.DirectionalLight;
 import org.snowjak.rays.light.Light;
-import org.snowjak.rays.light.PointLight;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
 import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Plane;
@@ -59,7 +60,7 @@ public class RaytracerApp extends Application {
 
 		World world = buildWorld();
 
-		WritableImage image = new WritableImage(800, 500);
+		WritableImage image = new WritableImage(400, 300);
 		DrawsEntireScreen screen = new TotalTimeElapsedScreenDecorator(primaryStage, new MultithreadedScreenDecorator(
 				new AntialiasingScreenDecorator(new BasicScreen(primaryStage, image, world.getCamera()), 3)));
 
@@ -144,16 +145,16 @@ public class RaytracerApp extends Application {
 		Sphere sphere1 = new Sphere();
 		sphere1.setAmbientColorScheme(new SimpleColorScheme(Color.YELLOW));
 		sphere1.setDiffuseColorScheme(new SimpleColorScheme(Color.YELLOW));
-		sphere1.getTransformers().add(new Translation(-0.5, 0d, 0d));
 
 		Cube cube1 = new Cube();
 		cube1.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
 		cube1.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
 		cube1.getTransformers().add(new Scale(2d, 2d, 2d));
-		cube1.getTransformers().add(new Translation(-0.5d, -1d, -0.5d));
-		
+		cube1.getTransformers().add(new Translation(-1d, -1d, -1d));
+
 		Intersect intersect = new Intersect(sphere1, cube1);
-		//intersect.getTransformers().add(new Rotation(0d, -15d, 0d));
+//		intersect.getTransformers().add(new Translation(0d, 0d, 0d));
+		intersect.getTransformers().add(new Rotation(0d, -75d, 0d));
 		world.getShapes().add(intersect);
 
 		ColorScheme planeColorScheme = new SimpleColorScheme(new RawColor(Color.BROWN).multiplyScalar(0.2));
@@ -163,10 +164,9 @@ public class RaytracerApp extends Application {
 		plane.getTransformers().add(new Translation(0d, -1d, 0d));
 		world.getShapes().add(plane);
 
-		Light pointLight;
-		pointLight = new PointLight(new RawColor(0.1, 0.1, 0.1), new RawColor(1d, 1d, 1d), new RawColor(1d, 1d, 1d));
-		pointLight.getTransformers().add(new Translation(0d, 5d, 0d));
-		world.getLights().add(pointLight);
+		Light light = new DirectionalLight(new Vector3D(0d, -1d, 0d), new RawColor(0.05, 0.05, 0.05),
+				new RawColor(Color.WHITE), new RawColor(Color.WHITE));
+		world.getLights().add(light);
 
 		Camera camera = new BasicCamera(4.0, 35.0);
 		camera.getTransformers().add(new Translation(0d, 1d, -6d));

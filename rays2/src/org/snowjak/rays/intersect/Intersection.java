@@ -37,9 +37,13 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	 */
 	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected) {
 
+		this(point, normal, ray, intersected, point.distance(ray.getOrigin()));
+	}
+
+	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, double distanceFromRayOrigin) {
 		this.point = point;
 		this.normal = normal;
-		this.distanceFromRayOrigin = point.distance(ray.getOrigin());
+		this.distanceFromRayOrigin = distanceFromRayOrigin;
 		this.ray = ray;
 		this.intersected = intersected;
 	}
@@ -49,6 +53,20 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 		this.point = point;
 		this.normal = normal;
 		this.distanceFromRayOrigin = point.distance(ray.getOrigin());
+		this.ray = ray;
+		this.intersected = intersected;
+		this.ambientColorScheme = ambientColorScheme;
+		this.diffuseColorScheme = diffuseColorScheme;
+		this.specularColorScheme = specularColorScheme;
+		this.emissiveColorScheme = emissiveColorScheme;
+	}
+
+	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, double distanceFromRayOrigin,
+			ColorScheme ambientColorScheme, ColorScheme diffuseColorScheme, ColorScheme specularColorScheme,
+			ColorScheme emissiveColorScheme) {
+		this.point = point;
+		this.normal = normal;
+		this.distanceFromRayOrigin = distanceFromRayOrigin;
 		this.ray = ray;
 		this.intersected = intersected;
 		this.ambientColorScheme = ambientColorScheme;
@@ -100,41 +118,49 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 
 	@Override
 	public ColorScheme getDiffuseColorScheme() {
+
 		return diffuseColorScheme;
 	}
 
 	@Override
 	public void setDiffuseColorScheme(ColorScheme diffuseColorScheme) {
+
 		this.diffuseColorScheme = diffuseColorScheme;
 	}
 
 	@Override
 	public ColorScheme getAmbientColorScheme() {
+
 		return ambientColorScheme;
 	}
 
 	@Override
 	public void setAmbientColorScheme(ColorScheme ambientColorScheme) {
+
 		this.ambientColorScheme = ambientColorScheme;
 	}
 
 	@Override
 	public ColorScheme getSpecularColorScheme() {
+
 		return specularColorScheme;
 	}
 
 	@Override
 	public void setSpecularColorScheme(ColorScheme specularColorScheme) {
+
 		this.specularColorScheme = specularColorScheme;
 	}
 
 	@Override
 	public ColorScheme getEmissiveColorScheme() {
+
 		return emissiveColorScheme;
 	}
 
 	@Override
 	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme) {
+
 		this.emissiveColorScheme = emissiveColorScheme;
 	}
 }

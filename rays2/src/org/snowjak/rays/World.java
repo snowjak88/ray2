@@ -2,6 +2,7 @@ package org.snowjak.rays;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.intersect.Intersection;
@@ -84,7 +85,7 @@ public class World {
 
 		return intersections.stream()
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
+				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
 	/**

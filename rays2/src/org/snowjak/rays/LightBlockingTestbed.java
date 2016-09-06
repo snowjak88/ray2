@@ -4,9 +4,12 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
+import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.shape.Sphere;
+import org.snowjak.rays.shape.csg.Intersect;
+import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
 
 public class LightBlockingTestbed {
@@ -15,29 +18,21 @@ public class LightBlockingTestbed {
 
 		World world = World.getSingleton();
 
-		Sphere sphere = new Sphere();
-		// sphere.getTransformers().add(new Translation(-1d, 0d, -1d));
-		world.getShapes().add(sphere);
+		Sphere sphere1 = new Sphere();
+		Cube cube1 = new Cube();
+		cube1.getTransformers().add(new Scale(2d, 2d, 2d));
+		cube1.getTransformers().add(new Translation(0d, 0d, 0d));
+		Intersect intersect = new Intersect(sphere1, cube1);
+		intersect.getTransformers().add(new Translation(0d, 1d, 0d));
+		world.getShapes().add(cube1);
 
-		Plane plane = new Plane();
-		plane.getTransformers().add(new Translation(0d, -6d, 0d));
-		world.getShapes().add(plane);
-
-		// sphere = new Sphere();
-		// sphere.getTransformers().add(new Translation(-1d, 0d, 1d));
-		// world.getShapes().add(sphere);
-		// sphere = new Sphere();
-		// sphere.getTransformers().add(new Translation(1d, 0d, -1d));
-		// world.getShapes().add(sphere);
-		// sphere = new Sphere();
-		// sphere.getTransformers().add(new Translation(1d, 0d, 1d));
-		// world.getShapes().add(sphere);
+		world.getShapes().add(new Plane());
 
 		Light worldLight = new Light(new RawColor(), new RawColor(), new RawColor());
-		worldLight.getTransformers().add(new Translation(0d, -1d, -4d));
+		worldLight.getTransformers().add(new Translation(0d, 5d, 0d));
 		world.getLights().add(worldLight);
 
-		Ray ray = new Ray(new Vector3D(0d, 0d, -5d), new Vector3D(0d, 0d, 1d));
+		Ray ray = new Ray(new Vector3D(5d, 1d, 0d), new Vector3D(-4.2, -1d, 0d).normalize());
 
 		for (Intersection<Shape> intersection : world.getShapeIntersections(ray)) {
 
@@ -57,7 +52,8 @@ public class LightBlockingTestbed {
 				System.out.println("Vector from intersection-point to light: " + toLight.toString()
 						+ " -- (normalized): " + toLight.normalize().toString());
 
-				Ray toLightRay = new Ray(intersection.getPoint(), toLight.normalize(), 1);
+				Ray toLightRay = new Ray(intersection.getPoint(), toLight.normalize(),
+						intersection.getRay().getRecursiveLevel() + 1);
 				System.out.println("Ray for detecting light-blockers: " + toLightRay.toString());
 
 				System.out.println("Looking for light occluders ...");

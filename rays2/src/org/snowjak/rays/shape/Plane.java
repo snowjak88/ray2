@@ -66,10 +66,13 @@ public class Plane extends Shape {
 			//
 			double t = -transformedRay.getOrigin().getY() / transformedRay.getVector().getY();
 
+			if (Double.compare(FastMath.abs(t), World.DOUBLE_ERROR) < 0)
+				return Collections.emptyList();
+
 			Vector3D intersectionPoint = transformedRay.getOrigin()
 					.add(transformedRay.getVector().normalize().scalarMultiply(t));
 			double normalSign = FastMath.signum(transformedRay.getVector().negate().dotProduct(Vector3D.PLUS_J));
-			Vector3D normal = Vector3D.PLUS_J.scalarMultiply(normalSign);
+			Vector3D normal = Vector3D.PLUS_J.scalarMultiply(normalSign).normalize();
 
 			results.add(localToWorld(new Intersection<Shape>(intersectionPoint, normal, transformedRay, this,
 					this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
@@ -78,6 +81,17 @@ public class Plane extends Shape {
 		}
 
 		return results;
+	}
+
+	@Override
+	public boolean isInside(Vector3D point) {
+
+		Vector3D localPoint = worldToLocal(point);
+
+		if (Double.compare(FastMath.abs(localPoint.getY()), World.DOUBLE_ERROR) <= 0)
+			return true;
+
+		return false;
 	}
 
 	/**

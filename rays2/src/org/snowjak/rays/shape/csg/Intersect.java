@@ -57,8 +57,11 @@ public class Intersect extends Shape {
 		// Intersections by distance, and collect into a new list.
 		Ray localRay = worldToLocal(ray);
 		List<Intersection<Shape>> childIntersections = children.parallelStream()
-				.map(s -> s.getIntersectionsIncludingBehind(localRay)).flatMap(li -> li.stream())
+				.map(s -> s.getIntersectionsIncludingBehind(localRay))
+				.flatMap(li -> li.stream())
 				.map(i -> localToWorld(i))
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.sequential()
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.collect(Collectors.toCollection(LinkedList::new));
 
@@ -72,35 +75,38 @@ public class Intersect extends Shape {
 		// Shape at the same time.
 		//
 		Set<Shape> currentlyIn = new HashSet<>();
+		//
+		// Test to see if the given Ray starts inside of any of our
+		// child Shapes.
+		children.parallelStream().filter(s -> s.isInside(ray.getOrigin())).forEach(s -> currentlyIn.add(s));
+
 		List<Intersection<Shape>> results = new LinkedList<>();
 		//
 		for (Intersection<Shape> currentIntersect : childIntersections) {
 
-			//
+			Shape intersectedShape = currentIntersect.getIntersected();
 			//
 			// We're crossing a boundary. Are we currently inside and coming
 			// out?
-			if (currentlyIn.contains(currentIntersect.getIntersected())) {
+			if (currentlyIn.contains(intersectedShape)) {
 
 				//
 				//
 				if (currentlyIn.containsAll(children))
 					results.add(currentIntersect);
 
-				currentlyIn.remove(currentIntersect.getIntersected());
+				currentlyIn.remove(intersectedShape);
 
 			} else {
 
 				//
 				//
 				// We're crossing into a Shape.
-				currentlyIn.add(currentIntersect.getIntersected());
+				currentlyIn.add(intersectedShape);
 
-				// If we are currently inside all child-Shapes -- and now are
+				// If we are now inside all child-Shapes -- after
 				// crossing into one of them -- then we're entering the
 				// Intersect.
-				// (Remember that the Intersect holds true only where we're
-				// inside all child Shapes simultaneously).
 				if (currentlyIn.containsAll(children))
 					results.add(currentIntersect);
 			}
@@ -125,7 +131,7 @@ public class Intersect extends Shape {
 
 			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, ambient, diffuse, specular,
 					emissive);
-		}).collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
+		}).collect(Collectors.toCollection(LinkedList::new));
 
 	}
 

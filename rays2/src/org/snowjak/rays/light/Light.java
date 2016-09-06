@@ -187,7 +187,7 @@ public class Light implements Transformable, Locatable {
 	 *         Intersection
 	 */
 	public double getExposure(Intersection<Shape> intersection) {
-		
+
 		Intersection<Shape> localIntersection = worldToLocal(intersection);
 		return exposureFunction.apply(this, localIntersection);
 	}
@@ -233,7 +233,7 @@ public class Light implements Transformable, Locatable {
 	 */
 	public static BiFunction<Light, Intersection<Shape>, Double> DEFAULT_EXPOSURE_FUNCTION() {
 
-		return (l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal().normalize());
+		return (l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal());
 	}
 
 }

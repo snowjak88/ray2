@@ -3,10 +3,12 @@ package org.snowjak.rays.shape;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Locatable;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.HasColorScheme;
 import org.snowjak.rays.color.SimpleColorScheme;
@@ -30,10 +32,12 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	 * By default, the ambient and diffuse color-schemes will take this value.
 	 */
 	public static final ColorScheme DEFAULT_COLOR_SCHEME = new SimpleColorScheme(Color.HOTPINK);
+
 	/**
 	 * By default, the specular color-scheme will take this value.
 	 */
 	public static final ColorScheme DEFAULT_SPECULAR_COLOR_SCHEME = new SimpleColorScheme(Color.WHITE);
+
 	/**
 	 * By default, the emissive color-scheme will take this value.
 	 */
@@ -59,13 +63,34 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Intersection<Shape>> getIntersections(Ray ray) {
-		return getIntersectionsIncludingBehind(ray).stream().sequential()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), 0d) >= 0)
-				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
+
+		List<Intersection<Shape>> intersectionsIncludingBehind = getIntersectionsIncludingBehind(ray);
+
+		return intersectionsIncludingBehind.parallelStream().filter(i -> {
+			Vector3D rayToIntersection = i.getPoint().subtract(ray.getOrigin());
+			return (Double.compare(rayToIntersection.getNorm(), World.DOUBLE_ERROR) <= 0
+					|| rayToIntersection.normalize().dotProduct(ray.getVector()) >= 0d);
+		}).collect(Collectors.toCollection(LinkedList::new));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public abstract List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray);
+
+	@Override
+	public boolean isInside(Vector3D point) {
+
+		Vector3D centerToPoint = point.subtract(getLocation());
+		//
+		// If the given point is "close enough" to the center, then this test is
+		// trivially true.
+		if (Double.compare(centerToPoint.getNorm(), World.DOUBLE_ERROR) <= 0)
+			return true;
+		//
+		// Else, construct a Ray from the point away from the center, and look
+		// for any intersections with this object.
+		return !(getIntersections(new Ray(point, centerToPoint.normalize())).isEmpty());
+	}
 
 	public ColorScheme getAmbientColorScheme() {
 

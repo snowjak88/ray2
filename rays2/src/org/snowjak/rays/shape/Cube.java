@@ -3,6 +3,7 @@ package org.snowjak.rays.shape;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
@@ -64,7 +65,8 @@ public class Cube extends Shape {
 		Ray transformedRay = worldToLocal(ray);
 
 		List<Intersection<Shape>> results = planes.parallelStream()
-				.map(p -> p.getIntersectionsIncludingBehind(transformedRay)).flatMap(li -> li.parallelStream())
+				.map(p -> p.getIntersectionsIncludingBehind(transformedRay))
+				.flatMap(li -> li.parallelStream())
 				.filter(i -> Double.compare(i.getPoint().getX(), -World.DOUBLE_ERROR) >= 0
 						&& Double.compare(i.getPoint().getY(), -World.DOUBLE_ERROR) >= 0
 						&& Double.compare(i.getPoint().getZ(), -World.DOUBLE_ERROR) >= 0)
@@ -76,9 +78,23 @@ public class Cube extends Shape {
 				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
 						getAmbientColorScheme(), getDiffuseColorScheme(), getSpecularColorScheme(),
 						getEmissiveColorScheme()))
-				.map(i -> localToWorld(i)).collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
+				.map(i -> localToWorld(i))
+				.collect(Collectors.toCollection(LinkedList::new));
 
 		return results;
+	}
+
+	@Override
+	public boolean isInside(Vector3D point) {
+
+		Vector3D localPoint = worldToLocal(point);
+
+		return (Double.compare(localPoint.getX(), -World.DOUBLE_ERROR) >= 0
+				&& Double.compare(localPoint.getY(), -World.DOUBLE_ERROR) >= 0
+				&& Double.compare(localPoint.getZ(), -World.DOUBLE_ERROR) >= 0)
+				&& (Double.compare(localPoint.getX() - 1d, World.DOUBLE_ERROR) <= 0
+						&& Double.compare(localPoint.getY() - 1d, World.DOUBLE_ERROR) <= 0
+						&& Double.compare(localPoint.getZ() - 1d, World.DOUBLE_ERROR) <= 0);
 	}
 
 	@Override

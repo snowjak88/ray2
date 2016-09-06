@@ -1,11 +1,13 @@
 package org.snowjak.rays.camera;
 
+import static org.apache.commons.math3.util.FastMath.sin;
+import static org.apache.commons.math3.util.FastMath.toRadians;
+
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import static org.apache.commons.math3.util.FastMath.*;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.transform.Transformable;
