@@ -8,9 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Group;
@@ -89,7 +88,8 @@ public class Union extends Shape {
 		// flatten that list of lists into a single list of intersections,
 		// and sort it by distance.
 		List<Intersection<Shape>> intersections = children.parallelStream()
-				.map(s -> s.getIntersectionsIncludingBehind(transformedRay)).flatMap(l -> l.parallelStream())
+				.map(s -> s.getIntersectionsIncludingBehind(transformedRay))
+				.flatMap(l -> l.parallelStream())
 				.map(i -> localToWorld(i))
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
@@ -156,6 +156,12 @@ public class Union extends Shape {
 			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, ambient, diffuse, specular,
 					emissive);
 		}).collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
+	}
+
+	@Override
+	public boolean isInside(Vector3D point) {
+
+		return children.parallelStream().anyMatch(s -> s.isInside(point));
 	}
 
 	/**
