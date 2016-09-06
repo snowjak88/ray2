@@ -78,7 +78,7 @@ public class Intersect extends Shape {
 		//
 		// Test to see if the given Ray starts inside of any of our
 		// child Shapes.
-		children.parallelStream().filter(s -> s.isInside(ray.getOrigin())).forEach(s -> currentlyIn.add(s));
+		children.parallelStream().filter(s -> s.isInside(localRay.getOrigin())).forEach(s -> currentlyIn.add(s));
 
 		List<Intersection<Shape>> results = new LinkedList<>();
 		//
