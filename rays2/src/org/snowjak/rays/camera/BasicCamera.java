@@ -35,7 +35,7 @@ public class BasicCamera extends Camera {
 		Vector3D location = new Vector3D(cameraX, cameraY, 0.0);
 		Vector3D direction = location.subtract(getEyeLocation()).normalize();
 
-		Ray ray = cameraToWorld(new Ray(location, direction));
+		Ray ray = localToWorld(new Ray(location, direction));
 		List<Intersection<Shape>> intersections = World.getSingleton().getShapeIntersections(ray);
 
 		return World.getSingleton().getLightingModel().determineRayColor(ray, intersections);
