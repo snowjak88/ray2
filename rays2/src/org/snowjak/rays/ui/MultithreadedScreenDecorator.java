@@ -79,8 +79,8 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 			for (int startY = child.getScreenMinY(); startY < child.getScreenMaxY(); startY += sizeY + 1)
 				for (int startX = child.getScreenMinX(); startX < child.getScreenMaxX(); startX += sizeX + 1) {
 
-					int extentX = FastMath.min(startX + sizeX, child.getScreenMaxX());
-					int extentY = FastMath.min(startY + sizeY, child.getScreenMaxY());
+					int extentX = FastMath.min(startX + sizeX, child.getScreenMaxX() - child.getScreenMinX());
+					int extentY = FastMath.min(startY + sizeY, child.getScreenMaxY() - child.getScreenMinY());
 					renderingThreadPool
 							.submit(new RegionRenderTask(startX, startY, extentX - startX, extentY - startY));
 				}

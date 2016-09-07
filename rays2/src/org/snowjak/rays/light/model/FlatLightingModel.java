@@ -22,7 +22,7 @@ public class FlatLightingModel implements LightingModel {
 	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
 		return intersections.stream()
-				.map(i -> i.getIntersected().getDiffuse(i.getIntersected().cameraToLocal(i.getPoint())))
+				.map(i -> i.getIntersected().getDiffuse(i.getIntersected().worldToLocal(i.getPoint())))
 				.findFirst();
 	}
 
