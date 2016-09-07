@@ -9,22 +9,29 @@ import javax.imageio.ImageIO;
 
 import org.snowjak.rays.camera.BasicCamera;
 import org.snowjak.rays.camera.Camera;
+import org.snowjak.rays.color.CheckerboardColorScheme;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.color.SimpleColorScheme;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.PointLight;
+import org.snowjak.rays.light.model.FogDecoratingLightingModel;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
+import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Cylinder;
 import org.snowjak.rays.shape.Plane;
-import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.shape.Sphere;
+import org.snowjak.rays.shape.csg.Intersect;
+import org.snowjak.rays.shape.csg.Minus;
+import org.snowjak.rays.shape.csg.Union;
 import org.snowjak.rays.transform.Rotation;
+import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.AntialiasingScreenDecorator;
+import org.snowjak.rays.ui.AntialiasingScreenDecorator.AA;
 import org.snowjak.rays.ui.BasicScreen;
 import org.snowjak.rays.ui.DrawsEntireScreen;
 import org.snowjak.rays.ui.MultithreadedScreenDecorator;
-import org.snowjak.rays.ui.TotalTimeElapsedScreenDecorator;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -56,9 +63,9 @@ public class RaytracerApp extends Application {
 
 		World world = buildWorld();
 
-		WritableImage image = new WritableImage(400, 300);
-		DrawsEntireScreen screen = new TotalTimeElapsedScreenDecorator(primaryStage, new MultithreadedScreenDecorator(
-				new AntialiasingScreenDecorator(new BasicScreen(primaryStage, image, world.getCamera()), 3)));
+		WritableImage image = new WritableImage(800, 500);
+		DrawsEntireScreen screen = new MultithreadedScreenDecorator(
+				new AntialiasingScreenDecorator(AA.x2, new BasicScreen(image, world.getCamera())));
 
 		ImageView imageView = new ImageView(image);
 		Group root = new Group(imageView);
@@ -66,20 +73,16 @@ public class RaytracerApp extends Application {
 
 		ContextMenu imageContextMenu = new ContextMenu();
 		MenuItem saveImageMenuItem = new MenuItem("Save...");
+		FileChooser saveFileChooser = new FileChooser();
+		saveFileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+		saveFileChooser.setInitialFileName("image");
+
+		saveFileChooser.getExtensionFilters().add(new ExtensionFilter("png", "*.png"));
+		saveFileChooser.getExtensionFilters().add(new ExtensionFilter("jpeg", "*.jpg"));
+		saveFileChooser.getExtensionFilters().add(new ExtensionFilter("bmp", "*.bmp"));
 		saveImageMenuItem.setOnAction(e -> {
 			imageContextMenu.hide();
-
-			String[] knownImageFormatSuffixes = ImageIO.getWriterFileSuffixes();
-
 			int selectedIndex = 0;
-
-			FileChooser saveFileChooser = new FileChooser();
-			saveFileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-			saveFileChooser.setInitialFileName("image");
-
-			saveFileChooser.getExtensionFilters().add(new ExtensionFilter("png", "*.png"));
-			saveFileChooser.getExtensionFilters().add(new ExtensionFilter("jpeg", "*.jpg"));
-			saveFileChooser.getExtensionFilters().add(new ExtensionFilter("bmp", "*.bmp"));
 			saveFileChooser.setSelectedExtensionFilter(saveFileChooser.getExtensionFilters().get(selectedIndex));
 
 			File saveFile = saveFileChooser.showSaveDialog(primaryStage);
@@ -122,8 +125,8 @@ public class RaytracerApp extends Application {
 			screen.shutdown();
 			Platform.exit();
 		});
-		primaryStage.show();
 
+		primaryStage.show();
 		Executors.newSingleThreadExecutor().submit(() -> screen.draw());
 	}
 
@@ -131,34 +134,63 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
-		Shape cylinder = new Cylinder(false);
-		cylinder.setAmbientColorScheme(new SimpleColorScheme(Color.YELLOW));
-		cylinder.setDiffuseColorScheme(new SimpleColorScheme(Color.YELLOW));
-		cylinder.getTransformers().add(new Rotation(-45d, 0d, 0d));
-		world.getShapes().add(cylinder);
+		Cylinder cylinder1 = new Cylinder(true);
+		ColorScheme cylinderColorScheme = new SimpleColorScheme(Color.YELLOW);
+		cylinderColorScheme.setReflectivity(0.9);
+		cylinderColorScheme.setShininess(0.3);
+		cylinder1.setAmbientColorScheme(cylinderColorScheme);
+		cylinder1.setDiffuseColorScheme(cylinderColorScheme);
+		cylinder1.getTransformers().add(new Scale(0.4, 2d, 0.4));
 
-		ColorScheme planeColorScheme = new SimpleColorScheme(new RawColor(Color.BROWN).multiplyScalar(0.2));
+		Cylinder cylinder2 = new Cylinder(true);
+		cylinder2.setAmbientColorScheme(cylinderColorScheme);
+		cylinder2.setDiffuseColorScheme(cylinderColorScheme);
+		cylinder2.getTransformers().add(new Scale(0.4, 2d, 0.4));
+		cylinder2.getTransformers().add(new Rotation(0d, 0d, 90d));
+
+		Cylinder cylinder3 = new Cylinder(true);
+		cylinder3.setAmbientColorScheme(cylinderColorScheme);
+		cylinder3.setDiffuseColorScheme(cylinderColorScheme);
+		cylinder3.getTransformers().add(new Scale(0.4, 2d, 0.4));
+		cylinder3.getTransformers().add(new Rotation(90d, 0d, 0d));
+
+		Union union = new Union(cylinder1, cylinder2, cylinder3);
+
+		Sphere sphere = new Sphere();
+		sphere.setAmbientColorScheme(new SimpleColorScheme(Color.RED));
+		sphere.setDiffuseColorScheme(new SimpleColorScheme(Color.RED));
+
+		Minus minus = new Minus(sphere, union);
+
+		Cube cube = new Cube();
+		cube.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
+		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
+		cube.getTransformers().add(new Translation(-.5, -.5, -.5));
+		cube.getTransformers().add(new Scale(1.6, 1.6, 1.6));
+
+		Intersect intersect = new Intersect(minus, cube);
+		world.getShapes().add(intersect);
+
 		Plane plane = new Plane();
+		ColorScheme planeColorScheme = new CheckerboardColorScheme(Color.BLANCHEDALMOND, Color.NAVY);
+		planeColorScheme.setReflectivity(0.75);
 		plane.setAmbientColorScheme(planeColorScheme);
 		plane.setDiffuseColorScheme(planeColorScheme);
-		plane.getTransformers().add(new Translation(0d, -1d, 0d));
-		// world.getShapes().add(plane);
+		plane.getTransformers().add(new Translation(0d, -2d, 0d));
+		world.getShapes().add(plane);
 
 		Light light = new PointLight(new RawColor(0.1, 0.1, 0.1), new RawColor(Color.WHITE), new RawColor(Color.WHITE));
-		light.getTransformers().add(new Translation(5d, 0d, 0d));
-		world.getLights().add(light);
-
-		light = new PointLight(new RawColor(0.1, 0.1, 0.1), new RawColor(Color.RED).multiplyScalar(0.4),
-				new RawColor(Color.RED).multiplyScalar(0.4));
-		light.getTransformers().add(new Translation(0d, 0d, 0d));
+		light.getTransformers().add(new Translation(4d, 4d, -2d));
 		world.getLights().add(light);
 
 		Camera camera = new BasicCamera(4.0, 35.0);
-		camera.getTransformers().add(new Translation(0d, 1d, -6d));
-		camera.getTransformers().add(new Rotation(-10d, 0d, 0d));
+		camera.getTransformers().add(new Translation(0d, 0.75d, -6d));
+		camera.getTransformers().add(new Rotation(-13d, 0d, 0d));
+		camera.getTransformers().add(new Rotation(0d, 30d, 0d));
 		world.setCamera(camera);
 
-		world.setLightingModel(new PhongReflectionLightingModel());
+		world.setLightingModel(
+				new FogDecoratingLightingModel(75d, new RawColor(Color.GRAY), new PhongReflectionLightingModel()));
 
 		return world;
 	}
