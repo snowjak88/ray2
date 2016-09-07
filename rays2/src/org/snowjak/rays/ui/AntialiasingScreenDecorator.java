@@ -46,24 +46,24 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 	 *            the existing screen to decorate
 	 */
 	public AntialiasingScreenDecorator(DrawsScreenPixel decoratedScreen) {
-		this(decoratedScreen, 9);
+		this(AA.x8, decoratedScreen);
 	}
 
 	/**
 	 * Create a new AntialiasingScreenDecorator on top of an existing
 	 * {@link DrawsScreenPixel} instance.
 	 * 
+	 * @param samples
+	 *            number of samples per side of the antialiasing box-filter.
+	 *            Default value is {@link AA#x8}
 	 * @param decoratedScreen
 	 *            the existing screen to decorate
-	 * @param sampleSpan
-	 *            number of samples per side of the antialiasing box-filter.
-	 *            Default value is 9.
 	 */
-	public AntialiasingScreenDecorator(DrawsScreenPixel decoratedScreen, int sampleSpan) {
+	public AntialiasingScreenDecorator(AA samples, DrawsScreenPixel decoratedScreen) {
 
 		this.child = decoratedScreen;
 		this.filterSpan = 1;
-		this.coordinateDelta = filterSpan / ((double) (sampleSpan / 2));
+		this.coordinateDelta = filterSpan / ((double) (samples.sampleCount / 2));
 
 		this.distribution = new NormalDistribution(0d, 0.5);
 	}
@@ -131,6 +131,24 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 	public int getScreenMaxY() {
 
 		return child.getScreenMaxY();
+	}
+
+	/**
+	 * Defines the number of samples to use when anti-aliasing.
+	 * 
+	 * @author rr247200
+	 *
+	 */
+	@SuppressWarnings("javadoc")
+	public static enum AA {
+		x2(3), x4(5), x8(9), x16(17), x32(33);
+
+		private int sampleCount;
+
+		AA(int sampleCount) {
+			this.sampleCount = sampleCount;
+		}
+
 	}
 
 }
