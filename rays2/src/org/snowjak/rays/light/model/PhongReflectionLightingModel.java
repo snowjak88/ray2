@@ -33,8 +33,12 @@ public class PhongReflectionLightingModel implements LightingModel {
 		// distance.
 		// And we only care about the first (closest) intersection that isn't
 		// too close.
-		Intersection<Shape> intersect = intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0).findFirst().get();
+		Optional<Intersection<Shape>> firstIntersect = intersections.stream()
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.findFirst();
+		if (!firstIntersect.isPresent())
+			return Optional.empty();
+		Intersection<Shape> intersect = firstIntersect.get();
 		//
 		// What are the configured colors for this shape?
 		RawColor intersectAmbientColor = intersect.getAmbient(intersect.getPoint());
