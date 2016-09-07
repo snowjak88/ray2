@@ -26,19 +26,18 @@ public class BasicScreen extends Screen {
 	 * 
 	 * @param image
 	 */
-	public BasicScreen(Stage screenStage, WritableImage image) {
-		this(screenStage, image, null);
+	public BasicScreen(WritableImage image) {
+		this(image, null);
 	}
 
 	/**
 	 * Create a new BasicScreen attached to the given {@link WritableImage} and
 	 * {@link Camera}.
 	 * 
-	 * @param screenStage
 	 * @param image
 	 * @param camera
 	 */
-	public BasicScreen(Stage screenStage, WritableImage image, Camera camera) {
+	public BasicScreen(WritableImage image, Camera camera) {
 		super(camera, (int) image.getWidth() - 1, (int) image.getHeight() - 1);
 
 		this.pixels = image.getPixelWriter();
