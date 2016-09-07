@@ -1,6 +1,7 @@
 package org.snowjak.rays;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Represents a "ray" -- a vector + an origin point, or position + direction.
@@ -53,6 +54,9 @@ public class Ray {
 		return vector;
 	}
 
+	/**
+	 * @return this Ray's recursion-level
+	 */
 	public int getRecursiveLevel() {
 
 		return recursiveLevel;
@@ -62,6 +66,36 @@ public class Ray {
 	public String toString() {
 
 		return recursiveLevel + "/" + point.toString() + "->" + vector.toString();
+	}
+
+	/**
+	 * Determine the minimum distance between this Ray (treated as an infinite
+	 * line) and a point.
+	 * <p>
+	 * Calculated by:
+	 * 
+	 * <pre>
+	 *   P = point
+	 *   O = ray origin
+	 *   V = ray vector (normalized)
+	 *   
+	 *   L = P - O
+	 *   t_ca = V . L
+	 *   d^2 = |L|^2 - t_ca^2
+	 *   
+	 *   distance = sqrt(d^2)
+	 * </pre>
+	 * </p>
+	 * 
+	 * @param point
+	 * @return the minimum distance between this Ray and a point
+	 */
+	public double getClosestApproachDistance(Vector3D point) {
+
+		Vector3D L = point.subtract(getOrigin());
+		double t_ca = getVector().normalize().dotProduct(L);
+		double d2 = L.getNormSq() - FastMath.pow(t_ca, 2d);
+		return FastMath.sqrt(d2);
 	}
 
 }
