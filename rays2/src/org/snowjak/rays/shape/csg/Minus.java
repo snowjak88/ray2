@@ -1,5 +1,6 @@
 package org.snowjak.rays.shape.csg;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
@@ -45,28 +47,33 @@ public class Minus extends Shape {
 	@Override
 	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
 
+		Ray localRay = worldToLocal(ray);
+
+		//
+		//
+		// First of all, test if this ray intersects the Minuend.
+		// If it doesn't intersect the Minuend, then there's no point in testing
+		// all our subtrahends as well.
+		List<Intersection<Shape>> childIntersections = minuend.getIntersectionsIncludingBehind(localRay)
+				.parallelStream()
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.collect(Collectors.toCollection(LinkedList::new));
+
+		if (childIntersections.isEmpty())
+			return Collections.emptyList();
+
 		//
 		//
 		// Find the intersections between the ray and all subtrahend Shapes.
 		//
 		// Literally: get the list of Intersections for each subtrahend,
 		// flat-map those lists into a single list of Intersections.
-		Ray localRay = worldToLocal(ray);
 
-		List<Intersection<Shape>> childIntersections = subtrahends.parallelStream()
+		childIntersections.addAll(subtrahends.parallelStream()
 				.map(s -> s.getIntersectionsIncludingBehind(localRay))
 				.flatMap(li -> li.stream())
-				.map(i -> localToWorld(i))
 				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
-				.collect(Collectors.toCollection(LinkedList::new));
-
-		//
-		// Add the minuend intersections, if any.
-		childIntersections.addAll(minuend.getIntersectionsIncludingBehind(localRay)
-				.parallelStream()
-				.map(i -> localToWorld(i))
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
-				.collect(Collectors.toCollection(LinkedList::new)));
+				.collect(Collectors.toCollection(ArrayList::new)));
 
 		//
 		// Sort everything by distance!
@@ -84,15 +91,19 @@ public class Minus extends Shape {
 		//
 		Set<Shape> currentlyInSubtrahends = new HashSet<>();
 		boolean currentlyInMinuend = false;
+
+		if (!childIntersections.isEmpty())
+			this.getClass();
+
 		//
 		// Test to see if the given Ray starts inside of any of our
 		// subtrahends.
-		subtrahends.parallelStream()
-				.filter(s -> s.isInside(localRay.getOrigin()))
-				.forEach(s -> currentlyInSubtrahends.add(s));
+		// subtrahends.parallelStream()
+		// .filter(s -> s.isInside(localRay.getOrigin()))
+		// .forEach(s -> currentlyInSubtrahends.add(s));
 		//
 		// And test again to see if the Ray starts within the minuend.
-		currentlyInMinuend = minuend.isInside(localRay.getOrigin());
+		// currentlyInMinuend = minuend.isInside(localRay.getOrigin());
 
 		List<Intersection<Shape>> results = new LinkedList<>();
 		//
@@ -108,7 +119,7 @@ public class Minus extends Shape {
 				// Crossing a minuend boundary.
 				//
 				// Are we currently in any of the subtrahends?
-				if (currentlyInSubtrahends.isEmpty()) {
+				if (!currentlyInAnySubtrahend(currentIntersect.getPoint())) {
 					//
 					// No -- not in any subtrahend. So record this minuend
 					// transition!
@@ -129,14 +140,14 @@ public class Minus extends Shape {
 				// Crossing a subtrahend boundary!
 				//
 				// Are we crossing in, or out?
-				if (currentlyInSubtrahends.contains(intersectedShape)) {
+				if (getContainingSubtrahends(currentIntersect.getPoint()).contains(intersectedShape)) {
 					//
 					// Crossing out of this subtrahend.
 					currentlyInSubtrahends.remove(intersectedShape);
 					//
 					// Are we currently in the minuend, and did we just exit all
 					// subtrahends?
-					if (currentlyInMinuend && currentlyInSubtrahends.isEmpty()) {
+					if (currentlyInMinuend(currentIntersect.getPoint()) && currentlyInSubtrahends.isEmpty()) {
 						//
 						// Yes! So record this transition.
 						// HOWEVER -- we need to flip the reported normal.
@@ -158,7 +169,7 @@ public class Minus extends Shape {
 					// Are we currently inside the minuend, and up to now
 					// outside all subtrahends?
 					// If so, then record this transition.
-					if (currentlyInMinuend && currentlyInSubtrahends.isEmpty()) {
+					if (currentlyInMinuend(currentIntersect.getPoint()) && currentlyInSubtrahends.isEmpty()) {
 						results.add(currentIntersect);
 					} else {
 						//
@@ -192,8 +203,25 @@ public class Minus extends Shape {
 
 			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, ambient, diffuse, specular,
 					emissive);
-		}).collect(Collectors.toCollection(LinkedList::new));
+		}).map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
 
+	}
+
+	private boolean currentlyInMinuend(Vector3D point) {
+
+		return minuend.isInside(point);
+	}
+
+	private boolean currentlyInAnySubtrahend(Vector3D point) {
+
+		return subtrahends.parallelStream().anyMatch(s -> s.isInside(point));
+	}
+
+	private List<Shape> getContainingSubtrahends(Vector3D point) {
+
+		return subtrahends.parallelStream()
+				.filter(s -> s.isInside(point))
+				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
 }
