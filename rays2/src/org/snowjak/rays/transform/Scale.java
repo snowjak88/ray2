@@ -46,14 +46,14 @@ public class Scale implements Transformer {
 	@Override
 	public Ray localToWorld(Ray ray) {
 
-		return new Ray(localToWorld(ray.getOrigin()), localToWorld(ray.getVector()).normalize(),
+		return new Ray(localToWorld(ray.getOrigin()), localToWorld(ray.getVector()),
 				ray.getRecursiveLevel());
 	}
 
 	@Override
 	public Ray worldToLocal(Ray ray) {
 
-		return new Ray(worldToLocal(ray.getOrigin()), worldToLocal(ray.getVector()).normalize(),
+		return new Ray(worldToLocal(ray.getOrigin()), worldToLocal(ray.getVector()),
 				ray.getRecursiveLevel());
 	}
 

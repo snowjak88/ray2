@@ -36,6 +36,9 @@ public class Ray {
 		this.point = origin;
 		this.vector = vector;
 		this.recursiveLevel = recursiveLevel;
+		
+		if (this.vector.getNorm() != 0d)
+			this.vector = this.vector.normalize();
 	}
 
 	/**
@@ -93,7 +96,7 @@ public class Ray {
 	public double getClosestApproachDistance(Vector3D point) {
 
 		Vector3D L = point.subtract(getOrigin());
-		double t_ca = getVector().normalize().dotProduct(L);
+		double t_ca = getVector().dotProduct(L);
 		double d2 = L.getNormSq() - FastMath.pow(t_ca, 2d);
 		return FastMath.sqrt(d2);
 	}

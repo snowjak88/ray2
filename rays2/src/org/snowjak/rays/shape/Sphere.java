@@ -60,7 +60,7 @@ public class Sphere extends Shape {
 		// t_ca = v dot-product L
 		//
 		// t_ca = v . L
-		double t_ca = transformedRay.getVector().normalize().dotProduct(L);
+		double t_ca = transformedRay.getVector().dotProduct(L);
 		//
 		// d = shortest distance from center of sphere to ray
 		//
@@ -111,7 +111,6 @@ public class Sphere extends Shape {
 
 		if (Double.compare(FastMath.abs(intersectionDistance1), World.DOUBLE_ERROR) >= 0) {
 			Vector3D intersectPointOnSphere1 = transformedRay.getVector()
-					.normalize()
 					.scalarMultiply(intersectionDistance1)
 					.add(transformedRay.getOrigin());
 
@@ -123,7 +122,6 @@ public class Sphere extends Shape {
 
 		if (Double.compare(FastMath.abs(intersectionDistance2), World.DOUBLE_ERROR) >= 0) {
 			Vector3D intersectPointOnSphere2 = transformedRay.getVector()
-					.normalize()
 					.scalarMultiply(intersectionDistance2)
 					.add(transformedRay.getOrigin());
 

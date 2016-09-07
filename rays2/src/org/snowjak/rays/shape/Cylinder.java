@@ -8,6 +8,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.transform.Translation;
 
@@ -73,8 +74,8 @@ public class Cylinder extends Shape {
 		// org.snowjak.rays.shape.Sphere
 
 		Vector2D p = new Vector2D(localRay.getOrigin().getX(), localRay.getOrigin().getZ());
-		Vector2D v = new Vector2D(localRay.getVector().normalize().getX(), localRay.getVector().normalize().getZ());
-		Vector2D o = Vector2D.ZERO;
+		Vector2D v = new Vector2D(localRay.getVector().getX(), localRay.getVector().getZ());
+		Vector2D o = new Vector2D(worldToLocal(getLocation()).getX(), worldToLocal(getLocation()).getZ());
 
 		Vector2D L = o.subtract(p);
 		double t_ca = v.normalize().dotProduct(L);
@@ -93,8 +94,8 @@ public class Cylinder extends Shape {
 		double t2 = t_ca + t_hc;
 		//
 		// Now we can determine the intersection-point(s) in 3D space.
-		Vector3D intersectionPoint1 = localRay.getOrigin().add(localRay.getVector().normalize().scalarMultiply(t1));
-		Vector3D intersectionPoint2 = localRay.getOrigin().add(localRay.getVector().normalize().scalarMultiply(t2));
+		Vector3D intersectionPoint1 = localRay.getOrigin().add(localRay.getVector().scalarMultiply(t1));
+		Vector3D intersectionPoint2 = localRay.getOrigin().add(localRay.getVector().scalarMultiply(t2));
 
 		//
 		//

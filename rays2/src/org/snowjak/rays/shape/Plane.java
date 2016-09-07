@@ -70,7 +70,7 @@ public class Plane extends Shape {
 				return Collections.emptyList();
 
 			Vector3D intersectionPoint = transformedRay.getOrigin()
-					.add(transformedRay.getVector().normalize().scalarMultiply(t));
+					.add(transformedRay.getVector().scalarMultiply(t));
 			double normalSign = FastMath.signum(transformedRay.getVector().negate().dotProduct(Vector3D.PLUS_J));
 			Vector3D normal = Vector3D.PLUS_J.scalarMultiply(normalSign).normalize();
 
