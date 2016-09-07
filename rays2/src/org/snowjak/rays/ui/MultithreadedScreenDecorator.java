@@ -12,6 +12,13 @@ import org.snowjak.rays.color.RawColor;
  */
 public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 
+	/**
+	 * If the screen is rendered in regions (see
+	 * {@link RenderSplitType#REGION}), then each region will be a square of
+	 * {@code ...SIDE_LENGTH} pixels on each side.
+	 */
+	public static final int REGION_SIDE_LENGTH = 64;
+
 	private DrawsScreenPixel child;
 
 	private ExecutorService renderingThreadPool;
@@ -66,8 +73,8 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 			break;
 
 		case REGION:
-			int sizeX = (child.getScreenMaxX() - child.getScreenMinX()) / 10;
-			int sizeY = (child.getScreenMaxY() - child.getScreenMinY()) / 10;
+			int sizeX = FastMath.min(REGION_SIDE_LENGTH, child.getScreenMaxX() - child.getScreenMinX());
+			int sizeY = FastMath.min(REGION_SIDE_LENGTH, child.getScreenMaxY() - child.getScreenMinY());
 
 			for (int startY = child.getScreenMinY(); startY < child.getScreenMaxY(); startY += sizeY + 1)
 				for (int startX = child.getScreenMinX(); startX < child.getScreenMaxX(); startX += sizeX + 1) {
