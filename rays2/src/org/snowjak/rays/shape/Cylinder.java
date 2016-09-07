@@ -3,6 +3,7 @@ package org.snowjak.rays.shape;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -64,6 +65,7 @@ public class Cylinder extends Shape {
 	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
 
 		Ray localRay = worldToLocal(ray);
+		Vector3D localLocation = worldToLocal(getLocation());
 		List<Intersection<Shape>> results = new LinkedList<>();
 		//
 		//
@@ -73,13 +75,14 @@ public class Cylinder extends Shape {
 		// For explanation of this routine, see the comments in
 		// org.snowjak.rays.shape.Sphere
 
-		Vector2D p = new Vector2D(localRay.getOrigin().getX(), localRay.getOrigin().getZ());
-		Vector2D v = new Vector2D(localRay.getVector().getX(), localRay.getVector().getZ());
-		Vector2D o = new Vector2D(worldToLocal(getLocation()).getX(), worldToLocal(getLocation()).getZ());
+		Vector2D rayOrigin = new Vector2D(localRay.getOrigin().getX(), localRay.getOrigin().getZ());
+		Vector2D rayVector = new Vector2D(localRay.getVector().getX(), localRay.getVector().getZ());
+		Vector2D circleOrigin = new Vector2D(localLocation.getX(), localLocation.getZ());
 
-		Vector2D L = o.subtract(p);
-		double t_ca = v.normalize().dotProduct(L);
+		Vector2D L = circleOrigin.subtract(rayOrigin);
+		double t_ca = rayVector.normalize().dotProduct(L);
 		double d2 = L.getNormSq() - FastMath.pow(t_ca, 2d);
+
 		double r2 = 1d;
 		if (Double.compare(d2, r2) > 0)
 			return Collections.emptyList();
@@ -87,13 +90,20 @@ public class Cylinder extends Shape {
 		double t_hc = FastMath.sqrt(r2 - d2);
 
 		boolean onlyOneSolution = false;
-		if (Double.compare(t_hc, 0d) == 0)
+		if (Double.compare(t_hc, World.DOUBLE_ERROR) <= 0)
 			onlyOneSolution = true;
 
-		double t1 = t_ca - t_hc;
-		double t2 = t_ca + t_hc;
+		double t1_2d = t_ca - t_hc;
+		double t2_2d = t_ca + t_hc;
 		//
-		// Now we can determine the intersection-point(s) in 3D space.
+		// Now we can determine the intersection-point(s) in 2D space.
+		Vector2D intersectionPoint1_2D = rayOrigin.add(rayVector.scalarMultiply(t1_2d));
+		Vector2D intersectionPoint2_2D = rayOrigin.add(rayVector.scalarMultiply(t2_2d));
+		//
+		// And translate those 2D intersection-points into 3D equivalents.
+		double t1 = (intersectionPoint1_2D.getX() - localRay.getOrigin().getX()) / localRay.getVector().getX();
+		double t2 = (intersectionPoint2_2D.getX() - localRay.getOrigin().getX()) / localRay.getVector().getX();
+
 		Vector3D intersectionPoint1 = localRay.getOrigin().add(localRay.getVector().scalarMultiply(t1));
 		Vector3D intersectionPoint2 = localRay.getOrigin().add(localRay.getVector().scalarMultiply(t2));
 
@@ -106,40 +116,30 @@ public class Cylinder extends Shape {
 		// cylinder.
 		//
 		if (isMinusYCapped) {
-			List<Intersection<Shape>> planeIntersections = minusYCap.getIntersectionsIncludingBehind(localRay);
-			if (!(planeIntersections.isEmpty())) {
 
-				Intersection<Shape> intersect = planeIntersections.get(0);
-				Vector3D intersectPoint = intersect.getPoint();
-
-				//
-				// Remember that a circle is x^2 + y^2 = r^2
-				// or, for points inside the circle:
-				// x^2 + y^2 <= r^2
-				if (Double.compare(FastMath.pow(intersectPoint.getX(), 2d) + FastMath.pow(intersectPoint.getZ(), 2d),
-						1d) <= 0)
-					results.add(localToWorld(new Intersection<Shape>(intersect.getPoint(), intersect.getNormal(),
-							intersect.getRay(), this, getAmbientColorScheme(), getDiffuseColorScheme(),
-							getSpecularColorScheme(), getEmissiveColorScheme())));
-
-			}
+			//
+			// Remember that a circle is x^2 + y^2 = r^2
+			// or, for points inside the circle:
+			// x^2 + y^2 <= r^2
+			results.addAll(minusYCap.getIntersectionsIncludingBehind(localRay)
+					.parallelStream()
+					.filter(i -> Double.compare(
+							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
+					.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
+							getAmbientColorScheme(), getDiffuseColorScheme(), getSpecularColorScheme(),
+							getEmissiveColorScheme()))
+					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
 		if (isPlusYCapped) {
-			List<Intersection<Shape>> planeIntersections = plusYCap.getIntersectionsIncludingBehind(localRay);
-			if (!(planeIntersections.isEmpty())) {
-
-				Intersection<Shape> intersect = planeIntersections.get(0);
-				Vector3D intersectPoint = intersect.getPoint();
-
-				if (Double.compare(
-
-						FastMath.pow(intersectPoint.getX(), 2d) + FastMath.pow(intersectPoint.getZ(), 2d), 1d) <= 0)
-					results.add(localToWorld(new Intersection<Shape>(intersect.getPoint(), intersect.getNormal(),
-							intersect.getRay(), this, getAmbientColorScheme(), getDiffuseColorScheme(),
-							getSpecularColorScheme(), getEmissiveColorScheme())));
-
-			}
+			results.addAll(plusYCap.getIntersectionsIncludingBehind(localRay)
+					.parallelStream()
+					.filter(i -> Double.compare(
+							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
+					.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
+							getAmbientColorScheme(), getDiffuseColorScheme(), getSpecularColorScheme(),
+							getEmissiveColorScheme()))
+					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
 		//
@@ -158,9 +158,8 @@ public class Cylinder extends Shape {
 			double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
 			normal = normal.scalarMultiply(normalSign);
 
-			results.add(localToWorld(
-					new Intersection<Shape>(intersectionPoint1, normal, localRay, this, getAmbientColorScheme(),
-							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme())));
+			results.add(new Intersection<Shape>(intersectionPoint1, normal, localRay, this, getAmbientColorScheme(),
+					getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme()));
 		}
 
 		if (onlyOneSolution && results.size() == 1)
@@ -172,12 +171,11 @@ public class Cylinder extends Shape {
 			double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
 			normal = normal.scalarMultiply(normalSign);
 
-			results.add(localToWorld(
-					new Intersection<Shape>(intersectionPoint2, normal, localRay, this, getAmbientColorScheme(),
-							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme())));
+			results.add(new Intersection<Shape>(intersectionPoint2, normal, localRay, this, getAmbientColorScheme(),
+					getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme()));
 		}
 
-		return results;
+		return results.parallelStream().map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
 	}
 
 }
