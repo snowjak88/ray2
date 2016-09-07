@@ -17,8 +17,6 @@ import javafx.scene.paint.Color;
  */
 public abstract class Screen implements DrawsEntireScreen, DrawsScreenPixel {
 
-	private Camera camera;
-
 	private int screenMinX, screenMinY, screenMaxX, screenMaxY;
 
 	/**
@@ -28,37 +26,23 @@ public abstract class Screen implements DrawsEntireScreen, DrawsScreenPixel {
 	 * @param screenMaxY
 	 */
 	public Screen(int screenMaxX, int screenMaxY) {
-		this(null, screenMaxX, screenMaxY);
+		this(0, 0, screenMaxX, screenMaxY);
 	}
 
 	/**
-	 * Create a new Screen with the given extent, attached to the given Camera.
+	 * Create a new Screen with the given extent.
 	 * 
-	 * @param camera
-	 * @param screenMaxX
-	 * @param screenMaxY
-	 */
-	public Screen(Camera camera, int screenMaxX, int screenMaxY) {
-		this(camera, 0, 0, screenMaxX, screenMaxY);
-	}
-
-	/**
-	 * Create a new Screen with the given extent, attached to the given Camera.
-	 * 
-	 * @param camera
 	 * @param screenMinX
 	 * @param screenMinY
 	 * @param screenMaxX
 	 * @param screemMaxY
 	 * @param screenMaxY
 	 */
-	public Screen(Camera camera, int screenMinX, int screenMinY, int screenMaxX, int screemMaxY) {
+	public Screen(int screenMinX, int screenMinY, int screenMaxX, int screemMaxY) {
 		this.screenMinX = screenMinX;
 		this.screenMinY = screenMinY;
 		this.screenMaxX = screenMaxX;
 		this.screenMaxY = screemMaxY;
-
-		setCamera(camera);
 	}
 
 	/**
@@ -67,12 +51,12 @@ public abstract class Screen implements DrawsEntireScreen, DrawsScreenPixel {
 	 * queried for each, and {@link #drawPixel(int, int, Color)} executed.
 	 */
 	@Override
-	public void draw() {
+	public void draw(Camera camera) {
 
 		if (camera != null)
 			for (int x = screenMinX; x <= screenMaxX; x++)
 				for (int y = screenMinY; y <= screenMaxY; y++) {
-					Optional<RawColor> color = getRayColor(x, y);
+					Optional<RawColor> color = getRayColor(x, y, camera);
 					if (color.isPresent())
 						drawPixel(x, screenMaxY - y + screenMinY, color.get());
 				}
@@ -86,9 +70,9 @@ public abstract class Screen implements DrawsEntireScreen, DrawsScreenPixel {
 	 *         location
 	 */
 	@Override
-	public Optional<RawColor> getRayColor(int screenX, int screenY) {
+	public Optional<RawColor> getRayColor(int screenX, int screenY, Camera camera) {
 
-		return camera.shootRay(getCameraX(screenX), getCameraY(screenY));
+		return camera.shootRay(getCameraX(screenX, camera), getCameraY(screenY, camera));
 	}
 
 	/**
@@ -108,25 +92,6 @@ public abstract class Screen implements DrawsEntireScreen, DrawsScreenPixel {
 	@Override
 	public void shutdown() {
 
-	}
-
-	/**
-	 * Set the {@link Camera} this Screen is associated with.
-	 * 
-	 * @param camera
-	 */
-	public void setCamera(Camera camera) {
-
-		this.camera = camera;
-	}
-
-	/**
-	 * @return this Screen's current Camera
-	 */
-	@Override
-	public Camera getCamera() {
-
-		return camera;
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.math3.util.FastMath;
+import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 
 /**
@@ -64,12 +65,12 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 	}
 
 	@Override
-	public void draw() {
+	public void draw(Camera camera) {
 
 		switch (splitType) {
 		case COLUMN:
 			for (int column = child.getScreenMinX(); column <= child.getScreenMaxX(); column++)
-				renderingThreadPool.submit(new ColumnRenderTask(column));
+				renderingThreadPool.submit(new ColumnRenderTask(camera, column));
 			break;
 
 		case REGION:
@@ -82,7 +83,7 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 					int extentX = FastMath.min(startX + sizeX, child.getScreenMaxX() - child.getScreenMinX());
 					int extentY = FastMath.min(startY + sizeY, child.getScreenMaxY() - child.getScreenMinY());
 					renderingThreadPool
-							.submit(new RegionRenderTask(startX, startY, extentX - startX, extentY - startY));
+							.submit(new RegionRenderTask(camera, startX, startY, extentX - startX, extentY - startY));
 				}
 		}
 	}
@@ -100,7 +101,10 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 
 		private int startX, startY, sizeX, sizeY;
 
-		public RegionRenderTask(int startX, int startY, int sizeX, int sizeY) {
+		private Camera camera;
+
+		public RegionRenderTask(Camera camera, int startX, int startY, int sizeX, int sizeY) {
+			this.camera = camera;
 			this.startX = startX;
 			this.startY = startY;
 			this.sizeX = sizeX;
@@ -118,7 +122,7 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 						if (Thread.interrupted())
 							return;
 
-						Optional<RawColor> color = child.getRayColor(startX + dx, startY + dy);
+						Optional<RawColor> color = child.getRayColor(startX + dx, startY + dy, camera);
 						if (color.isPresent())
 							child.drawPixel(startX + dx, startY + dy, color.get());
 
@@ -138,7 +142,10 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 
 		private int column;
 
-		public ColumnRenderTask(int column) {
+		private Camera camera;
+
+		public ColumnRenderTask(Camera camera, int column) {
+			this.camera = camera;
 			this.column = column;
 		}
 
@@ -150,7 +157,7 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 					if (Thread.interrupted())
 						return;
 
-					Optional<RawColor> color = child.getRayColor(column, y);
+					Optional<RawColor> color = child.getRayColor(column, y, camera);
 					if (color.isPresent())
 						child.drawPixel(column, y, color.get());
 

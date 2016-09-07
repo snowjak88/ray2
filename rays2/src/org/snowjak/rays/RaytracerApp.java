@@ -17,12 +17,8 @@ import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.PointLight;
 import org.snowjak.rays.light.model.FogDecoratingLightingModel;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
-import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Cylinder;
 import org.snowjak.rays.shape.Plane;
-import org.snowjak.rays.shape.Sphere;
-import org.snowjak.rays.shape.csg.Intersect;
-import org.snowjak.rays.shape.csg.Minus;
 import org.snowjak.rays.shape.csg.Union;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
@@ -51,7 +47,9 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 @SuppressWarnings("javadoc")
-public class RaytracerApp extends Application {
+public class RaytracerApp extends Application implements Renderer {
+
+	private DrawsEntireScreen screenDrawer;
 
 	public static void main(String[] args) {
 
@@ -65,7 +63,7 @@ public class RaytracerApp extends Application {
 
 		WritableImage image = new WritableImage(800, 500);
 		DrawsEntireScreen screen = new MultithreadedScreenDecorator(
-				new AntialiasingScreenDecorator(AA.x2, new BasicScreen(image, world.getCamera())));
+				new AntialiasingScreenDecorator(AA.x8, new BasicScreen(image, world.getCamera())));
 
 		ImageView imageView = new ImageView(image);
 		Group root = new Group(imageView);
@@ -127,7 +125,8 @@ public class RaytracerApp extends Application {
 		});
 
 		primaryStage.show();
-		Executors.newSingleThreadExecutor().submit(() -> screen.draw());
+		Renderer renderer = this;
+		Executors.newSingleThreadExecutor().submit(() -> renderer.render(world.getCamera()));
 	}
 
 	private World buildWorld() {
@@ -142,37 +141,17 @@ public class RaytracerApp extends Application {
 		cylinder1.setDiffuseColorScheme(cylinderColorScheme);
 		cylinder1.getTransformers().add(new Scale(0.4, 2d, 0.4));
 
-		Cylinder cylinder2 = new Cylinder(true);
-		cylinder2.setAmbientColorScheme(cylinderColorScheme);
-		cylinder2.setDiffuseColorScheme(cylinderColorScheme);
-		cylinder2.getTransformers().add(new Scale(0.4, 2d, 0.4));
+		Cylinder cylinder2 = cylinder1.copy();
 		cylinder2.getTransformers().add(new Rotation(0d, 0d, 90d));
 
-		Cylinder cylinder3 = new Cylinder(true);
-		cylinder3.setAmbientColorScheme(cylinderColorScheme);
-		cylinder3.setDiffuseColorScheme(cylinderColorScheme);
-		cylinder3.getTransformers().add(new Scale(0.4, 2d, 0.4));
+		Cylinder cylinder3 = cylinder1.copy();
 		cylinder3.getTransformers().add(new Rotation(90d, 0d, 0d));
 
 		Union union = new Union(cylinder1, cylinder2, cylinder3);
-
-		Sphere sphere = new Sphere();
-		sphere.setAmbientColorScheme(new SimpleColorScheme(Color.RED));
-		sphere.setDiffuseColorScheme(new SimpleColorScheme(Color.RED));
-
-		Minus minus = new Minus(sphere, union);
-
-		Cube cube = new Cube();
-		cube.setAmbientColorScheme(new SimpleColorScheme(Color.BLUE));
-		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
-		cube.getTransformers().add(new Translation(-.5, -.5, -.5));
-		cube.getTransformers().add(new Scale(1.6, 1.6, 1.6));
-
-		Intersect intersect = new Intersect(minus, cube);
-		world.getShapes().add(intersect);
+		world.getShapes().add(union);
 
 		Plane plane = new Plane();
-		ColorScheme planeColorScheme = new CheckerboardColorScheme(Color.BLANCHEDALMOND, Color.NAVY);
+		ColorScheme planeColorScheme = new CheckerboardColorScheme(Color.WHITE, Color.NAVY);
 		planeColorScheme.setReflectivity(0.75);
 		plane.setAmbientColorScheme(planeColorScheme);
 		plane.setDiffuseColorScheme(planeColorScheme);
@@ -193,6 +172,18 @@ public class RaytracerApp extends Application {
 				new FogDecoratingLightingModel(75d, new RawColor(Color.GRAY), new PhongReflectionLightingModel()));
 
 		return world;
+	}
+
+	@Override
+	public DrawsEntireScreen getScreenDrawer() {
+
+		return screenDrawer;
+
+	}
+
+	public void setScreenDrawer(DrawsEntireScreen screenDrawer) {
+
+		this.screenDrawer = screenDrawer;
 	}
 
 }

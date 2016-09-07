@@ -69,7 +69,7 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 	}
 
 	@Override
-	public Optional<RawColor> getRayColor(int screenX, int screenY) {
+	public Optional<RawColor> getRayColor(int screenX, int screenY, Camera camera) {
 
 		RawColor totalColor = new RawColor();
 		double totalScale = 0d;
@@ -77,11 +77,11 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 		for (double dx = -(filterSpan / 2d); dx <= (filterSpan / 2d); dx += coordinateDelta) {
 			for (double dy = -(filterSpan / 2d); dy <= (filterSpan / 2d); dy += coordinateDelta) {
 
-				double x = getCameraX(screenX + dx), y = getCameraY(screenY + dy);
+				double x = getCameraX(screenX + dx, camera), y = getCameraY(screenY + dy, camera);
 				double scale = distribution.density(FastMath.sqrt(FastMath.pow(dx, 2d) + FastMath.pow(dy, 2d)));
 
 				totalScale += scale;
-				Optional<RawColor> color = child.getCamera().shootRay(x, y);
+				Optional<RawColor> color = camera.shootRay(x, y);
 				if (color.isPresent())
 					totalColor = totalColor.add(color.get().multiplyScalar(scale));
 			}
@@ -101,12 +101,6 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 	public void shutdown() {
 
 		child.shutdown();
-	}
-
-	@Override
-	public Camera getCamera() {
-
-		return child.getCamera();
 	}
 
 	@Override

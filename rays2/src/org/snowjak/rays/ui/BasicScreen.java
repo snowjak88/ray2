@@ -6,7 +6,6 @@ import org.snowjak.rays.color.RawColor;
 import javafx.application.Platform;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
-import javafx.stage.Stage;
 
 /**
  * A basic implementation of Screen which writes to a JavaFX
@@ -38,7 +37,7 @@ public class BasicScreen extends Screen {
 	 * @param camera
 	 */
 	public BasicScreen(WritableImage image, Camera camera) {
-		super(camera, (int) image.getWidth() - 1, (int) image.getHeight() - 1);
+		super((int) image.getWidth() - 1, (int) image.getHeight() - 1);
 
 		this.pixels = image.getPixelWriter();
 	}
@@ -46,7 +45,7 @@ public class BasicScreen extends Screen {
 	@Override
 	public void drawPixel(int x, int y, RawColor color) {
 
-		Platform.runLater(() -> pixels.setColor(x, getScreenMaxY() - y + getScreenMinY(), color.toColor()));
+		Platform.runLater(() -> pixels.setColor(x, y, color.toColor()));
 	}
 
 }

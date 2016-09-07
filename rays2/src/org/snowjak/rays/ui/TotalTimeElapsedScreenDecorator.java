@@ -7,6 +7,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.snowjak.rays.camera.Camera;
+
 import javafx.application.Platform;
 import javafx.stage.Stage;
 
@@ -65,7 +67,7 @@ public class TotalTimeElapsedScreenDecorator implements DrawsEntireScreen {
 	}
 
 	@Override
-	public void draw() {
+	public void draw(Camera camera) {
 
 		AtomicReference<Instant> startedRunning = new AtomicReference<Instant>(Instant.now());
 
@@ -84,8 +86,8 @@ public class TotalTimeElapsedScreenDecorator implements DrawsEntireScreen {
 
 		}, timeUpdateInterval, timeUpdateInterval, intervalUnit);
 
-		child.draw();
-		
+		child.draw(camera);
+
 		timeUpdateThread.shutdown();
 	}
 
