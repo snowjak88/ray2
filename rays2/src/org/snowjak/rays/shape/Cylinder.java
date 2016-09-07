@@ -76,11 +76,11 @@ public class Cylinder extends Shape {
 		// org.snowjak.rays.shape.Sphere
 
 		Vector2D rayOrigin = new Vector2D(localRay.getOrigin().getX(), localRay.getOrigin().getZ());
-		Vector2D rayVector = new Vector2D(localRay.getVector().getX(), localRay.getVector().getZ());
+		Vector2D rayVector = new Vector2D(localRay.getVector().getX(), localRay.getVector().getZ()).normalize();
 		Vector2D circleOrigin = new Vector2D(localLocation.getX(), localLocation.getZ());
 
 		Vector2D L = circleOrigin.subtract(rayOrigin);
-		double t_ca = rayVector.normalize().dotProduct(L);
+		double t_ca = rayVector.dotProduct(L);
 		double d2 = L.getNormSq() - FastMath.pow(t_ca, 2d);
 
 		double r2 = 1d;
