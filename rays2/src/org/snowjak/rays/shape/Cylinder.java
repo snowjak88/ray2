@@ -178,4 +178,13 @@ public class Cylinder extends Shape {
 		return results.parallelStream().map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
 	}
 
+	@Override
+	public Cylinder copy() {
+
+		Cylinder newCylinder = new Cylinder(this.isMinusYCapped, this.isPlusYCapped);
+		newCylinder = configureCopy(newCylinder);
+
+		return newCylinder;
+	}
+
 }

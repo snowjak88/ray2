@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.intersect.Intersection;
@@ -70,6 +71,16 @@ public class Group extends Shape {
 				LinkedList::addAll);
 
 		return results;
+	}
+
+	@Override
+	public Group copy() {
+
+		Group newGroup = new Group(
+				this.getChildren().stream().map(s -> s.copy()).collect(Collectors.toCollection(LinkedList::new)));
+		newGroup = configureCopy(newGroup);
+
+		return newGroup;
 	}
 
 }

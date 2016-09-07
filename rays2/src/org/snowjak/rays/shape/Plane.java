@@ -69,8 +69,7 @@ public class Plane extends Shape {
 			if (Double.compare(FastMath.abs(t), World.DOUBLE_ERROR) < 0)
 				return Collections.emptyList();
 
-			Vector3D intersectionPoint = transformedRay.getOrigin()
-					.add(transformedRay.getVector().scalarMultiply(t));
+			Vector3D intersectionPoint = transformedRay.getOrigin().add(transformedRay.getVector().scalarMultiply(t));
 			double normalSign = FastMath.signum(transformedRay.getVector().negate().dotProduct(Vector3D.PLUS_J));
 			Vector3D normal = Vector3D.PLUS_J.scalarMultiply(normalSign).normalize();
 
@@ -100,6 +99,14 @@ public class Plane extends Shape {
 	public Vector3D getNormal() {
 
 		return localToWorld(new Ray(Vector3D.ZERO, Vector3D.PLUS_J)).getVector();
+	}
+
+	@Override
+	public Plane copy() {
+
+		Plane newPlane = new Plane();
+		newPlane = configureCopy(newPlane);
+		return newPlane;
 	}
 
 }

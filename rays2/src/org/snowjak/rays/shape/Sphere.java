@@ -134,4 +134,12 @@ public class Sphere extends Shape {
 		return results;
 	}
 
+	@Override
+	public Sphere copy() {
+
+		Sphere sphere = new Sphere(this.radius);
+		sphere = configureCopy(sphere);
+		return sphere;
+	}
+
 }

@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
@@ -170,5 +171,16 @@ public class Union extends Shape {
 	public Collection<Shape> getChildren() {
 
 		return children;
+	}
+
+	@Override
+	public Union copy() {
+
+		Union newUnion = new Union();
+		newUnion = configureCopy(newUnion);
+		newUnion.getChildren().addAll(
+				this.getChildren().stream().map(s -> s.copy()).collect(Collectors.toCollection(LinkedList::new)));
+
+		return newUnion;
 	}
 }

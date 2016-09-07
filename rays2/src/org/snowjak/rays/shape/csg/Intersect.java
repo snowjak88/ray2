@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
@@ -26,14 +25,27 @@ public class Intersect extends Shape {
 
 	private Collection<Shape> children = new LinkedList<>();
 
+	/**
+	 * Construct a new (empty) Intersection.
+	 */
 	public Intersect() {
 		this(Collections.emptyList());
 	}
 
+	/**
+	 * Construct a new Intersection between the specified Shapes.
+	 * 
+	 * @param children
+	 */
 	public Intersect(Shape... children) {
 		this(Arrays.asList(children));
 	}
 
+	/**
+	 * Construct a new Intersection between the specified Shapes.
+	 * 
+	 * @param children
+	 */
 	public Intersect(Collection<Shape> children) {
 		super();
 		this.children.addAll(children);
@@ -132,6 +144,16 @@ public class Intersect extends Shape {
 					emissive);
 		}).map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
 
+	}
+
+	@Override
+	public Intersect copy() {
+
+		Intersect newIntersect = new Intersect(
+				this.children.stream().map(s -> s.copy()).collect(Collectors.toCollection(LinkedList::new)));
+		newIntersect = configureCopy(newIntersect);
+
+		return newIntersect;
 	}
 
 }

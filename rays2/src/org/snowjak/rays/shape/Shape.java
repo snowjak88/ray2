@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Locatable;
+import org.snowjak.rays.Prototype;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
@@ -26,7 +27,7 @@ import javafx.scene.paint.Color;
  * @author rr247200
  *
  */
-public abstract class Shape implements Transformable, Locatable, Intersectable, HasColorScheme {
+public abstract class Shape implements Transformable, Locatable, Intersectable, HasColorScheme, Prototype<Shape> {
 
 	/**
 	 * By default, the ambient and diffuse color-schemes will take this value.
@@ -47,6 +48,13 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 
 	private ColorScheme ambientColorScheme = DEFAULT_COLOR_SCHEME, diffuseColorScheme = DEFAULT_COLOR_SCHEME,
 			specularColorScheme = DEFAULT_SPECULAR_COLOR_SCHEME, emissiveColorScheme = DEFAULT_EMISSIVE_COLOR_SCHEME;
+
+	/**
+	 * Default, no-action constructor.
+	 */
+	public Shape() {
+
+	}
 
 	@Override
 	public Deque<Transformer> getTransformers() {
@@ -135,5 +143,36 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 
 		this.emissiveColorScheme = emissiveColorScheme;
 	}
+
+	/**
+	 * As part of copying -- once you've created a new Shape instance, call this
+	 * method to ensure all configuration is copied.
+	 * 
+	 * @param copy
+	 *            the newly-created Shape instance, currently being configured
+	 * @return the same Shape instance, with additional configuration copied
+	 *         over from this instance
+	 */
+	protected <T extends Shape> T configureCopy(T copy) {
+
+		copy.setAmbientColorScheme(this.getAmbientColorScheme().copy());
+		copy.setDiffuseColorScheme(this.getDiffuseColorScheme().copy());
+		copy.setSpecularColorScheme(this.getSpecularColorScheme().copy());
+		copy.setEmissiveColorScheme(this.getEmissiveColorScheme().copy());
+		copy.getTransformers().addAll(this.getTransformers());
+		return copy;
+	}
+
+	/**
+	 * {@inheritDoc Prototype#copy()}
+	 * <p>
+	 * For {@link Shape} instances, you will want to call
+	 * {@link Shape#configureCopy(Shape)} as part of your implementation of this
+	 * method. {@code configureCopy(Shape)} will copy all those fields declared
+	 * on the Shape type.
+	 * </p>
+	 */
+	@Override
+	public abstract Shape copy();
 
 }

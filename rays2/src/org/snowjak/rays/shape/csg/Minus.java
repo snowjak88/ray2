@@ -29,10 +29,24 @@ public class Minus extends Shape {
 
 	private Collection<Shape> subtrahends = new LinkedList<>();
 
+	/**
+	 * Create a new Minus instance with the specified minuend and subtrahend
+	 * Shapes.
+	 * 
+	 * @param minuend
+	 * @param children
+	 */
 	public Minus(Shape minuend, Shape... children) {
 		this(minuend, Arrays.asList(children));
 	}
 
+	/**
+	 * Create a new Minus instance with the specified minuend and subtrahend
+	 * Shapes.
+	 * 
+	 * @param minuend
+	 * @param children
+	 */
 	public Minus(Shape minuend, Collection<Shape> children) {
 		super();
 		this.minuend = minuend;
@@ -222,6 +236,16 @@ public class Minus extends Shape {
 		return subtrahends.parallelStream()
 				.filter(s -> s.isInside(point))
 				.collect(Collectors.toCollection(LinkedList::new));
+	}
+
+	@Override
+	public Minus copy() {
+
+		Minus newMinus = new Minus(this.minuend.copy(),
+				this.subtrahends.stream().map(s -> s.copy()).collect(Collectors.toCollection(LinkedList::new)));
+		newMinus = configureCopy(newMinus);
+
+		return newMinus;
 	}
 
 }

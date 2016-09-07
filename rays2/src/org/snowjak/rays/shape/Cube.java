@@ -103,4 +103,13 @@ public class Cube extends Shape {
 		return localToWorld(new Vector3D(0.5, 0.5, 0.5));
 	}
 
+	@Override
+	public Cube copy() {
+
+		Cube newCube = new Cube();
+		newCube = configureCopy(newCube);
+
+		return newCube;
+	}
+
 }
