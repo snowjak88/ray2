@@ -141,4 +141,14 @@ public class CheckerboardColorScheme extends ColorScheme {
 		return color2;
 	}
 
+	@Override
+	public CheckerboardColorScheme copy() {
+
+		CheckerboardColorScheme newColorScheme = new CheckerboardColorScheme(this.getCubeSize(),
+				this.getColor1().copy(), this.getColor2().copy());
+		newColorScheme.setReflectivity(this.getReflectivity());
+		newColorScheme.setShininess(this.getShininess());
+		return newColorScheme;
+	}
+
 }

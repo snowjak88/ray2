@@ -4,6 +4,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.snowjak.rays.Prototype;
 import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
 
@@ -13,7 +14,7 @@ import org.snowjak.rays.transform.Transformer;
  * @author rr247200
  *
  */
-public abstract class ColorScheme implements Transformable {
+public abstract class ColorScheme implements Transformable, Prototype<ColorScheme> {
 
 	private Deque<Transformer> transformers = new LinkedList<>();
 

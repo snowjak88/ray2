@@ -28,10 +28,18 @@ public class SimpleColorScheme extends ColorScheme {
 		this(new RawColor(red, green, blue));
 	}
 
+	/**
+	 * Create a new SimpleColorScheme using the specified JavaFX color.
+	 * 
+	 * @param color
+	 */
 	public SimpleColorScheme(Color color) {
 		this(new RawColor(color));
 	}
 
+	/**
+	 * Create a new SimpleColorScheme that uses nothing but black.
+	 */
 	public SimpleColorScheme() {
 		this(Color.TRANSPARENT);
 	}
@@ -49,6 +57,15 @@ public class SimpleColorScheme extends ColorScheme {
 	public RawColor getColor(double x, double y, double z) {
 
 		return color;
+	}
+
+	@Override
+	public SimpleColorScheme copy() {
+
+		SimpleColorScheme newColorScheme = new SimpleColorScheme(this.color);
+		newColorScheme.setReflectivity(this.getReflectivity());
+		newColorScheme.setShininess(this.getShininess());
+		return newColorScheme;
 	}
 
 }
