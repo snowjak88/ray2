@@ -13,7 +13,7 @@ import javafx.scene.paint.Color;
  * alternating cubes of a given side-length (by default, 1.0).
  * </p>
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class CheckerboardColorScheme extends ColorScheme {

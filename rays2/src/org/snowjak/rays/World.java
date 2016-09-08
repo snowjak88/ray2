@@ -20,7 +20,7 @@ import org.snowjak.rays.shape.Shape;
  * the JVM.
  * </p>
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class World {

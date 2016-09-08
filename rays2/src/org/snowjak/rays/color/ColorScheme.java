@@ -11,7 +11,7 @@ import org.snowjak.rays.transform.Transformer;
 /**
  * Represents an algorithm for coloring an object.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public abstract class ColorScheme implements Transformable, Prototype<ColorScheme> {

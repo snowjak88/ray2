@@ -20,7 +20,7 @@ import org.snowjak.rays.shape.Shape;
 /**
  * Implements the CSG operation "minus".
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Minus extends Shape {

@@ -14,7 +14,7 @@ import org.snowjak.rays.shape.Shape;
  * A basic {@link Camera} implementation. Does not perform any processing
  * (antialiasing, etc.).
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class BasicCamera extends Camera {

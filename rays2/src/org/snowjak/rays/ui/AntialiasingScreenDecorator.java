@@ -25,7 +25,7 @@ import org.snowjak.rays.color.RawColor;
  * </pre>
  * </p>
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class AntialiasingScreenDecorator implements DrawsScreenPixel {
@@ -123,7 +123,7 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 	/**
 	 * Defines the number of samples to use when anti-aliasing.
 	 * 
-	 * @author rr247200
+	 * @author snowjak88
 	 *
 	 */
 	@SuppressWarnings("javadoc")

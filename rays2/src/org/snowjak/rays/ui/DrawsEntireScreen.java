@@ -7,8 +7,8 @@ import javafx.scene.paint.Color;
 /**
  * Indicates that this object has the capability to draw the entire screen.
  * 
- * @see Screen
- * @author rr247200
+ * @see BasicScreen
+ * @author snowjak88
  *
  */
 public interface DrawsEntireScreen extends CanBeShutdown {

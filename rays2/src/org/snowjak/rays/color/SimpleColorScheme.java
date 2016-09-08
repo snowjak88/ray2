@@ -6,7 +6,7 @@ import javafx.scene.paint.Color;
  * Implements a basic {@link ColorScheme}, in which every point is the same
  * color. In effect, paints an entire object the same color.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class SimpleColorScheme extends ColorScheme {

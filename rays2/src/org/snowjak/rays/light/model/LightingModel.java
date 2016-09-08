@@ -14,7 +14,7 @@ import org.snowjak.rays.shape.Shape;
  * underlying algorithm, this LightingModel may be recursive, spawning
  * additional Rays to compute reflection, refraction, etc.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public interface LightingModel {

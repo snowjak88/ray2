@@ -16,7 +16,7 @@ import javafx.scene.paint.Color;
  * A Decorator-type LightingModel that enhances another LightingModel with
  * rudimentary fog!
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class FogDecoratingLightingModel implements LightingModel {

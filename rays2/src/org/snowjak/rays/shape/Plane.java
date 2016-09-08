@@ -13,7 +13,7 @@ import org.snowjak.rays.intersect.Intersection;
 /**
  * Represents a plane, by default oriented normal to the Y-axis.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Plane extends Shape {

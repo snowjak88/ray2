@@ -12,7 +12,7 @@ import org.snowjak.rays.ui.MultithreadedScreenDecorator;
 /**
  * Represents the origination-point for all scene-rendering.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Renderer implements CanBeShutdown {
@@ -32,6 +32,21 @@ public class Renderer implements CanBeShutdown {
 	 */
 	public Renderer(DrawsScreenPixel pixelDrawerImpl) {
 		this.rootScreenDrawer = getDefaultScreenDrawer(pixelDrawerImpl);
+	}
+
+	/**
+	 * Create a new Renderer using only the specified screen-drawing toolchain.
+	 * <p>
+	 * Unlike {@link #Renderer(DrawsScreenPixel)}, this constructor will add
+	 * none of the default drawing toolchain to your supplied drawing-instance.
+	 * Use this constructor if you need to specify an non-default drawing
+	 * toolchain.
+	 * </p>
+	 * 
+	 * @param drawToolchain
+	 */
+	public Renderer(DrawsEntireScreen drawToolchain) {
+		this.rootScreenDrawer = drawToolchain;
 	}
 
 	/**
@@ -79,7 +94,7 @@ public class Renderer implements CanBeShutdown {
 	 * By default, the Settings singleton will use the "fast" preset.
 	 * </p>
 	 * 
-	 * @author rr247200
+	 * @author snowjak88
 	 *
 	 */
 	public static class Settings {

@@ -24,7 +24,7 @@ import javafx.scene.paint.Color;
  * Represents an "object" in a 3D space. Something susceptible of being placed,
  * transformed, and intersected with {@link Ray}s.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public abstract class Shape implements Transformable, Locatable, Intersectable, HasColorScheme, Prototype<Shape> {

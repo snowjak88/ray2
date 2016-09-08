@@ -9,8 +9,8 @@ import org.snowjak.rays.color.RawColor;
  * Indicates that this object has the capability to determine the color for, and
  * draw, a single pixel on the screen.
  * 
- * @author rr247200
- * @see Screen
+ * @author snowjak88
+ * @see BasicScreen
  *
  */
 public interface DrawsScreenPixel extends CanBeShutdown {
@@ -22,7 +22,10 @@ public interface DrawsScreenPixel extends CanBeShutdown {
 	 * @return the computed RawColor, if present, for the corresponding screen
 	 *         location
 	 */
-	public Optional<RawColor> getRayColor(int screenX, int screenY, Camera camera);
+	public default Optional<RawColor> getRayColor(int screenX, int screenY, Camera camera) {
+
+		return camera.shootRay(getCameraX(screenX, camera), getCameraY(screenY, camera));
+	}
 
 	/**
 	 * Draw the given Color to the Screen at the given location.

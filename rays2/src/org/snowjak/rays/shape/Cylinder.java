@@ -18,7 +18,7 @@ import org.snowjak.rays.transform.Translation;
  * (0,0,0), with a radius of 1, and an extension along the Y-axis from [-1] to
  * [1].
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Cylinder extends Shape {

@@ -17,7 +17,7 @@ import org.snowjak.rays.intersect.Intersection;
  * Represents a Sphere, centered on (0,0,0) (absent any transformations you may
  * apply).
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Sphere extends Shape {

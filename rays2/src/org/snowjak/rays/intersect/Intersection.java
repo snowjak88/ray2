@@ -9,7 +9,7 @@ import org.snowjak.rays.color.HasColorScheme;
  * Represents a point of contact between an object (i.e., an
  * {@link Intersectable}) and a Ray.
  * 
- * @author rr247200
+ * @author snowjak88
  * @param <S>
  *            an Intersectable type
  *

@@ -13,7 +13,7 @@ import org.snowjak.rays.intersect.Intersection;
  * {@link Transformer}s. Allows you to transform local coordinates to world
  * coordinates, and vice versa.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public interface Transformable {

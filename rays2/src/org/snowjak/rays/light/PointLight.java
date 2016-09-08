@@ -11,7 +11,7 @@ import org.snowjak.rays.color.RawColor;
  * space.
  * </p>
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class PointLight extends Light {

@@ -39,7 +39,7 @@ import org.snowjak.rays.shape.Shape;
  * </ul>
  * </p>
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Union extends Shape {

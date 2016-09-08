@@ -14,7 +14,7 @@ import org.snowjak.rays.intersect.Intersection;
 /**
  * Represents a rotation through the X, Y, and/or Z axes.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Rotation implements Transformer {

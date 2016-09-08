@@ -4,7 +4,7 @@ package org.snowjak.rays.ui;
  * Indicates that this object has resources -- open files, background threads,
  * etc. -- which should be retired when the application is shutting down.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public interface CanBeShutdown {

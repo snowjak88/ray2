@@ -6,7 +6,7 @@ import org.apache.commons.math3.util.FastMath;
 /**
  * Represents a "ray" -- a vector + an origin point, or position + direction.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Ray {

@@ -16,7 +16,7 @@ import org.snowjak.rays.transform.Translation;
  * Represents a cube, with edges aligned to the primary axes and opposite
  * corners at (0,0,0) and (1,1,1)
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Cube extends Shape {

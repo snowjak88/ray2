@@ -5,7 +5,7 @@ package org.snowjak.rays;
  * instantiated, configured, and then copied an infinite number of times while
  * retaining that configuration.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  * @param <T>
  */

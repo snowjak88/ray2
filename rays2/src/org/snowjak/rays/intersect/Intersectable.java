@@ -9,7 +9,7 @@ import org.snowjak.rays.Ray;
  * Indicates that this object can be checked for {@link Intersection}s with a
  * {@link Ray}.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public interface Intersectable {

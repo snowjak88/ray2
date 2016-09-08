@@ -14,7 +14,7 @@ import org.snowjak.rays.intersect.Intersection;
  * Allows you to group several Shapes together under a single set of
  * transformations.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Group extends Shape {

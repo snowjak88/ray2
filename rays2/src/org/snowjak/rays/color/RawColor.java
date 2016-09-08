@@ -9,7 +9,7 @@ import javafx.scene.paint.Color;
  * convenience method ({@link #toColor()} to convert to a JavaFX {@link Color}
  * instance, clamping the RGB values to [0,1].
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class RawColor {

@@ -5,7 +5,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 /**
  * Indicates that something can be said to have a definite location in 3D space.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public interface Locatable {

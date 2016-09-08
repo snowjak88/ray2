@@ -10,7 +10,7 @@ import org.snowjak.rays.intersect.Intersection;
 /**
  * Represents a scaling {@link Transformer}.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class Scale implements Transformer {

@@ -16,7 +16,7 @@ import javafx.stage.Stage;
  * Decorator for an existing DrawsEntireScreen implementation, that sets and
  * updates the render-window title with the total time-elapsed over the render.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class TotalTimeElapsedScreenDecorator implements DrawsEntireScreen {

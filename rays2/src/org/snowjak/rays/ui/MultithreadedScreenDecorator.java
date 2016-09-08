@@ -156,7 +156,7 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 	 * Denotes how a {@link MultithreadedScreenDecorator} will split up the
 	 * screen-rendering job.
 	 * 
-	 * @author rr247200
+	 * @author snowjak88
 	 *
 	 */
 	public static enum RenderSplitType {

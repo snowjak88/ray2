@@ -12,10 +12,10 @@ import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
-import org.snowjak.rays.ui.Screen;
+import org.snowjak.rays.ui.BasicScreen;
 
 /**
- * Represents a virtual window onto the {@link World}. A {@link Screen} requires
+ * Represents a virtual window onto the {@link World}. A {@link BasicScreen} requires
  * at least one Camera in order to have a viewpoint to render on the UI.
  * 
  * <p>
@@ -24,7 +24,7 @@ import org.snowjak.rays.ui.Screen;
  * depth-of-field, or other effects.
  * </p>
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public abstract class Camera implements Transformable {

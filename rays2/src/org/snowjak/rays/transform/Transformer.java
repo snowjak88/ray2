@@ -12,7 +12,7 @@ import org.snowjak.rays.intersect.Intersection;
  * Represents a transformation of a set of coordinates from an object-local
  * reference-frame to a global reference-frame, and vice versa.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public interface Transformer {

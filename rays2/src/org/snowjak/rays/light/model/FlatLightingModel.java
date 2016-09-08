@@ -13,7 +13,7 @@ import org.snowjak.rays.shape.Shape;
  * lighting! Instead, every ray simply yields the color of the closest
  * intersected object.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public class FlatLightingModel implements LightingModel {

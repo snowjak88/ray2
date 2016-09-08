@@ -5,7 +5,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 /**
  * Indicates that an object has a {@link ColorScheme} associated with it.
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
 public interface HasColorScheme {
