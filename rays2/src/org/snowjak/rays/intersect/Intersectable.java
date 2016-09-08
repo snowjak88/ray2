@@ -20,7 +20,7 @@ public interface Intersectable {
 	 * 
 	 * @param ray
 	 * @return the list of {@link Intersection}s made by the given Ray on this
-	 *         object, sorted by distance from the ray's origin
+	 *         object
 	 */
 	public <S extends Intersectable> List<Intersection<S>> getIntersections(Ray ray);
 
@@ -30,7 +30,8 @@ public interface Intersectable {
 	 * "behind" the Ray.
 	 * 
 	 * @param ray
-	 * @return
+	 * @return the list of {@link Intersection}s made by the given Ray on this
+	 *         object, including those behind the Ray's origin
 	 */
 	public <S extends Intersectable> List<Intersection<S>> getIntersectionsIncludingBehind(Ray ray);
 

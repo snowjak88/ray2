@@ -3,11 +3,11 @@ package org.snowjak.rays;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.ui.AntialiasingScreenDecorator;
 import org.snowjak.rays.ui.AntialiasingScreenDecorator.AA;
-import org.snowjak.rays.ui.MultithreadedScreenDecorator.RenderSplitType;
 import org.snowjak.rays.ui.CanBeShutdown;
-import org.snowjak.rays.ui.ScreenDrawer;
-import org.snowjak.rays.ui.PixelDrawer;
 import org.snowjak.rays.ui.MultithreadedScreenDecorator;
+import org.snowjak.rays.ui.MultithreadedScreenDecorator.RenderSplitType;
+import org.snowjak.rays.ui.PixelDrawer;
+import org.snowjak.rays.ui.ScreenDrawer;
 
 /**
  * Represents the origination-point for all scene-rendering.

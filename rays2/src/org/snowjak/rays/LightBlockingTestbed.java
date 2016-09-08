@@ -12,6 +12,7 @@ import org.snowjak.rays.shape.csg.Intersect;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
 
+@SuppressWarnings("javadoc")
 public class LightBlockingTestbed {
 
 	public static void main(String[] args) {

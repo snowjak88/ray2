@@ -40,6 +40,16 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 		this(point, normal, ray, intersected, point.distance(ray.getOrigin()));
 	}
 
+	/**
+	 * Construct a new Intersection, explicitly specifying the distance between
+	 * the intersection-point and the ray-origin.
+	 * 
+	 * @param point
+	 * @param normal
+	 * @param ray
+	 * @param intersected
+	 * @param distanceFromRayOrigin
+	 */
 	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, double distanceFromRayOrigin) {
 		this.point = point;
 		this.normal = normal;
@@ -48,6 +58,19 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 		this.intersected = intersected;
 	}
 
+	/**
+	 * Construct a new Intersection, explicitly specifying the various
+	 * ColorSchemes associated with it.
+	 * 
+	 * @param point
+	 * @param normal
+	 * @param ray
+	 * @param intersected
+	 * @param ambientColorScheme
+	 * @param diffuseColorScheme
+	 * @param specularColorScheme
+	 * @param emissiveColorScheme
+	 */
 	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, ColorScheme ambientColorScheme,
 			ColorScheme diffuseColorScheme, ColorScheme specularColorScheme, ColorScheme emissiveColorScheme) {
 		this.point = point;
@@ -61,6 +84,21 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 		this.emissiveColorScheme = emissiveColorScheme;
 	}
 
+	/**
+	 * Create a new Intersection, explicitly specifying the various ColorSchemes
+	 * associated with it as well as the distance between the intersection-point
+	 * and the ray-origin.
+	 * 
+	 * @param point
+	 * @param normal
+	 * @param ray
+	 * @param intersected
+	 * @param distanceFromRayOrigin
+	 * @param ambientColorScheme
+	 * @param diffuseColorScheme
+	 * @param specularColorScheme
+	 * @param emissiveColorScheme
+	 */
 	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, double distanceFromRayOrigin,
 			ColorScheme ambientColorScheme, ColorScheme diffuseColorScheme, ColorScheme specularColorScheme,
 			ColorScheme emissiveColorScheme) {
