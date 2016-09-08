@@ -11,7 +11,7 @@ import javafx.scene.paint.Color;
  * @author snowjak88
  *
  */
-public interface DrawsEntireScreen extends CanBeShutdown {
+public interface ScreenDrawer extends CanBeShutdown {
 
 	/**
 	 * Draw (or redraw) the entire screen. Every pixel in (screenMinX,

@@ -10,9 +10,9 @@ import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 
 /**
- * Renders a {@link DrawsScreenPixel} on several threads at once.
+ * Renders a {@link PixelDrawer} on several threads at once.
  */
-public class MultithreadedScreenDecorator implements DrawsEntireScreen {
+public class MultithreadedScreenDecorator implements ScreenDrawer {
 
 	/**
 	 * If the screen is rendered in regions (see
@@ -21,7 +21,7 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 	 */
 	public static final int REGION_SIDE_LENGTH = 64;
 
-	private DrawsScreenPixel child;
+	private PixelDrawer child;
 
 	private ExecutorService renderingThreadPool;
 
@@ -36,7 +36,7 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 	 * @param renderingThreadCount
 	 * @param splitType
 	 */
-	public MultithreadedScreenDecorator(DrawsScreenPixel child) {
+	public MultithreadedScreenDecorator(PixelDrawer child) {
 		this.child = child;
 		this.renderingThreadPool = Executors
 				.newFixedThreadPool(FastMath.max(Settings.getSingleton().getRenderThreadCount(), 1));

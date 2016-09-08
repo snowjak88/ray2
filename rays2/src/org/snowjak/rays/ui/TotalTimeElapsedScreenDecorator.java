@@ -13,15 +13,15 @@ import javafx.application.Platform;
 import javafx.stage.Stage;
 
 /**
- * Decorator for an existing DrawsEntireScreen implementation, that sets and
+ * Decorator for an existing ScreenDrawer implementation, that sets and
  * updates the render-window title with the total time-elapsed over the render.
  * 
  * @author snowjak88
  *
  */
-public class TotalTimeElapsedScreenDecorator implements DrawsEntireScreen {
+public class TotalTimeElapsedScreenDecorator implements ScreenDrawer {
 
-	private DrawsEntireScreen child;
+	private ScreenDrawer child;
 
 	private Stage screenStage;
 
@@ -38,9 +38,9 @@ public class TotalTimeElapsedScreenDecorator implements DrawsEntireScreen {
 	 * @param screenStage
 	 *            the {@link Stage} containing the render screen
 	 * @param decoratedScreen
-	 *            the {@link DrawsEntireScreen} implementation to decorate
+	 *            the {@link ScreenDrawer} implementation to decorate
 	 */
-	public TotalTimeElapsedScreenDecorator(Stage screenStage, DrawsEntireScreen decoratedScreen) {
+	public TotalTimeElapsedScreenDecorator(Stage screenStage, ScreenDrawer decoratedScreen) {
 		this(screenStage, decoratedScreen, 1, TimeUnit.SECONDS);
 	}
 
@@ -50,13 +50,13 @@ public class TotalTimeElapsedScreenDecorator implements DrawsEntireScreen {
 	 * @param screenStage
 	 *            the {@link Stage} containing the render screen
 	 * @param decoratedScreen
-	 *            the {@link DrawsEntireScreen} implementation to decorate
+	 *            the {@link ScreenDrawer} implementation to decorate
 	 * @param timeUpdateInterval
 	 *            the number of time-units to wait between timer-display updates
 	 * @param intervalUnit
 	 *            the {@link TimeUnit} in which the above interval is expressed
 	 */
-	public TotalTimeElapsedScreenDecorator(Stage screenStage, DrawsEntireScreen decoratedScreen, int timeUpdateInterval,
+	public TotalTimeElapsedScreenDecorator(Stage screenStage, ScreenDrawer decoratedScreen, int timeUpdateInterval,
 			TimeUnit intervalUnit) {
 
 		this.child = decoratedScreen;

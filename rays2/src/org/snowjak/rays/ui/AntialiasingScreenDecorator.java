@@ -11,7 +11,7 @@ import org.snowjak.rays.color.RawColor;
 
 /**
  * Implements a simple antialiasing filter on top of an existing
- * {@link DrawsScreenPixel} implementation.
+ * {@link PixelDrawer} implementation.
  * <p>
  * This Decorator implements a simple box filter. It samples a variety of Rays
  * +/- the central Ray, and combines all the resulting colors into a single
@@ -28,13 +28,13 @@ import org.snowjak.rays.color.RawColor;
  * @author snowjak88
  *
  */
-public class AntialiasingScreenDecorator implements DrawsScreenPixel {
+public class AntialiasingScreenDecorator implements PixelDrawer {
 
 	private AA aaSetting;
 
 	private RealDistribution distribution;
 
-	private DrawsScreenPixel child;
+	private PixelDrawer child;
 
 	private double coordinateDelta;
 
@@ -42,12 +42,12 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 
 	/**
 	 * Create a new AntialiasingScreenDecorator on top of an existing
-	 * {@link DrawsScreenPixel} instance.
+	 * {@link PixelDrawer} instance.
 	 * 
 	 * @param decoratedScreen
 	 *            the existing screen to decorate
 	 */
-	public AntialiasingScreenDecorator(DrawsScreenPixel decoratedScreen) {
+	public AntialiasingScreenDecorator(PixelDrawer decoratedScreen) {
 
 		this.child = decoratedScreen;
 		this.filterSpan = 1;

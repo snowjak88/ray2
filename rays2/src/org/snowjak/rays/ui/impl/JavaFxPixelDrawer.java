@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 import org.snowjak.rays.Renderer.Settings;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.ui.BasicScreen;
-import org.snowjak.rays.ui.DrawsScreenPixel;
+import org.snowjak.rays.ui.PixelDrawer;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -29,7 +29,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 /**
- * A basic implementation of Screen under JavaFX.
+ * A basic implementation of PixelDrawer under JavaFX.
  * <p>
  * This implementation creates a new window into which the Renderer draws the
  * finished image. The window has a context-menu (summoned by right-clicking the
@@ -40,7 +40,7 @@ import javafx.stage.Stage;
  * @author snowjak88
  *
  */
-public class JavaFxScreen extends BasicScreen implements DrawsScreenPixel {
+public class JavaFxPixelDrawer extends BasicScreen implements PixelDrawer {
 
 	private PixelWriter pixels;
 
@@ -51,7 +51,7 @@ public class JavaFxScreen extends BasicScreen implements DrawsScreenPixel {
 	 * 
 	 * @param image
 	 */
-	public JavaFxScreen(Stage screenStage) {
+	public JavaFxPixelDrawer(Stage screenStage) {
 
 		super(Settings.getSingleton().getImageWidth() - 1, Settings.getSingleton().getImageHeight() - 1);
 

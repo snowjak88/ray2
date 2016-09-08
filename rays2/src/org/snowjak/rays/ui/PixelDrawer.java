@@ -13,7 +13,7 @@ import org.snowjak.rays.color.RawColor;
  * @see BasicScreen
  *
  */
-public interface DrawsScreenPixel extends CanBeShutdown {
+public interface PixelDrawer extends CanBeShutdown {
 
 	/**
 	 * @param screenX

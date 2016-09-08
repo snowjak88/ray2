@@ -18,7 +18,7 @@ import org.snowjak.rays.shape.csg.Union;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
-import org.snowjak.rays.ui.impl.JavaFxScreen;
+import org.snowjak.rays.ui.impl.JavaFxPixelDrawer;
 
 import javafx.application.Application;
 import javafx.scene.paint.Color;
@@ -37,7 +37,7 @@ public class RaytracerApp extends Application {
 
 		World world = buildWorld();
 
-		Renderer renderer = new Renderer(new JavaFxScreen(primaryStage));
+		Renderer renderer = new Renderer(new JavaFxPixelDrawer(primaryStage));
 
 		primaryStage.setOnCloseRequest((e) -> {
 			renderer.shutdown();

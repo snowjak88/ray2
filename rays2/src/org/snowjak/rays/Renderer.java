@@ -5,8 +5,8 @@ import org.snowjak.rays.ui.AntialiasingScreenDecorator;
 import org.snowjak.rays.ui.AntialiasingScreenDecorator.AA;
 import org.snowjak.rays.ui.MultithreadedScreenDecorator.RenderSplitType;
 import org.snowjak.rays.ui.CanBeShutdown;
-import org.snowjak.rays.ui.DrawsEntireScreen;
-import org.snowjak.rays.ui.DrawsScreenPixel;
+import org.snowjak.rays.ui.ScreenDrawer;
+import org.snowjak.rays.ui.PixelDrawer;
 import org.snowjak.rays.ui.MultithreadedScreenDecorator;
 
 /**
@@ -17,27 +17,27 @@ import org.snowjak.rays.ui.MultithreadedScreenDecorator;
  */
 public class Renderer implements CanBeShutdown {
 
-	private DrawsEntireScreen rootScreenDrawer;
+	private ScreenDrawer rootScreenDrawer;
 
 	/**
 	 * Create a new Renderer, associated with the specified
-	 * {@link DrawsScreenPixel} implementation.
+	 * {@link PixelDrawer} implementation.
 	 * <p>
 	 * You must supply the implementation-specific pixel-drawer. This Renderer
 	 * will construct the rest of the screen-drawing toolchain automatically.
-	 * (See {@link #getDefaultScreenDrawer(DrawsScreenPixel)}).
+	 * (See {@link #getDefaultScreenDrawer(PixelDrawer)}).
 	 * </p>
 	 * 
 	 * @param pixelDrawerImpl
 	 */
-	public Renderer(DrawsScreenPixel pixelDrawerImpl) {
+	public Renderer(PixelDrawer pixelDrawerImpl) {
 		this.rootScreenDrawer = getDefaultScreenDrawer(pixelDrawerImpl);
 	}
 
 	/**
 	 * Create a new Renderer using only the specified screen-drawing toolchain.
 	 * <p>
-	 * Unlike {@link #Renderer(DrawsScreenPixel)}, this constructor will add
+	 * Unlike {@link #Renderer(PixelDrawer)}, this constructor will add
 	 * none of the default drawing toolchain to your supplied drawing-instance.
 	 * Use this constructor if you need to specify an non-default drawing
 	 * toolchain.
@@ -45,7 +45,7 @@ public class Renderer implements CanBeShutdown {
 	 * 
 	 * @param drawToolchain
 	 */
-	public Renderer(DrawsEntireScreen drawToolchain) {
+	public Renderer(ScreenDrawer drawToolchain) {
 		this.rootScreenDrawer = drawToolchain;
 	}
 
@@ -71,13 +71,13 @@ public class Renderer implements CanBeShutdown {
 	 * <ol>
 	 * <li>{@link MultithreadedScreenDecorator}</li>
 	 * <li>{@link AntialiasingScreenDecorator}</li>
-	 * <li>(your {@link DrawsScreenPixel} implementation)</li>
+	 * <li>(your {@link PixelDrawer} implementation)</li>
 	 * </ol>
 	 * 
 	 * @param pixelDrawerImpl
 	 * @return the constructed drawchain
 	 */
-	public static DrawsEntireScreen getDefaultScreenDrawer(DrawsScreenPixel pixelDrawerImpl) {
+	public static ScreenDrawer getDefaultScreenDrawer(PixelDrawer pixelDrawerImpl) {
 
 		return new MultithreadedScreenDecorator(new AntialiasingScreenDecorator(pixelDrawerImpl));
 	}
