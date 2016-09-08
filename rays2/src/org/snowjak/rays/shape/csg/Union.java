@@ -2,7 +2,6 @@ package org.snowjak.rays.shape.csg;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,15 +44,6 @@ import org.snowjak.rays.shape.Shape;
 public class Union extends Shape {
 
 	private Collection<Shape> children = new LinkedList<>();
-
-	/**
-	 * Create a new Union with no initial child Shapes.
-	 * 
-	 * @param children
-	 */
-	public Union() {
-		this(Collections.emptyList());
-	}
 
 	/**
 	 * Create a new Union of the given child Shapes.
@@ -182,5 +172,17 @@ public class Union extends Shape {
 				this.getChildren().stream().map(s -> s.copy()).collect(Collectors.toCollection(LinkedList::new)));
 
 		return newUnion;
+	}
+
+	@Override
+	public Vector3D getNormalRelativeTo(Vector3D localPoint) {
+
+		return children.parallelStream()
+				.map(s -> s.getIntersections(new Ray(localPoint, s.getLocation().subtract(localPoint).normalize())))
+				.flatMap(li -> li.stream())
+				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
+				.findFirst()
+				.get()
+				.getNormal();
 	}
 }

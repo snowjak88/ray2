@@ -5,8 +5,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.intersect.Intersection;
 
@@ -81,6 +84,21 @@ public class Group extends Shape {
 		newGroup = configureCopy(newGroup);
 
 		return newGroup;
+	}
+
+	@Override
+	public Vector3D getNormalRelativeTo(Vector3D localPoint) {
+
+		Optional<Pair<Shape, Double>> nearestChild = children.parallelStream()
+				.map(s -> new Pair<>(s, localPoint.distance(s.getLocation())))
+				.sorted((p1, p2) -> Double.compare(p1.getValue(), p2.getValue()))
+				.findFirst();
+		if (nearestChild.isPresent()) {
+			Shape child = nearestChild.get().getKey();
+			return child.getNormalRelativeTo(child.worldToLocal(localPoint));
+		}
+
+		return new Sphere().getNormalRelativeTo(localPoint);
 	}
 
 }

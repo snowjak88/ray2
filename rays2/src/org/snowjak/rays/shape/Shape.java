@@ -3,6 +3,7 @@ package org.snowjak.rays.shape;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -66,6 +67,15 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	public Vector3D getLocation() {
 
 		return localToWorld(Vector3D.ZERO);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Optional<Intersection<Shape>> getIntersection(Ray ray) {
+
+		return getIntersections(ray).stream()
+				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
+				.findFirst();
 	}
 
 	@SuppressWarnings("unchecked")

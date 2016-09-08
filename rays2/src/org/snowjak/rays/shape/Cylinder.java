@@ -187,4 +187,11 @@ public class Cylinder extends Shape {
 		return newCylinder;
 	}
 
+	@Override
+	public Vector3D getNormalRelativeTo(Vector3D localPoint) {
+
+		Vector3D normal = localPoint.normalize();
+		return new Vector3D(normal.getX(), 0d, normal.getZ());
+	}
+
 }

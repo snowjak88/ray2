@@ -109,4 +109,11 @@ public class Plane extends Shape {
 		return newPlane;
 	}
 
+	@Override
+	public Vector3D getNormalRelativeTo(Vector3D localPoint) {
+
+		double normalSign = FastMath.signum(localPoint.normalize().dotProduct(Vector3D.PLUS_J));
+		return Vector3D.PLUS_J.scalarMultiply(normalSign).normalize();
+	}
+
 }

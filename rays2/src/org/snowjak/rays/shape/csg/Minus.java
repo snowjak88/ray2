@@ -248,4 +248,14 @@ public class Minus extends Shape {
 		return newMinus;
 	}
 
+	@Override
+	public Vector3D getNormalRelativeTo(Vector3D localPoint) {
+
+		return getIntersections(localToWorld(new Ray(localPoint, localPoint.normalize()))).stream()
+				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
+				.findFirst()
+				.get()
+				.getNormal();
+	}
+
 }

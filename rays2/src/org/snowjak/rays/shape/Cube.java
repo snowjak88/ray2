@@ -1,11 +1,14 @@
 package org.snowjak.rays.shape;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
@@ -106,6 +109,31 @@ public class Cube extends Shape {
 		newCube = configureCopy(newCube);
 
 		return newCube;
+	}
+
+	@Override
+	public Vector3D getNormalRelativeTo(Vector3D localPoint) {
+
+		Vector3D normal = localPoint.normalize();
+		Pair<String, Double> biggestAxis = Arrays
+				.asList(new Pair<>("x", normal.getX()), new Pair<>("y", normal.getY()), new Pair<>("z", normal.getZ()))
+				.stream()
+				.sorted((p1, p2) -> Double.compare(FastMath.abs(p1.getValue()), FastMath.abs(p2.getValue())))
+				.findFirst()
+				.get();
+
+		switch (biggestAxis.getKey()) {
+		case "x":
+			normal = new Vector3D(normal.getX(), 0d, 0d).normalize();
+			break;
+		case "y":
+			normal = new Vector3D(0d, normal.getY(), 0d).normalize();
+			break;
+		case "z":
+			normal = new Vector3D(0d, 0d, normal.getZ()).normalize();
+		}
+
+		return normal;
 	}
 
 }

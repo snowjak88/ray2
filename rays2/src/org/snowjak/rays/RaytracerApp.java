@@ -2,19 +2,22 @@ package org.snowjak.rays;
 
 import java.util.concurrent.Executors;
 
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.camera.BasicCamera;
 import org.snowjak.rays.camera.Camera;
+import org.snowjak.rays.color.BlendColorScheme;
 import org.snowjak.rays.color.CheckerboardColorScheme;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.color.SimpleColorScheme;
+import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.PointLight;
 import org.snowjak.rays.light.model.FogDecoratingLightingModel;
 import org.snowjak.rays.light.model.PhongReflectionLightingModel;
-import org.snowjak.rays.shape.Cylinder;
 import org.snowjak.rays.shape.Plane;
-import org.snowjak.rays.shape.csg.Union;
+import org.snowjak.rays.shape.Sphere;
+import org.snowjak.rays.shape.perturb.NormalPerturber;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
@@ -51,22 +54,15 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
-		Cylinder cylinder1 = new Cylinder(false);
-		ColorScheme cylinderColorScheme = new SimpleColorScheme(Color.YELLOW);
-		cylinderColorScheme.setReflectivity(0.9);
-		cylinderColorScheme.setShininess(0.3);
-		cylinder1.setAmbientColorScheme(cylinderColorScheme);
-		cylinder1.setDiffuseColorScheme(cylinderColorScheme);
-		cylinder1.getTransformers().add(new Scale(0.4, 2d, 0.4));
+		Sphere sphere = new Sphere(1.25);
+		ColorScheme sphereColors = new BlendColorScheme(new SimpleColorScheme(Color.WHITE),
+				new SimpleColorScheme(Color.RED), (v) -> FastMath.abs(Functions.getPerlinNoise(v)));
+		// sphereColors.setReflectivity(0.5);
+		sphere.setAmbientColorScheme(sphereColors);
+		sphere.setDiffuseColorScheme(sphereColors);
 
-		Cylinder cylinder2 = cylinder1.copy();
-		cylinder2.getTransformers().add(new Rotation(0d, 0d, 90d));
-
-		Cylinder cylinder3 = cylinder1.copy();
-		cylinder3.getTransformers().add(new Rotation(90d, 0d, 0d));
-
-		Union union = new Union(cylinder1, cylinder2, cylinder3);
-		world.getShapes().add(union);
+		NormalPerturber normalPerturber = new NormalPerturber((v) -> v, sphere);
+		world.getShapes().add(normalPerturber);
 
 		Plane plane = new Plane();
 		ColorScheme planeColorScheme = new CheckerboardColorScheme(Color.WHITE, Color.NAVY);

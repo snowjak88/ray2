@@ -142,4 +142,10 @@ public class Sphere extends Shape {
 		return sphere;
 	}
 
+	@Override
+	public Vector3D getNormalRelativeTo(Vector3D localPoint) {
+
+		return localPoint.normalize();
+	}
+
 }

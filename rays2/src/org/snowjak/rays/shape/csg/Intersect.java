@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
@@ -156,4 +157,15 @@ public class Intersect extends Shape {
 		return newIntersect;
 	}
 
+	@Override
+	public Vector3D getNormalRelativeTo(Vector3D localPoint) {
+
+		return children.parallelStream()
+				.map(s -> s.getIntersections(new Ray(localPoint, s.getLocation().subtract(localPoint).normalize())))
+				.flatMap(li -> li.stream())
+				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
+				.findFirst()
+				.get()
+				.getNormal();
+	}
 }

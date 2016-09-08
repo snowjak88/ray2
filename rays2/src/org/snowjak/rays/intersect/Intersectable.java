@@ -1,6 +1,7 @@
 package org.snowjak.rays.intersect;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
@@ -13,6 +14,15 @@ import org.snowjak.rays.Ray;
  *
  */
 public interface Intersectable {
+
+	/**
+	 * Determine the closest Intersection where the given {@link Ray} (expressed
+	 * in global coordinates) would intersect this object.
+	 * 
+	 * @param ray
+	 * @return the closest Intersection made by the Ray on this object
+	 */
+	public <S extends Intersectable> Optional<Intersection<S>> getIntersection(Ray ray);
 
 	/**
 	 * Determine where the given {@link Ray} (expressed in global coordinates)
@@ -49,4 +59,14 @@ public interface Intersectable {
 	 *         object
 	 */
 	public boolean isInside(Vector3D point);
+
+	/**
+	 * Given a point {@code localPoint} in object-local coordinates, determine
+	 * the surface-normal at the point on the object's surface nearest to
+	 * {@code localPoint}.
+	 * 
+	 * @param localPoint
+	 * @return the calculated surface-normal
+	 */
+	public Vector3D getNormalRelativeTo(Vector3D localPoint);
 }
