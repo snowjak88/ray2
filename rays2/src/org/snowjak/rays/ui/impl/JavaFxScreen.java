@@ -8,17 +8,18 @@ import javax.imageio.ImageIO;
 
 import org.snowjak.rays.Renderer.Settings;
 import org.snowjak.rays.color.RawColor;
-import org.snowjak.rays.ui.Screen;
+import org.snowjak.rays.ui.BasicScreen;
+import org.snowjak.rays.ui.DrawsScreenPixel;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
@@ -36,10 +37,10 @@ import javafx.stage.Stage;
  * secondary storage in a variety of formats.
  * </p>
  * 
- * @author rr247200
+ * @author snowjak88
  *
  */
-public class JavaFxScreen extends Screen {
+public class JavaFxScreen extends BasicScreen implements DrawsScreenPixel {
 
 	private PixelWriter pixels;
 
@@ -128,6 +129,11 @@ public class JavaFxScreen extends Screen {
 		imageContextMenu.getItems().add(saveImageMenuItem);
 
 		return imageContextMenu;
+	}
+
+	@Override
+	public void shutdown() {
+
 	}
 
 }
