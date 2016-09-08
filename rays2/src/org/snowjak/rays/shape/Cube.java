@@ -14,7 +14,7 @@ import org.snowjak.rays.transform.Translation;
 
 /**
  * Represents a cube, with edges aligned to the primary axes and opposite
- * corners at (0,0,0) and (1,1,1)
+ * corners at (-1,-1,-1) and (1,1,1)
  * 
  * @author snowjak88
  *
@@ -25,14 +25,14 @@ public class Cube extends Shape {
 
 	/**
 	 * Create a new Cube of side-length 1, with edges aligned to the primary
-	 * axes and opposite corners located at (0,0,0) and (1,1,1)
+	 * axes and opposite corners located at (-1,-1,-1) and (1,1,1)
 	 */
 	public Cube() {
 		super();
 		this.planes = new LinkedList<>();
 
 		Plane p = new Plane();
-		p.getTransformers().add(new Rotation(180d, 0d, 0d));
+		p.getTransformers().add(new Translation(0d, -1d, 0d));
 		planes.add(p);
 
 		p = new Plane();
@@ -41,6 +41,7 @@ public class Cube extends Shape {
 
 		p = new Plane();
 		p.getTransformers().add(new Rotation(0d, 0d, -90d));
+		p.getTransformers().add(new Translation(-1d, 0d, 0d));
 		planes.add(p);
 
 		p = new Plane();
@@ -50,6 +51,7 @@ public class Cube extends Shape {
 
 		p = new Plane();
 		p.getTransformers().add(new Rotation(90d, 0d, 0d));
+		p.getTransformers().add(new Translation(0d, 0d, -1d));
 		planes.add(p);
 
 		p = new Plane();
@@ -67,9 +69,9 @@ public class Cube extends Shape {
 		List<Intersection<Shape>> results = planes.parallelStream()
 				.map(p -> p.getIntersectionsIncludingBehind(transformedRay))
 				.flatMap(li -> li.parallelStream())
-				.filter(i -> Double.compare(i.getPoint().getX(), -World.DOUBLE_ERROR) >= 0
-						&& Double.compare(i.getPoint().getY(), -World.DOUBLE_ERROR) >= 0
-						&& Double.compare(i.getPoint().getZ(), -World.DOUBLE_ERROR) >= 0)
+				.filter(i -> Double.compare(i.getPoint().getX() + 1d, -World.DOUBLE_ERROR) >= 0
+						&& Double.compare(i.getPoint().getY() + 1d, -World.DOUBLE_ERROR) >= 0
+						&& Double.compare(i.getPoint().getZ() + 1d, -World.DOUBLE_ERROR) >= 0)
 
 				.filter(i -> Double.compare(i.getPoint().getX() - 1d, World.DOUBLE_ERROR) <= 0
 						&& Double.compare(i.getPoint().getY() - 1d, World.DOUBLE_ERROR) <= 0
@@ -89,18 +91,12 @@ public class Cube extends Shape {
 
 		Vector3D localPoint = worldToLocal(point);
 
-		return (Double.compare(localPoint.getX(), -World.DOUBLE_ERROR) >= 0
-				&& Double.compare(localPoint.getY(), -World.DOUBLE_ERROR) >= 0
-				&& Double.compare(localPoint.getZ(), -World.DOUBLE_ERROR) >= 0)
+		return (Double.compare(localPoint.getX() + 1d, -World.DOUBLE_ERROR) >= 0
+				&& Double.compare(localPoint.getY() + 1d, -World.DOUBLE_ERROR) >= 0
+				&& Double.compare(localPoint.getZ() + 1d, -World.DOUBLE_ERROR) >= 0)
 				&& (Double.compare(localPoint.getX() - 1d, World.DOUBLE_ERROR) <= 0
 						&& Double.compare(localPoint.getY() - 1d, World.DOUBLE_ERROR) <= 0
 						&& Double.compare(localPoint.getZ() - 1d, World.DOUBLE_ERROR) <= 0);
-	}
-
-	@Override
-	public Vector3D getLocation() {
-
-		return localToWorld(new Vector3D(0.5, 0.5, 0.5));
 	}
 
 	@Override
