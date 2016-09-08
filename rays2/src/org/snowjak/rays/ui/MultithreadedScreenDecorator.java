@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.math3.util.FastMath;
+import org.snowjak.rays.Renderer.Settings;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 
@@ -27,29 +28,6 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 	private RenderSplitType splitType;
 
 	/**
-	 * Create a new {@link MultithreadedScreenDecorator} using the default
-	 * number of threads (i.e.,
-	 * {@code Runtime.getRuntime().availableProcessors() - 1}).
-	 * 
-	 * @param child
-	 */
-	public MultithreadedScreenDecorator(DrawsScreenPixel child) {
-
-		this(child, FastMath.max(Runtime.getRuntime().availableProcessors() - 1, 1));
-	}
-
-	/**
-	 * Create a new {@link MultithreadedScreenDecorator} using the specified
-	 * number of rendering threads.
-	 * 
-	 * @param child
-	 * @param renderingThreadCount
-	 */
-	public MultithreadedScreenDecorator(DrawsScreenPixel child, int renderingThreadCount) {
-		this(child, renderingThreadCount, RenderSplitType.REGION);
-	}
-
-	/**
 	 * Create a new {@link MultithreadedScreenDecorator} using the specified
 	 * number of rendering threads and splitting the render-job using the
 	 * specified paradigm.
@@ -58,10 +36,11 @@ public class MultithreadedScreenDecorator implements DrawsEntireScreen {
 	 * @param renderingThreadCount
 	 * @param splitType
 	 */
-	public MultithreadedScreenDecorator(DrawsScreenPixel child, int renderingThreadCount, RenderSplitType splitType) {
+	public MultithreadedScreenDecorator(DrawsScreenPixel child) {
 		this.child = child;
-		this.renderingThreadPool = Executors.newFixedThreadPool(FastMath.max(renderingThreadCount, 1));
-		this.splitType = splitType;
+		this.renderingThreadPool = Executors
+				.newFixedThreadPool(FastMath.max(Settings.getSingleton().getRenderThreadCount(), 1));
+		this.splitType = Settings.getSingleton().getRenderSplitType();
 	}
 
 	@Override

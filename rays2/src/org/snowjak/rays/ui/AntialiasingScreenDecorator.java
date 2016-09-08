@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.util.FastMath;
+import org.snowjak.rays.Renderer.Settings;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 
@@ -29,6 +30,8 @@ import org.snowjak.rays.color.RawColor;
  */
 public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 
+	private AA aaSetting;
+
 	private RealDistribution distribution;
 
 	private DrawsScreenPixel child;
@@ -39,37 +42,27 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 
 	/**
 	 * Create a new AntialiasingScreenDecorator on top of an existing
-	 * {@link DrawsScreenPixel} instance, taking 9x9 samples centered around
-	 * each pixel.
+	 * {@link DrawsScreenPixel} instance.
 	 * 
 	 * @param decoratedScreen
 	 *            the existing screen to decorate
 	 */
 	public AntialiasingScreenDecorator(DrawsScreenPixel decoratedScreen) {
-		this(AA.x8, decoratedScreen);
-	}
-
-	/**
-	 * Create a new AntialiasingScreenDecorator on top of an existing
-	 * {@link DrawsScreenPixel} instance.
-	 * 
-	 * @param samples
-	 *            number of samples per side of the antialiasing box-filter.
-	 *            Default value is {@link AA#x8}
-	 * @param decoratedScreen
-	 *            the existing screen to decorate
-	 */
-	public AntialiasingScreenDecorator(AA samples, DrawsScreenPixel decoratedScreen) {
 
 		this.child = decoratedScreen;
 		this.filterSpan = 1;
-		this.coordinateDelta = filterSpan / ((double) (samples.sampleCount / 2));
+		this.aaSetting = Settings.getSingleton().getAntialiasing();
+		if (aaSetting != AA.OFF)
+			this.coordinateDelta = filterSpan / ((double) (aaSetting.sampleCount / 2));
 
 		this.distribution = new NormalDistribution(0d, 0.5);
 	}
 
 	@Override
 	public Optional<RawColor> getRayColor(int screenX, int screenY, Camera camera) {
+
+		if (aaSetting == AA.OFF)
+			return child.getRayColor(screenX, screenY, camera);
 
 		RawColor totalColor = new RawColor();
 		double totalScale = 0d;
@@ -135,7 +128,10 @@ public class AntialiasingScreenDecorator implements DrawsScreenPixel {
 	 */
 	@SuppressWarnings("javadoc")
 	public static enum AA {
-		x2(3), x4(5), x8(9), x16(17), x32(33);
+		/**
+		 * Turn off antialiasing completely.
+		 */
+		OFF(-1), x2(3), x4(5), x8(9), x16(17), x32(33);
 
 		private int sampleCount;
 

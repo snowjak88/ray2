@@ -1,11 +1,6 @@
 package org.snowjak.rays;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.Executors;
-
-import javax.imageio.ImageIO;
 
 import org.snowjak.rays.camera.BasicCamera;
 import org.snowjak.rays.camera.Camera;
@@ -23,33 +18,14 @@ import org.snowjak.rays.shape.csg.Union;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
-import org.snowjak.rays.ui.AntialiasingScreenDecorator;
-import org.snowjak.rays.ui.AntialiasingScreenDecorator.AA;
-import org.snowjak.rays.ui.BasicScreen;
-import org.snowjak.rays.ui.DrawsEntireScreen;
-import org.snowjak.rays.ui.MultithreadedScreenDecorator;
+import org.snowjak.rays.ui.impl.JavaFxScreen;
 
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 @SuppressWarnings("javadoc")
-public class RaytracerApp extends Application implements Renderer {
-
-	private DrawsEntireScreen screenDrawer;
+public class RaytracerApp extends Application {
 
 	public static void main(String[] args) {
 
@@ -61,71 +37,8 @@ public class RaytracerApp extends Application implements Renderer {
 
 		World world = buildWorld();
 
-		WritableImage image = new WritableImage(800, 500);
-		DrawsEntireScreen screen = new MultithreadedScreenDecorator(
-				new AntialiasingScreenDecorator(AA.x8, new BasicScreen(image, world.getCamera())));
+		Renderer renderer = new Renderer(new JavaFxScreen(primaryStage));
 
-		ImageView imageView = new ImageView(image);
-		Group root = new Group(imageView);
-		Scene scene = new Scene(root, Color.BLACK);
-
-		ContextMenu imageContextMenu = new ContextMenu();
-		MenuItem saveImageMenuItem = new MenuItem("Save...");
-		FileChooser saveFileChooser = new FileChooser();
-		saveFileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-		saveFileChooser.setInitialFileName("image");
-
-		saveFileChooser.getExtensionFilters().add(new ExtensionFilter("png", "*.png"));
-		saveFileChooser.getExtensionFilters().add(new ExtensionFilter("jpeg", "*.jpg"));
-		saveFileChooser.getExtensionFilters().add(new ExtensionFilter("bmp", "*.bmp"));
-		saveImageMenuItem.setOnAction(e -> {
-			imageContextMenu.hide();
-			int selectedIndex = 0;
-			saveFileChooser.setSelectedExtensionFilter(saveFileChooser.getExtensionFilters().get(selectedIndex));
-
-			File saveFile = saveFileChooser.showSaveDialog(primaryStage);
-
-			if (saveFile != null) {
-				String selectedImageFormatName = saveFileChooser.getSelectedExtensionFilter().getDescription();
-
-				BufferedImage bufferedImage = SwingFXUtils.fromFXImage(imageView.getImage(), null);
-				try {
-					ImageIO.write(bufferedImage, selectedImageFormatName, saveFile);
-
-				} catch (IOException e1) {
-					System.err.println("\nUnexpected problem saving the image to the file ["
-							+ saveFile.getAbsolutePath() + "]\nMessage: ");
-					System.err.println(e1.getMessage());
-					e1.printStackTrace(System.err);
-
-					Alert alertDialog = new Alert(AlertType.ERROR,
-							"Unexpected problem saving the image: " + e1.getMessage(), ButtonType.OK);
-
-					alertDialog.showAndWait();
-				}
-			}
-		});
-		imageContextMenu.getItems().add(saveImageMenuItem);
-
-		root.setOnMouseClicked(e -> {
-			switch (e.getButton()) {
-			case SECONDARY:
-				imageContextMenu.show(imageView, e.getScreenX(), e.getScreenY());
-				break;
-			default:
-				imageContextMenu.hide();
-				break;
-			}
-		});
-
-		primaryStage.setScene(scene);
-		primaryStage.setOnCloseRequest(e -> {
-			screen.shutdown();
-			Platform.exit();
-		});
-
-		primaryStage.show();
-		Renderer renderer = this;
 		Executors.newSingleThreadExecutor().submit(() -> renderer.render(world.getCamera()));
 	}
 
@@ -133,7 +46,7 @@ public class RaytracerApp extends Application implements Renderer {
 
 		World world = World.getSingleton();
 
-		Cylinder cylinder1 = new Cylinder(true);
+		Cylinder cylinder1 = new Cylinder(false);
 		ColorScheme cylinderColorScheme = new SimpleColorScheme(Color.YELLOW);
 		cylinderColorScheme.setReflectivity(0.9);
 		cylinderColorScheme.setShininess(0.3);
@@ -169,21 +82,9 @@ public class RaytracerApp extends Application implements Renderer {
 		world.setCamera(camera);
 
 		world.setLightingModel(
-				new FogDecoratingLightingModel(75d, new RawColor(Color.GRAY), new PhongReflectionLightingModel()));
+				new FogDecoratingLightingModel(25d, new RawColor(Color.GRAY), new PhongReflectionLightingModel()));
 
 		return world;
-	}
-
-	@Override
-	public DrawsEntireScreen getScreenDrawer() {
-
-		return screenDrawer;
-
-	}
-
-	public void setScreenDrawer(DrawsEntireScreen screenDrawer) {
-
-		this.screenDrawer = screenDrawer;
 	}
 
 }
