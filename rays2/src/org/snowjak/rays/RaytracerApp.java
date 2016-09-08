@@ -39,6 +39,11 @@ public class RaytracerApp extends Application {
 
 		Renderer renderer = new Renderer(new JavaFxScreen(primaryStage));
 
+		primaryStage.setOnCloseRequest((e) -> {
+			renderer.shutdown();
+			primaryStage.close();
+		});
+
 		Executors.newSingleThreadExecutor().submit(() -> renderer.render(world.getCamera()));
 	}
 
