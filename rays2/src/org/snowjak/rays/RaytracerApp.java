@@ -62,7 +62,7 @@ public class RaytracerApp extends Application {
 		light.getTransformers().add(new Translation(4d, 2.5d, 0d));
 		world.getLights().add(light);
 
-		Camera camera = new Camera(4.0, 30.0);
+		Camera camera = new Camera(4.0, 60.0);
 		camera.getTransformers().add(new Translation(0d, 0.5d, -6d));
 		camera.getTransformers().add(new Rotation(-5d, 0d, 0d));
 		camera.getTransformers().add(new Rotation(0d, 30d, 0d));

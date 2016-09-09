@@ -8,7 +8,6 @@ import static org.apache.commons.math3.util.FastMath.round;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-import org.snowjak.rays.color.BlendColorScheme;
 
 /**
  * Specifies a number of functions, useful for creating complicated effects via

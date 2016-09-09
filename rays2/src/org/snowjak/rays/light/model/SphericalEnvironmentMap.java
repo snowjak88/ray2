@@ -39,7 +39,7 @@ public class SphericalEnvironmentMap implements EnvironmentMap {
 		// pow(v.getZ() + 1d, 2d));
 		// return new Vector2D(v.getX() / m + 0.5, v.getY() / m + 0.5);
 
-		double u = FastMath.atan(v.getZ() / v.getX()) / (2d * FastMath.PI) + 0.5;
+		double u = FastMath.atan2(v.getZ(), v.getX()) / (2d * FastMath.PI) + 0.5;
 
 		return new Vector2D(u, v.getY() * 0.5 + 0.5);
 	}
