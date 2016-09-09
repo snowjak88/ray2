@@ -27,6 +27,9 @@ import org.snowjak.rays.shape.Shape;
  *   original-normal, original-intersection --> updated-normal
  * </pre>
  * 
+ * where {@code original-normal} and {@code original-intersection} are expressed
+ * in global coordinates (relative to the NormalPerturber instance).
+ * 
  * See {@link #DEFAULT_PERTURBATION_FUNCTION}
  * </p>
  * 
@@ -71,15 +74,15 @@ public class NormalPerturber extends Shape {
 
 		return child.getIntersectionsIncludingBehind(worldToLocal(ray))
 				.parallelStream()
+				.map(i -> localToWorld(i))
 				.map(i -> new Intersection<>(i.getPoint(), normalPerturbationFunction.apply(i.getNormal(), i),
 						i.getRay(), i.getIntersected(), i.getDistanceFromRayOrigin(), i.getAmbientColorScheme(),
 						i.getDiffuseColorScheme(), i.getSpecularColorScheme(), i.getEmissiveColorScheme()))
-				.map(i -> localToWorld(i))
 				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
 	@Override
-	public Shape copy() {
+	public NormalPerturber copy() {
 
 		NormalPerturber perturber = new NormalPerturber(normalPerturbationFunction, child.copy());
 		return configureCopy(perturber);
