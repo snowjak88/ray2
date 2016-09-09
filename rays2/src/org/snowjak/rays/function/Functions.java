@@ -1,154 +1,258 @@
 package org.snowjak.rays.function;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.floor;
+import static org.apache.commons.math3.util.FastMath.max;
+import static org.apache.commons.math3.util.FastMath.min;
+import static org.apache.commons.math3.util.FastMath.pow;
+import static org.apache.commons.math3.util.FastMath.round;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Pair;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
+import org.snowjak.rays.color.BlendColorScheme;
 
+/**
+ * Specifies a number of functions, useful for creating complicated effects via
+ * composition with, e.g., a {@link BlendColorScheme}
+ * 
+ * @author snowjak88
+ *
+ */
 public class Functions {
 
-	private static int perlinGradiantSize = 20;
+	private static final int perlinGridSize = 20;
 
-	private static Vector3D[][][] perlinGradiant = null;
+	private static Vector3D[][][] perlinGradiants = null;
 
-	private static Random rnd = new Random(Functions.class.hashCode());
+	private static final double[][] availablePerlinGradiants = new double[][] { { -1, -1, -1 }, { -1, -1, 1 },
+			{ -1, 1, -1 }, { -1, 1, 1 }, { 1, -1, -1 }, { 1, -1, 1 }, { 1, 1, -1 }, { 1, 1, 1 } };
 
-	public static void main(String[] args) {
+	private static Random perlinRnd = new Random();
 
-		NumberFormat fmt = new DecimalFormat("#0.000");
+	/**
+	 * Compute the checkerboard function for the given point.
+	 * <p>
+	 * The checkerboard function implements the following algorithm:
+	 * 
+	 * <pre>
+	 * result = sum ( round(abs(x)), ...y, ...z) MOD 2
+	 * </pre>
+	 * 
+	 * {@code result} will always be in {0, 1}.
+	 * </p>
+	 * 
+	 * @param v
+	 * 
+	 * @return the value of the checkerboard function
+	 */
+	public static double checkerboard(Vector2D v) {
 
-		double minNoise = 1e30, maxNoise = -1e30;
-		int lastPercentage = -1;
+		return checkerboard(v.getX(), v.getY());
+	}
 
-		for (double x = -20; x <= 20d; x += 0.3d) {
-			for (double y = -20; y <= 20d; y += 0.3d) {
-				for (double z = -20; z <= 20d; z += 0.3d) {
-					double noise = getPerlinNoise(x, y, z);
-					minNoise = FastMath.min(minNoise, noise);
-					maxNoise = FastMath.max(maxNoise, noise);
-				}
-			}
+	/**
+	 * Compute the checkerboard function for the given point.
+	 * <p>
+	 * The checkerboard function implements the following algorithm:
+	 * 
+	 * <pre>
+	 * result = sum ( round(abs(x)), ...y, ...z) MOD 2
+	 * </pre>
+	 * 
+	 * {@code result} will always be in {0, 1}.
+	 * </p>
+	 * 
+	 * @param x
+	 * @param y
+	 * 
+	 * @return the value of the checkerboard function
+	 */
+	public static double checkerboard(double x, double y) {
 
-			int percentage = (int) (FastMath.round(((x + 20d) / 40d) * 100d));
-			if (percentage != lastPercentage) {
-				lastPercentage = percentage;
-				System.out.println(percentage + "% complete ... min = " + fmt.format(minNoise) + ", max = "
-						+ fmt.format(maxNoise));
-			}
-		}
+		return checkerboard(x, y, 0d);
+	}
 
-		System.out.println("Across that interval --");
-		System.out.println("Min noise = " + fmt.format(minNoise));
-		System.out.println("Max noise = " + fmt.format(maxNoise));
+	/**
+	 * Compute the checkerboard function for the given point.
+	 * <p>
+	 * The checkerboard function implements the following algorithm:
+	 * 
+	 * <pre>
+	 * result = sum ( round(abs(x)), ...y, ...z) MOD 2
+	 * </pre>
+	 * 
+	 * {@code result} will always be in {0, 1}.
+	 * </p>
+	 * 
+	 * @param v
+	 * 
+	 * @return the value of the checkerboard function
+	 */
+	public static double checkerboard(Vector3D v) {
+
+		return checkerboard(v.getX(), v.getY(), v.getZ());
+	}
+
+	/**
+	 * Compute the checkerboard function for the given point.
+	 * <p>
+	 * The checkerboard function implements the following algorithm:
+	 * 
+	 * <pre>
+	 * result = sum ( round(abs(x)), ...y, ...z) MOD 2
+	 * </pre>
+	 * 
+	 * {@code result} will always be in {0, 1}.
+	 * </p>
+	 * 
+	 * @param x
+	 * @param y
+	 * @param z
+	 * 
+	 * @return the value of the checkerboard function
+	 */
+	public static double checkerboard(double x, double y, double z) {
+
+		long lx = (long) round(abs(x));
+		long ly = (long) round(abs(y));
+		long lz = (long) round(abs(z));
+		return (double) ((lx + ly + lz) % 2);
+	}
+
+	/**
+	 * Computes Perlin noise at the specified point.
+	 * 
+	 * @param v
+	 * @return the computed Perlin noise
+	 */
+	public static double perlinNoise(Vector2D v) {
+
+		return perlinNoise(v.getX(), v.getY());
+	}
+
+	/**
+	 * Computes Perlin noise at the specified point.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return the computed Perlin noise
+	 */
+	public static double perlinNoise(double x, double y) {
+
+		return perlinNoise(x, y, 0d);
+	}
+
+	/**
+	 * Computes Perlin noise at the specified point.
+	 * 
+	 * @param v
+	 * @return the computed Perlin noise
+	 */
+	public static double perlinNoise(Vector3D v) {
+
+		return perlinNoise(v.getX(), v.getY(), v.getZ());
+	}
+
+	/**
+	 * Computes Perlin noise at the specified point.
+	 * 
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return the computed Perlin noise
+	 */
+	public static double perlinNoise(double x, double y, double z) {
+
+		if (perlinGradiants == null)
+			initializePerlinGradiants();
+
+		long maxExtent = perlinGridSize - 2l;
+
+		while (x <= (double) -maxExtent)
+			x += (double) perlinGridSize;
+		while (x >= (double) maxExtent)
+			x -= (double) perlinGridSize;
+
+		while (y <= (double) -maxExtent)
+			y += (double) perlinGridSize;
+		while (y >= (double) maxExtent)
+			y -= (double) perlinGridSize;
+
+		while (z <= (double) -maxExtent)
+			z += (double) perlinGridSize;
+		while (z >= (double) maxExtent)
+			z -= (double) perlinGridSize;
+
+		x = abs(x);
+		y = abs(y);
+		z = abs(z);
+
+		double fx = x - floor(x), fy = y - floor(y), fz = z - floor(z);
+
+		int x0 = (int) x, x1 = (int) x + 1;
+		int y0 = (int) y, y1 = (int) y + 1;
+		int z0 = (int) z, z1 = (int) z + 1;
+
+		double lerp_x_y0_z0 = linearInterpolate(getPerlinDotProduct(x0, y0, z0, x, y, z),
+				getPerlinDotProduct(x1, y0, z0, x, y, z), fx);
+		double lerp_x_y1_z0 = linearInterpolate(getPerlinDotProduct(x0, y1, z0, x, y, z),
+				getPerlinDotProduct(x1, y1, z0, x, y, z), fx);
+		double lerp_x_y0_z1 = linearInterpolate(getPerlinDotProduct(x0, y0, z1, x, y, z),
+				getPerlinDotProduct(x1, y0, z1, x, y, z), fx);
+		double lerp_x_y1_z1 = linearInterpolate(getPerlinDotProduct(x0, y1, z1, x, y, z),
+				getPerlinDotProduct(x1, y1, z1, x, y, z), fx);
+
+		double lerp_y_z0 = linearInterpolate(lerp_x_y0_z0, lerp_x_y1_z0, fy);
+		double lerp_y_z1 = linearInterpolate(lerp_x_y0_z1, lerp_x_y1_z1, fy);
+
+		double lerp = linearInterpolate(lerp_y_z0, lerp_y_z1, fz);
+
+		return lerp;
+	}
+
+	private static double getPerlinDotProduct(int gx, int gy, int gz, double px, double py, double pz) {
+
+		Vector3D displacement = new Vector3D(px - (double) gx, py - (double) gy, pz - (double) gz);
+		return displacement.dotProduct(perlinGradiants[gx][gy][gz]);
+	}
+
+	private static void initializePerlinGradiants() {
+
+		perlinGradiants = new Vector3D[perlinGridSize][perlinGridSize][perlinGridSize];
+		for (int i = 0; i < perlinGradiants.length; i++)
+			for (int j = 0; j < perlinGradiants[i].length; j++)
+				for (int k = 0; k < perlinGradiants[i][j].length; k++)
+					perlinGradiants[i][j][k] = new Vector3D(availablePerlinGradiants[perlinRnd.nextInt(8)]);
 
 	}
 
-	public static double getCheckerboard(Vector3D point) {
+	/**
+	 * Computers a linear-interpolation between two values.
+	 * 
+	 * @param v1
+	 * @param v2
+	 * @param w
+	 * @return the new linear-interpolation function
+	 */
+	public static double linearInterpolate(double v1, double v2, double w) {
 
-		return getCheckerboard(point.getX(), point.getY(), point.getZ());
+		return v1 * (1d - w) + v2 * w;
 	}
 
-	public static double getCheckerboard(double x, double y, double z) {
-
-		long xPart = (long) FastMath.round(x);
-		long yPart = (long) FastMath.round(y);
-		long zPart = (long) FastMath.round(z);
-
-		if ((xPart + yPart + zPart) % 2 == 0)
-			return 0d;
-		else
-			return 1d;
-	}
-
-	public static double getPerlinNoise(double x, double y, double z) {
-
-		if (perlinGradiant == null)
-			initializeGradiants();
-
-		double noiseX = abs((x / (double) perlinGradiantSize)
-				- floor(x / (double) perlinGradiantSize) * ((double) perlinGradiantSize));
-		double noiseY = abs((y / (double) perlinGradiantSize)
-				- floor(y / (double) perlinGradiantSize) * ((double) perlinGradiantSize));
-		double noiseZ = abs((z / (double) perlinGradiantSize)
-				- floor(z / (double) perlinGradiantSize) * ((double) perlinGradiantSize));
-
-		double x0 = floor(noiseX), x1 = floor(noiseX) + 1d;
-		double y0 = floor(noiseY), y1 = floor(noiseY) + 1d;
-		double z0 = floor(noiseZ), z1 = floor(noiseZ) + 1d;
-		double wx = noiseX - x0;
-		double wy = noiseY - y0;
-		double wz = noiseZ - z0;
-
-		List<Pair<Vector3D, Double>> dotProducts = Arrays
-				.asList(new Vector3D(x0, y0, z0), new Vector3D(x1, y0, z0), new Vector3D(x0, y1, z0),
-						new Vector3D(x1, y1, z0), new Vector3D(x0, y0, z1), new Vector3D(x1, y0, z1),
-						new Vector3D(x0, y1, z1), new Vector3D(x1, y1, z1))
-				.stream()
-				.map(v -> new Pair<>(v,
-						perlinGradiant[(int) v.getX() % perlinGradiantSize][(int) v.getY()
-								% perlinGradiantSize][(int) v.getZ() % perlinGradiantSize]
-										.dotProduct(new Vector3D(noiseX, noiseY, noiseZ).subtract(v))))
-				.collect(Collectors.toCollection(ArrayList::new));
-
-		double[] xDotProducts, yDotProducts, zDotProducts;
-		zDotProducts = new double[2];
-		for (int iz = 0; iz <= 1; iz++) {
-			yDotProducts = new double[2];
-			for (int iy = 0; iy <= 1; iy++) {
-				xDotProducts = new double[2];
-				for (int ix = 0; ix <= 1; ix++) {
-					xDotProducts[ix] = dotProducts.get(iz * 4 + iy * 2 + ix).getValue();
-				}
-
-				yDotProducts[iy] = linearInterpolate(xDotProducts[0], xDotProducts[1], wx);
-			}
-
-			zDotProducts[iz] = linearInterpolate(yDotProducts[0], yDotProducts[1], wy);
-		}
-
-		double noise = linearInterpolate(zDotProducts[0], zDotProducts[1], wz);
-		return noise;
-	}
-
-	private static double linearInterpolate(double v1, double v2, double w) {
-
-		return v1 * w + v2 * (1d - w);
-	}
-
+	/**
+	 * Evaluates the smoothstep function.
+	 * 
+	 * @param x
+	 * @param edge1
+	 * @param edge2
+	 * @return the computed smoothstep value
+	 */
 	public static double smoothstep(double x, double edge1, double edge2) {
 
-		x = FastMath.min(FastMath.max((x - edge1) / (edge2 - edge1), 0d), 1d);
-		return (3d * FastMath.pow(x, 2d)) - (2d * FastMath.pow(x, 3d));
+		x = min(max((x - edge1) / (edge2 - edge1), 0d), 1d);
+		return (3d * pow(x, 2d)) - (2d * pow(x, 3d));
 	}
 
-	public static double getPerlinNoise(Vector3D point) {
-
-		return getPerlinNoise(point.getX(), point.getY(), point.getZ());
-	}
-
-	private static void randomSeed(long seed) {
-
-		rnd = new Random(seed);
-	}
-
-	private static void initializeGradiants() {
-
-		perlinGradiant = new Vector3D[perlinGradiantSize][perlinGradiantSize][perlinGradiantSize];
-
-		for (int x = 0; x < perlinGradiant.length; x++)
-			for (int y = 0; y < perlinGradiant[x].length; y++)
-				for (int z = 0; z < perlinGradiant[x][y].length; z++) {
-					perlinGradiant[x][y][z] = new Vector3D(rnd.nextGaussian(), rnd.nextGaussian(), rnd.nextGaussian())
-							.normalize();
-				}
-	}
 }
