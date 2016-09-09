@@ -69,11 +69,12 @@ public class NormalPerturber extends Shape {
 	@Override
 	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
 
-		return child.getIntersectionsIncludingBehind(ray)
+		return child.getIntersectionsIncludingBehind(worldToLocal(ray))
 				.parallelStream()
 				.map(i -> new Intersection<>(i.getPoint(), normalPerturbationFunction.apply(i.getNormal(), i),
 						i.getRay(), i.getIntersected(), i.getDistanceFromRayOrigin(), i.getAmbientColorScheme(),
 						i.getDiffuseColorScheme(), i.getSpecularColorScheme(), i.getEmissiveColorScheme()))
+				.map(i -> localToWorld(i))
 				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
