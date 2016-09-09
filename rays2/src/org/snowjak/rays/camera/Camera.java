@@ -5,11 +5,15 @@ import static org.apache.commons.math3.util.FastMath.toRadians;
 
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
+import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
 import org.snowjak.rays.ui.BasicScreen;
@@ -27,7 +31,7 @@ import org.snowjak.rays.ui.BasicScreen;
  * @author snowjak88
  *
  */
-public abstract class Camera implements Transformable {
+public class Camera implements Transformable {
 
 	private double cameraFrameSideLength, cameraDepth, cameraFieldOfView;
 
@@ -58,7 +62,17 @@ public abstract class Camera implements Transformable {
 	 * @param cameraY
 	 * @return the amount of light reaching the camera at this point
 	 */
-	public abstract Optional<RawColor> shootRay(double cameraX, double cameraY);
+	public Optional<RawColor> shootRay(double cameraX, double cameraY) {
+
+		Vector3D location = new Vector3D(cameraX, cameraY, 0.0);
+		Vector3D direction = location.subtract(getEyeLocation()).normalize();
+
+		Ray ray = localToWorld(new Ray(location, direction));
+		List<Intersection<Shape>> intersections = World.getSingleton().getShapeIntersections(ray);
+
+		return World.getSingleton().getLightingModel().determineRayColor(ray, intersections);
+
+	}
 
 	public Deque<Transformer> getTransformers() {
 

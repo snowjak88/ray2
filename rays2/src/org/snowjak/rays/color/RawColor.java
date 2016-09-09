@@ -86,6 +86,20 @@ public class RawColor {
 	}
 
 	/**
+	 * Linearly interpolate between this {@link RawColor} and another based on
+	 * the given fraction (after being clamped to [0,1]).
+	 * 
+	 * @param otherColor
+	 * @param fraction
+	 * @return (1 - fraction) of this color + (fraction) of otherColor
+	 */
+	public RawColor linearlyInterpolate(RawColor otherColor, double fraction) {
+
+		fraction = FastMath.max(FastMath.min(fraction, 1d), 0d);
+		return this.multiplyScalar(1d - fraction).add(otherColor.multiplyScalar(fraction));
+	}
+
+	/**
 	 * @return a {@link Color} with this RawColor's values of R,G,B clamped to
 	 *         [0,1]
 	 */
