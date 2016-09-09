@@ -22,14 +22,14 @@ import org.snowjak.rays.color.BlendColorScheme;
  */
 public class Functions {
 
-	private static final int perlinGridSize = 20;
+	private static int perlinGridSize = 20;
 
 	private static Vector3D[][][] perlinGradiants = null;
 
 	private static final double[][] availablePerlinGradiants = new double[][] { { -1, -1, -1 }, { -1, -1, 1 },
 			{ -1, 1, -1 }, { -1, 1, 1 }, { 1, -1, -1 }, { 1, -1, 1 }, { 1, 1, -1 }, { 1, 1, 1 } };
 
-	private static Random perlinRnd = new Random();
+	private static Random perlinRnd = new Random(Functions.class.hashCode());
 
 	/**
 	 * Compute the checkerboard function for the given point.
@@ -119,6 +119,19 @@ public class Functions {
 		long ly = (long) round(abs(y));
 		long lz = (long) round(abs(z));
 		return (double) ((lx + ly + lz) % 2);
+	}
+
+	/**
+	 * Update the Perlin-noise grid-size (default = 20).
+	 * 
+	 * @param gridSize
+	 */
+	public static void setPerlinGridSize(int gridSize) {
+
+		if (perlinGridSize != gridSize)
+			perlinGradiants = null;
+		perlinGridSize = gridSize;
+
 	}
 
 	/**
@@ -224,7 +237,8 @@ public class Functions {
 		for (int i = 0; i < perlinGradiants.length; i++)
 			for (int j = 0; j < perlinGradiants[i].length; j++)
 				for (int k = 0; k < perlinGradiants[i][j].length; k++)
-					perlinGradiants[i][j][k] = new Vector3D(availablePerlinGradiants[perlinRnd.nextInt(8)]);
+					perlinGradiants[i][j][k] = new Vector3D(
+							availablePerlinGradiants[perlinRnd.nextInt(availablePerlinGradiants.length)]);
 
 	}
 
