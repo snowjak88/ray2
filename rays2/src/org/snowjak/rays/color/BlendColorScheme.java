@@ -5,6 +5,8 @@ import java.util.function.Function;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 
+import javafx.scene.paint.Color;
+
 /**
  * A BlendColorScheme blends between two colors based on the provided function.
  * <p>
@@ -25,6 +27,10 @@ public class BlendColorScheme extends ColorScheme {
 	private ColorScheme color1, color2;
 
 	private Function<Vector3D, Double> selectionFunction;
+
+	public BlendColorScheme(Color color1, Color color2, Function<Vector3D, Double> selectionFunction) {
+		this(new SimpleColorScheme(color1), new SimpleColorScheme(color2), selectionFunction);
+	}
 
 	/**
 	 * Construct a new {@link BlendColorScheme}, varying between color1 and
