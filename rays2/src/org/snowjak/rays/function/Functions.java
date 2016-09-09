@@ -157,6 +157,122 @@ public class Functions {
 	}
 
 	/**
+	 * Calculate a turbulent-noise function using a number of aggregated
+	 * Perlin-noise values.
+	 * <p>
+	 * The final turbulence value is calculated as:
+	 * 
+	 * <pre>
+	 *                          Perlin( b^i * X )
+	 * noise = sum (i = 1->N) ---------------------
+	 *                                a^i
+	 * </pre>
+	 * 
+	 * where {@code X} = the 3D point in question, {@code a} = "smoothness
+	 * parameter" (by default, 2), {@code b} = "scaling factor" (some power of
+	 * 2), and {@code N} = the number of octaves to use
+	 * </p>
+	 * 
+	 * @param point
+	 * @param octaves
+	 * @return the calculated turbulent-noise value
+	 */
+	public static double turbulence(Vector2D point, int octaves) {
+
+		return turbulence(point.getX(), point.getY(), octaves);
+	}
+
+	/**
+	 * Calculate a turbulent-noise function using a number of aggregated
+	 * Perlin-noise values.
+	 * <p>
+	 * The final turbulence value is calculated as:
+	 * 
+	 * <pre>
+	 *                          Perlin( b^i * X )
+	 * noise = sum (i = 1->N) ---------------------
+	 *                                a^i
+	 * </pre>
+	 * 
+	 * where {@code X} = the 3D point in question, {@code a} = "smoothness
+	 * parameter" (by default, 2), {@code b} = "scaling factor" (some power of
+	 * 2), and {@code N} = the number of octaves to use
+	 * </p>
+	 * 
+	 * @param x
+	 * @param y
+	 * @param octaves
+	 * @return the calculated turbulent-noise value
+	 */
+	public static double turbulence(double x, double y, int octaves) {
+
+		return turbulence(x, y, 0d, octaves);
+	}
+
+	/**
+	 * Calculate a turbulent-noise function using a number of aggregated
+	 * Perlin-noise values.
+	 * <p>
+	 * The final turbulence value is calculated as:
+	 * 
+	 * <pre>
+	 *                          Perlin( b^i * X )
+	 * noise = sum (i = 1->N) ---------------------
+	 *                                a^i
+	 * </pre>
+	 * 
+	 * where {@code X} = the 3D point in question, {@code a} = "smoothness
+	 * parameter" (by default, 2), {@code b} = "scaling factor" (some power of
+	 * 2), and {@code N} = the number of octaves to use
+	 * </p>
+	 * 
+	 * @param point
+	 * @param octaves
+	 * @return the calculated turbulent-noise value
+	 */
+	public static double turbulence(Vector3D point, int octaves) {
+
+		return turbulence(point.getX(), point.getY(), point.getZ(), octaves);
+	}
+
+	/**
+	 * Calculate a turbulent-noise function using a number of aggregated
+	 * Perlin-noise values.
+	 * <p>
+	 * The final turbulence value is calculated as:
+	 * 
+	 * <pre>
+	 *                          Perlin( b^i * X )
+	 * noise = sum (i = 1->N) ---------------------
+	 *                                a^i
+	 * </pre>
+	 * 
+	 * where {@code X} = the 3D point in question, {@code a} = "smoothness
+	 * parameter" (by default, 2), {@code b} = "scaling factor" (some power of
+	 * 2), and {@code N} = the number of octaves to use
+	 * </p>
+	 * 
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param octaves
+	 * @return the calculated turbulent-noise value
+	 */
+	public static double turbulence(double x, double y, double z, int octaves) {
+
+		if (octaves < 0)
+			throw new IllegalArgumentException("octaves cannot be < 0 -- argument given = " + octaves);
+
+		double finalNoise = 0d;
+		for (int i = 1; i <= octaves; i++) {
+			finalNoise += perlinNoise(x * pow(2d, (double) i), y * pow(2d, (double) i), z * pow(2d, (double) i))
+					/ pow(2d, (double) i);
+		}
+
+		return finalNoise;
+	}
+
+	/**
 	 * Computers a linear-interpolation between two values.
 	 * 
 	 * @param v1

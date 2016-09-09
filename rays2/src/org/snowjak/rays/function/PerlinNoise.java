@@ -22,7 +22,7 @@ public class PerlinNoise {
 	private final double[][] availablePerlinGradiants = new double[][] { { -1, -1, -1 }, { -1, -1, 1 }, { -1, 1, -1 },
 			{ -1, 1, 1 }, { 1, -1, -1 }, { 1, -1, 1 }, { 1, 1, -1 }, { 1, 1, 1 } };
 
-	private Random perlinRnd = new Random(Functions.class.hashCode());
+	private Random perlinRnd = new Random();
 
 	private static PerlinNoise INSTANCE = null;
 
