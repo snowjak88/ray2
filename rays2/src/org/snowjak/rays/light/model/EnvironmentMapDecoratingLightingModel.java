@@ -64,15 +64,6 @@ public class EnvironmentMapDecoratingLightingModel implements LightingModel {
 	public static interface EnvironmentMap {
 
 		/**
-		 * Convert the provided image coordinates to a world vector,
-		 * representing an eye-vector from (0,0,0) to "infinite" distance.
-		 * 
-		 * @param uv
-		 * @return the equivalent look-vector in world coordinates
-		 */
-		public Vector3D convert(Vector2D uv);
-
-		/**
 		 * Convert the provided look-vector (in world coordinates) to the
 		 * corresponding image location.
 		 * 

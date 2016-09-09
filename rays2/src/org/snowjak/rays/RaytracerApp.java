@@ -3,7 +3,6 @@ package org.snowjak.rays;
 import java.util.concurrent.Executors;
 
 import org.snowjak.rays.Renderer.Settings;
-import org.snowjak.rays.camera.BasicCamera;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.RawColor;
@@ -63,14 +62,15 @@ public class RaytracerApp extends Application {
 		light.getTransformers().add(new Translation(4d, 2.5d, 0d));
 		world.getLights().add(light);
 
-		Camera camera = new BasicCamera(4.0, 35.0);
+		Camera camera = new Camera(4.0, 30.0);
 		camera.getTransformers().add(new Translation(0d, 0.5d, -6d));
 		camera.getTransformers().add(new Rotation(-5d, 0d, 0d));
 		camera.getTransformers().add(new Rotation(0d, 30d, 0d));
 		world.setCamera(camera);
 
 		world.setLightingModel(new EnvironmentMapDecoratingLightingModel(
-				new SphericalEnvironmentMap(new Image("spherical-map-field.jpg")), new PhongReflectionLightingModel()));
+				new SphericalEnvironmentMap(new Image("resources/images/spherical-map-field2.jpg")),
+				new PhongReflectionLightingModel()));
 
 		return world;
 	}
