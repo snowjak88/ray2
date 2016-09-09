@@ -2,14 +2,12 @@ package org.snowjak.rays;
 
 import java.util.concurrent.Executors;
 
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.camera.BasicCamera;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.BlendColorScheme;
-import org.snowjak.rays.color.CheckerboardColorScheme;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.RawColor;
-import org.snowjak.rays.color.SimpleColorScheme;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.PointLight;
@@ -19,7 +17,6 @@ import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Sphere;
 import org.snowjak.rays.shape.perturb.NormalPerturber;
 import org.snowjak.rays.transform.Rotation;
-import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.impl.JavaFxPixelDrawer;
 
@@ -55,17 +52,19 @@ public class RaytracerApp extends Application {
 		World world = World.getSingleton();
 
 		Sphere sphere = new Sphere(1.25);
-		ColorScheme sphereColors = new BlendColorScheme(new SimpleColorScheme(Color.WHITE),
-				new SimpleColorScheme(Color.RED), (v) -> FastMath.abs(Functions.getPerlinNoise(v)));
-		// sphereColors.setReflectivity(0.5);
+		ColorScheme sphereColors = new BlendColorScheme(Color.WHITE, Color.RED, (v) -> Functions.perlinNoise(v));
+		sphereColors.setReflectivity(0.5);
 		sphere.setAmbientColorScheme(sphereColors);
 		sphere.setDiffuseColorScheme(sphereColors);
 
-		NormalPerturber normalPerturber = new NormalPerturber((v) -> v, sphere);
+		NormalPerturber normalPerturber = new NormalPerturber((v, i) -> {
+			double fraction = Functions.perlinNoise(i.getPoint());
+			return new Vector3D((1d - fraction), v, fraction, i.getRay().getVector()).normalize();
+		}, sphere);
 		world.getShapes().add(normalPerturber);
 
 		Plane plane = new Plane();
-		ColorScheme planeColorScheme = new CheckerboardColorScheme(Color.WHITE, Color.NAVY);
+		ColorScheme planeColorScheme = new BlendColorScheme(Color.WHITE, Color.NAVY, (v) -> Functions.checkerboard(v));
 		planeColorScheme.setReflectivity(0.75);
 		plane.setAmbientColorScheme(planeColorScheme);
 		plane.setDiffuseColorScheme(planeColorScheme);
