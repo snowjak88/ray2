@@ -1,13 +1,10 @@
 package org.snowjak.rays.function;
 
 import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.floor;
 import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.round;
-
-import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -21,15 +18,6 @@ import org.snowjak.rays.color.BlendColorScheme;
  *
  */
 public class Functions {
-
-	private static int perlinGridSize = 20;
-
-	private static Vector3D[][][] perlinGradiants = null;
-
-	private static final double[][] availablePerlinGradiants = new double[][] { { -1, -1, -1 }, { -1, -1, 1 },
-			{ -1, 1, -1 }, { -1, 1, 1 }, { 1, -1, -1 }, { 1, -1, 1 }, { 1, 1, -1 }, { 1, 1, 1 } };
-
-	private static Random perlinRnd = new Random(Functions.class.hashCode());
 
 	/**
 	 * Compute the checkerboard function for the given point.
@@ -122,19 +110,6 @@ public class Functions {
 	}
 
 	/**
-	 * Update the Perlin-noise grid-size (default = 20).
-	 * 
-	 * @param gridSize
-	 */
-	public static void setPerlinGridSize(int gridSize) {
-
-		if (perlinGridSize != gridSize)
-			perlinGradiants = null;
-		perlinGridSize = gridSize;
-
-	}
-
-	/**
 	 * Computes Perlin noise at the specified point.
 	 * 
 	 * @param v
@@ -178,68 +153,7 @@ public class Functions {
 	 */
 	public static double perlinNoise(double x, double y, double z) {
 
-		if (perlinGradiants == null)
-			initializePerlinGradiants();
-
-		long maxExtent = perlinGridSize - 2l;
-
-		while (x <= (double) -maxExtent)
-			x += (double) perlinGridSize;
-		while (x >= (double) maxExtent)
-			x -= (double) perlinGridSize;
-
-		while (y <= (double) -maxExtent)
-			y += (double) perlinGridSize;
-		while (y >= (double) maxExtent)
-			y -= (double) perlinGridSize;
-
-		while (z <= (double) -maxExtent)
-			z += (double) perlinGridSize;
-		while (z >= (double) maxExtent)
-			z -= (double) perlinGridSize;
-
-		x = abs(x);
-		y = abs(y);
-		z = abs(z);
-
-		double fx = x - floor(x), fy = y - floor(y), fz = z - floor(z);
-
-		int x0 = (int) x, x1 = (int) x + 1;
-		int y0 = (int) y, y1 = (int) y + 1;
-		int z0 = (int) z, z1 = (int) z + 1;
-
-		double lerp_x_y0_z0 = linearInterpolate(getPerlinDotProduct(x0, y0, z0, x, y, z),
-				getPerlinDotProduct(x1, y0, z0, x, y, z), fx);
-		double lerp_x_y1_z0 = linearInterpolate(getPerlinDotProduct(x0, y1, z0, x, y, z),
-				getPerlinDotProduct(x1, y1, z0, x, y, z), fx);
-		double lerp_x_y0_z1 = linearInterpolate(getPerlinDotProduct(x0, y0, z1, x, y, z),
-				getPerlinDotProduct(x1, y0, z1, x, y, z), fx);
-		double lerp_x_y1_z1 = linearInterpolate(getPerlinDotProduct(x0, y1, z1, x, y, z),
-				getPerlinDotProduct(x1, y1, z1, x, y, z), fx);
-
-		double lerp_y_z0 = linearInterpolate(lerp_x_y0_z0, lerp_x_y1_z0, fy);
-		double lerp_y_z1 = linearInterpolate(lerp_x_y0_z1, lerp_x_y1_z1, fy);
-
-		double lerp = linearInterpolate(lerp_y_z0, lerp_y_z1, fz);
-
-		return lerp;
-	}
-
-	private static double getPerlinDotProduct(int gx, int gy, int gz, double px, double py, double pz) {
-
-		Vector3D displacement = new Vector3D(px - (double) gx, py - (double) gy, pz - (double) gz);
-		return displacement.dotProduct(perlinGradiants[gx][gy][gz]);
-	}
-
-	private static void initializePerlinGradiants() {
-
-		perlinGradiants = new Vector3D[perlinGridSize][perlinGridSize][perlinGridSize];
-		for (int i = 0; i < perlinGradiants.length; i++)
-			for (int j = 0; j < perlinGradiants[i].length; j++)
-				for (int k = 0; k < perlinGradiants[i][j].length; k++)
-					perlinGradiants[i][j][k] = new Vector3D(
-							availablePerlinGradiants[perlinRnd.nextInt(availablePerlinGradiants.length)]);
-
+		return PerlinNoise.getSingleton().perlinNoise(x, y, z);
 	}
 
 	/**
