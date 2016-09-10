@@ -61,8 +61,8 @@ public class Translation implements Transformer {
 
 		return new Intersection<S>(localToWorld(intersection.getPoint()), intersection.getNormal(),
 				localToWorld(intersection.getRay()), intersection.getIntersected(),
-				intersection.getAmbientColorScheme(), intersection.getDiffuseColorScheme(),
-				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
+				intersection.getDiffuseColorScheme(), intersection.getSpecularColorScheme(),
+				intersection.getEmissiveColorScheme());
 	}
 
 	@Override
@@ -70,8 +70,8 @@ public class Translation implements Transformer {
 
 		return new Intersection<S>(worldToLocal(intersection.getPoint()), intersection.getNormal(),
 				worldToLocal(intersection.getRay()), intersection.getIntersected(),
-				intersection.getAmbientColorScheme(), intersection.getDiffuseColorScheme(),
-				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
+				intersection.getDiffuseColorScheme(), intersection.getSpecularColorScheme(),
+				intersection.getEmissiveColorScheme());
 	}
 
 	@Override

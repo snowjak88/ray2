@@ -121,24 +121,20 @@ public class Cylinder extends Shape {
 			// Remember that a circle is x^2 + y^2 = r^2
 			// or, for points inside the circle:
 			// x^2 + y^2 <= r^2
-			results.addAll(minusYCap.getIntersectionsIncludingBehind(localRay)
-					.parallelStream()
+			results.addAll(minusYCap.getIntersectionsIncludingBehind(localRay).parallelStream()
 					.filter(i -> Double.compare(
 							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
 					.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
-							getAmbientColorScheme(), getDiffuseColorScheme(), getSpecularColorScheme(),
-							getEmissiveColorScheme()))
+							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme()))
 					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
 		if (isPlusYCapped) {
-			results.addAll(plusYCap.getIntersectionsIncludingBehind(localRay)
-					.parallelStream()
+			results.addAll(plusYCap.getIntersectionsIncludingBehind(localRay).parallelStream()
 					.filter(i -> Double.compare(
 							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
 					.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
-							getAmbientColorScheme(), getDiffuseColorScheme(), getSpecularColorScheme(),
-							getEmissiveColorScheme()))
+							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme()))
 					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
@@ -158,8 +154,8 @@ public class Cylinder extends Shape {
 			double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
 			normal = normal.scalarMultiply(normalSign);
 
-			results.add(new Intersection<Shape>(intersectionPoint1, normal, localRay, this, getAmbientColorScheme(),
-					getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme()));
+			results.add(new Intersection<Shape>(intersectionPoint1, normal, localRay, this, getDiffuseColorScheme(),
+					getSpecularColorScheme(), getEmissiveColorScheme()));
 		}
 
 		if (onlyOneSolution && results.size() == 1)
@@ -171,8 +167,8 @@ public class Cylinder extends Shape {
 			double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
 			normal = normal.scalarMultiply(normalSign);
 
-			results.add(new Intersection<Shape>(intersectionPoint2, normal, localRay, this, getAmbientColorScheme(),
-					getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme()));
+			results.add(new Intersection<Shape>(intersectionPoint2, normal, localRay, this, getDiffuseColorScheme(),
+					getSpecularColorScheme(), getEmissiveColorScheme()));
 		}
 
 		return results.parallelStream().map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));

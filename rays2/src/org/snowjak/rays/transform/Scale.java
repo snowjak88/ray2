@@ -46,15 +46,13 @@ public class Scale implements Transformer {
 	@Override
 	public Ray localToWorld(Ray ray) {
 
-		return new Ray(localToWorld(ray.getOrigin()), localToWorld(ray.getVector()),
-				ray.getRecursiveLevel());
+		return new Ray(localToWorld(ray.getOrigin()), localToWorld(ray.getVector()), ray.getRecursiveLevel());
 	}
 
 	@Override
 	public Ray worldToLocal(Ray ray) {
 
-		return new Ray(worldToLocal(ray.getOrigin()), worldToLocal(ray.getVector()),
-				ray.getRecursiveLevel());
+		return new Ray(worldToLocal(ray.getOrigin()), worldToLocal(ray.getVector()), ray.getRecursiveLevel());
 	}
 
 	@Override
@@ -62,9 +60,8 @@ public class Scale implements Transformer {
 
 		return new Intersection<S>(localToWorld(intersection.getPoint()),
 				localToWorld(intersection.getNormal()).normalize(), localToWorld(intersection.getRay()),
-				intersection.getIntersected(), intersection.getAmbientColorScheme(),
-				intersection.getDiffuseColorScheme(), intersection.getSpecularColorScheme(),
-				intersection.getEmissiveColorScheme());
+				intersection.getIntersected(), intersection.getDiffuseColorScheme(),
+				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
 	}
 
 	@Override
@@ -72,8 +69,7 @@ public class Scale implements Transformer {
 
 		return new Intersection<S>(worldToLocal(intersection.getPoint()),
 				worldToLocal(intersection.getNormal()).normalize(), worldToLocal(intersection.getRay()),
-				intersection.getIntersected(),
-				intersection.getAmbientColorScheme(), intersection.getDiffuseColorScheme(),
+				intersection.getIntersected(), intersection.getDiffuseColorScheme(),
 				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
 	}
 

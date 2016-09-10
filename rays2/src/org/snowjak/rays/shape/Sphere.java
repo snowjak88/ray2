@@ -22,23 +22,10 @@ import org.snowjak.rays.intersect.Intersection;
  */
 public class Sphere extends Shape {
 
-	private double radius;
-
 	/**
 	 * Create a Sphere of radius {@code 1.0}
 	 */
 	public Sphere() {
-		this(1d);
-	}
-
-	/**
-	 * Create a Sphere of a given radius.
-	 * 
-	 * @param radius
-	 */
-	public Sphere(double radius) {
-		super();
-		this.radius = radius;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -71,7 +58,7 @@ public class Sphere extends Shape {
 		// r = sphere's radius
 		//
 		// Now -- if d > r, then this ray does *not* intersect this sphere!
-		double r2 = pow(radius, 2d);
+		double r2 = pow(1d, 2d);
 		if (Double.compare(d2, r2) > 0)
 			return Collections.emptyList();
 		//
@@ -110,25 +97,21 @@ public class Sphere extends Shape {
 		List<Intersection<Shape>> results = new LinkedList<>();
 
 		if (Double.compare(FastMath.abs(intersectionDistance1), World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere1 = transformedRay.getVector()
-					.scalarMultiply(intersectionDistance1)
+			Vector3D intersectPointOnSphere1 = transformedRay.getVector().scalarMultiply(intersectionDistance1)
 					.add(transformedRay.getOrigin());
 
 			Vector3D normal1 = intersectPointOnSphere1.normalize();
 			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, transformedRay, this,
-					this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
-					this.getEmissiveColorScheme())));
+					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme())));
 		}
 
 		if (Double.compare(FastMath.abs(intersectionDistance2), World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere2 = transformedRay.getVector()
-					.scalarMultiply(intersectionDistance2)
+			Vector3D intersectPointOnSphere2 = transformedRay.getVector().scalarMultiply(intersectionDistance2)
 					.add(transformedRay.getOrigin());
 
 			Vector3D normal2 = intersectPointOnSphere2.normalize();
 			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this,
-					this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
-					this.getEmissiveColorScheme())));
+					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme())));
 		}
 
 		return results;
@@ -137,7 +120,7 @@ public class Sphere extends Shape {
 	@Override
 	public Sphere copy() {
 
-		Sphere sphere = new Sphere(this.radius);
+		Sphere sphere = new Sphere();
 		sphere = configureCopy(sphere);
 		return sphere;
 	}

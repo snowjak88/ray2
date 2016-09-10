@@ -24,7 +24,7 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 
 	private S intersected;
 
-	private ColorScheme ambientColorScheme, diffuseColorScheme, specularColorScheme, emissiveColorScheme;
+	private ColorScheme diffuseColorScheme, specularColorScheme, emissiveColorScheme;
 
 	/**
 	 * Create a new Intersection using (expressed in global coordinates) the
@@ -71,14 +71,13 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	 * @param specularColorScheme
 	 * @param emissiveColorScheme
 	 */
-	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, ColorScheme ambientColorScheme,
-			ColorScheme diffuseColorScheme, ColorScheme specularColorScheme, ColorScheme emissiveColorScheme) {
+	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, ColorScheme diffuseColorScheme,
+			ColorScheme specularColorScheme, ColorScheme emissiveColorScheme) {
 		this.point = point;
 		this.normal = normal;
 		this.distanceFromRayOrigin = point.distance(ray.getOrigin());
 		this.ray = ray;
 		this.intersected = intersected;
-		this.ambientColorScheme = ambientColorScheme;
 		this.diffuseColorScheme = diffuseColorScheme;
 		this.specularColorScheme = specularColorScheme;
 		this.emissiveColorScheme = emissiveColorScheme;
@@ -100,14 +99,12 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	 * @param emissiveColorScheme
 	 */
 	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, double distanceFromRayOrigin,
-			ColorScheme ambientColorScheme, ColorScheme diffuseColorScheme, ColorScheme specularColorScheme,
-			ColorScheme emissiveColorScheme) {
+			ColorScheme diffuseColorScheme, ColorScheme specularColorScheme, ColorScheme emissiveColorScheme) {
 		this.point = point;
 		this.normal = normal;
 		this.distanceFromRayOrigin = distanceFromRayOrigin;
 		this.ray = ray;
 		this.intersected = intersected;
-		this.ambientColorScheme = ambientColorScheme;
 		this.diffuseColorScheme = diffuseColorScheme;
 		this.specularColorScheme = specularColorScheme;
 		this.emissiveColorScheme = emissiveColorScheme;
@@ -164,18 +161,6 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	public void setDiffuseColorScheme(ColorScheme diffuseColorScheme) {
 
 		this.diffuseColorScheme = diffuseColorScheme;
-	}
-
-	@Override
-	public ColorScheme getAmbientColorScheme() {
-
-		return ambientColorScheme;
-	}
-
-	@Override
-	public void setAmbientColorScheme(ColorScheme ambientColorScheme) {
-
-		this.ambientColorScheme = ambientColorScheme;
 	}
 
 	@Override

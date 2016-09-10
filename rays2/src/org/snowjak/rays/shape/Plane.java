@@ -74,8 +74,7 @@ public class Plane extends Shape {
 			Vector3D normal = Vector3D.PLUS_J.scalarMultiply(normalSign).normalize();
 
 			results.add(localToWorld(new Intersection<Shape>(intersectionPoint, normal, transformedRay, this,
-					this.getAmbientColorScheme(), this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
-					this.getEmissiveColorScheme())));
+					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme())));
 
 		}
 

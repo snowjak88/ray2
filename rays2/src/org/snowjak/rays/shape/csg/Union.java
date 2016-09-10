@@ -62,7 +62,6 @@ public class Union extends Shape {
 	public Union(Collection<Shape> children) {
 		super();
 		this.children.addAll(children);
-		setAmbientColorScheme(null);
 		setDiffuseColorScheme(null);
 		setSpecularColorScheme(null);
 		setEmissiveColorScheme(null);
@@ -79,8 +78,7 @@ public class Union extends Shape {
 		// flatten that list of lists into a single list of intersections,
 		// and sort it by distance.
 		List<Intersection<Shape>> intersections = children.parallelStream()
-				.map(s -> s.getIntersectionsIncludingBehind(transformedRay))
-				.flatMap(l -> l.parallelStream())
+				.map(s -> s.getIntersectionsIncludingBehind(transformedRay)).flatMap(l -> l.parallelStream())
 				.map(i -> localToWorld(i))
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
@@ -135,8 +133,6 @@ public class Union extends Shape {
 			//
 			// Has this Union been given its own definitive ColorSchemes, which
 			// will override those of its children?
-			ColorScheme ambient = (this.getAmbientColorScheme() != null) ? this.getAmbientColorScheme()
-					: i.getAmbientColorScheme();
 			ColorScheme diffuse = (this.getDiffuseColorScheme() != null) ? this.getDiffuseColorScheme()
 					: i.getDiffuseColorScheme();
 			ColorScheme specular = (this.getSpecularColorScheme() != null) ? this.getSpecularColorScheme()
@@ -144,8 +140,7 @@ public class Union extends Shape {
 			ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
 					: i.getEmissiveColorScheme();
 
-			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, ambient, diffuse, specular,
-					emissive);
+			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive);
 		}).collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
 	}
 
@@ -181,8 +176,6 @@ public class Union extends Shape {
 				.map(s -> s.getIntersections(new Ray(localPoint, s.getLocation().subtract(localPoint).normalize())))
 				.flatMap(li -> li.stream())
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.findFirst()
-				.get()
-				.getNormal();
+				.findFirst().get().getNormal();
 	}
 }

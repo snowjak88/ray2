@@ -51,7 +51,6 @@ public class Minus extends Shape {
 		super();
 		this.minuend = minuend;
 		this.subtrahends.addAll(children);
-		this.setAmbientColorScheme(null);
 		this.setDiffuseColorScheme(null);
 		this.setSpecularColorScheme(null);
 		this.setEmissiveColorScheme(null);
@@ -69,8 +68,7 @@ public class Minus extends Shape {
 		// If it doesn't intersect the Minuend, then there's no point in testing
 		// all our subtrahends as well.
 		List<Intersection<Shape>> childIntersections = minuend.getIntersectionsIncludingBehind(localRay)
-				.parallelStream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.parallelStream().filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
 				.collect(Collectors.toCollection(LinkedList::new));
 
 		if (childIntersections.isEmpty())
@@ -83,8 +81,7 @@ public class Minus extends Shape {
 		// Literally: get the list of Intersections for each subtrahend,
 		// flat-map those lists into a single list of Intersections.
 
-		childIntersections.addAll(subtrahends.parallelStream()
-				.map(s -> s.getIntersectionsIncludingBehind(localRay))
+		childIntersections.addAll(subtrahends.parallelStream().map(s -> s.getIntersectionsIncludingBehind(localRay))
 				.flatMap(li -> li.stream())
 				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
 				.collect(Collectors.toCollection(ArrayList::new)));
@@ -167,9 +164,8 @@ public class Minus extends Shape {
 						// HOWEVER -- we need to flip the reported normal.
 						results.add(new Intersection<Shape>(currentIntersect.getPoint(),
 								currentIntersect.getNormal().negate(), currentIntersect.getRay(),
-								currentIntersect.getIntersected(), currentIntersect.getAmbientColorScheme(),
-								currentIntersect.getDiffuseColorScheme(), currentIntersect.getSpecularColorScheme(),
-								currentIntersect.getEmissiveColorScheme()));
+								currentIntersect.getIntersected(), currentIntersect.getDiffuseColorScheme(),
+								currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme()));
 					} else {
 						//
 						// No! either we're still in at least one subtrahend, or
@@ -206,8 +202,6 @@ public class Minus extends Shape {
 			//
 			// Has this Intersect been given its own definitive ColorSchemes,
 			// which will override those of its children?
-			ColorScheme ambient = (this.getAmbientColorScheme() != null) ? this.getAmbientColorScheme()
-					: i.getAmbientColorScheme();
 			ColorScheme diffuse = (this.getDiffuseColorScheme() != null) ? this.getDiffuseColorScheme()
 					: i.getDiffuseColorScheme();
 			ColorScheme specular = (this.getSpecularColorScheme() != null) ? this.getSpecularColorScheme()
@@ -215,8 +209,7 @@ public class Minus extends Shape {
 			ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
 					: i.getEmissiveColorScheme();
 
-			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, ambient, diffuse, specular,
-					emissive);
+			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive);
 		}).map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
 
 	}
@@ -233,8 +226,7 @@ public class Minus extends Shape {
 
 	private List<Shape> getContainingSubtrahends(Vector3D point) {
 
-		return subtrahends.parallelStream()
-				.filter(s -> s.isInside(point))
+		return subtrahends.parallelStream().filter(s -> s.isInside(point))
 				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
@@ -253,9 +245,7 @@ public class Minus extends Shape {
 
 		return getIntersections(localToWorld(new Ray(localPoint, localPoint.normalize()))).stream()
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.findFirst()
-				.get()
-				.getNormal();
+				.findFirst().get().getNormal();
 	}
 
 }

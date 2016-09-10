@@ -12,26 +12,6 @@ public interface HasColorScheme {
 
 	/**
 	 * @param worldCoord
-	 * @return this object's ambient color for the given global location
-	 */
-	public default RawColor getAmbient(Vector3D worldCoord) {
-
-		return getAmbientColorScheme().getColorForWorld(worldCoord);
-	}
-
-	/**
-	 * @param worldX
-	 * @param worldY
-	 * @param worldZ
-	 * @return this object's ambient color for the given global location
-	 */
-	public default RawColor getAmbient(double worldX, double worldY, double worldZ) {
-
-		return getAmbientColorScheme().getColorForWorld(worldX, worldY, worldZ);
-	}
-
-	/**
-	 * @param worldCoord
 	 * @return this object's diffuse color for the given global location
 	 */
 	public default RawColor getDiffuse(Vector3D worldCoord) {
@@ -103,18 +83,6 @@ public interface HasColorScheme {
 	public void setDiffuseColorScheme(ColorScheme diffuseColorScheme);
 
 	/**
-	 * @return this object's ambient {@link ColorScheme}
-	 */
-	public ColorScheme getAmbientColorScheme();
-
-	/**
-	 * Set this object's ambient {@link ColorScheme}.
-	 * 
-	 * @param ambientColorScheme
-	 */
-	public void setAmbientColorScheme(ColorScheme ambientColorScheme);
-
-	/**
 	 * @return this object's specular {@link ColorScheme}
 	 */
 	public ColorScheme getSpecularColorScheme();
@@ -138,5 +106,4 @@ public interface HasColorScheme {
 	 */
 	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme);
 
-	
 }

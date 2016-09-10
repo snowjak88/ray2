@@ -70,8 +70,7 @@ public class Cube extends Shape {
 		Ray transformedRay = worldToLocal(ray);
 
 		List<Intersection<Shape>> results = planes.parallelStream()
-				.map(p -> p.getIntersectionsIncludingBehind(transformedRay))
-				.flatMap(li -> li.parallelStream())
+				.map(p -> p.getIntersectionsIncludingBehind(transformedRay)).flatMap(li -> li.parallelStream())
 				.filter(i -> Double.compare(i.getPoint().getX() + 1d, -World.DOUBLE_ERROR) >= 0
 						&& Double.compare(i.getPoint().getY() + 1d, -World.DOUBLE_ERROR) >= 0
 						&& Double.compare(i.getPoint().getZ() + 1d, -World.DOUBLE_ERROR) >= 0)
@@ -81,10 +80,8 @@ public class Cube extends Shape {
 						&& Double.compare(i.getPoint().getZ() - 1d, World.DOUBLE_ERROR) <= 0)
 
 				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
-						getAmbientColorScheme(), getDiffuseColorScheme(), getSpecularColorScheme(),
-						getEmissiveColorScheme()))
-				.map(i -> localToWorld(i))
-				.collect(Collectors.toCollection(LinkedList::new));
+						getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme()))
+				.map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
 
 		return results;
 	}
@@ -117,10 +114,8 @@ public class Cube extends Shape {
 		Vector3D normal = localPoint.normalize();
 		Pair<String, Double> biggestAxis = Arrays
 				.asList(new Pair<>("x", normal.getX()), new Pair<>("y", normal.getY()), new Pair<>("z", normal.getZ()))
-				.stream()
-				.sorted((p1, p2) -> Double.compare(FastMath.abs(p1.getValue()), FastMath.abs(p2.getValue())))
-				.findFirst()
-				.get();
+				.stream().sorted((p1, p2) -> Double.compare(FastMath.abs(p1.getValue()), FastMath.abs(p2.getValue())))
+				.findFirst().get();
 
 		switch (biggestAxis.getKey()) {
 		case "x":

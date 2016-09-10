@@ -47,8 +47,8 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 
 	private Deque<Transformer> transformers = new LinkedList<>();
 
-	private ColorScheme ambientColorScheme = DEFAULT_COLOR_SCHEME, diffuseColorScheme = DEFAULT_COLOR_SCHEME,
-			specularColorScheme = DEFAULT_SPECULAR_COLOR_SCHEME, emissiveColorScheme = DEFAULT_EMISSIVE_COLOR_SCHEME;
+	private ColorScheme diffuseColorScheme = DEFAULT_COLOR_SCHEME, specularColorScheme = DEFAULT_SPECULAR_COLOR_SCHEME,
+			emissiveColorScheme = DEFAULT_EMISSIVE_COLOR_SCHEME;
 
 	/**
 	 * Default, no-action constructor.
@@ -110,19 +110,9 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 		return !(getIntersections(new Ray(point, centerToPoint.normalize())).isEmpty());
 	}
 
-	public ColorScheme getAmbientColorScheme() {
-
-		return ambientColorScheme;
-	}
-
 	public ColorScheme getDiffuseColorScheme() {
 
 		return diffuseColorScheme;
-	}
-
-	public void setAmbientColorScheme(ColorScheme ambientColorScheme) {
-
-		this.ambientColorScheme = ambientColorScheme;
 	}
 
 	public void setDiffuseColorScheme(ColorScheme diffuseColorScheme) {
@@ -165,7 +155,6 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	 */
 	protected <T extends Shape> T configureCopy(T copy) {
 
-		copy.setAmbientColorScheme(this.getAmbientColorScheme().copy());
 		copy.setDiffuseColorScheme(this.getDiffuseColorScheme().copy());
 		copy.setSpecularColorScheme(this.getSpecularColorScheme().copy());
 		copy.setEmissiveColorScheme(this.getEmissiveColorScheme().copy());

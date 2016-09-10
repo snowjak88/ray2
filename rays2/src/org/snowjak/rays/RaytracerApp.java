@@ -50,10 +50,9 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
-		Shape sphere = new Sphere(1d);
+		Shape sphere = new Sphere();
 		ColorScheme sphereColors = new SimpleColorScheme(Color.WHITE);
 		sphereColors.setReflectivity(0.95);
-		sphere.setAmbientColorScheme(sphereColors);
 		sphere.setDiffuseColorScheme(sphereColors);
 		world.getShapes().add(sphere);
 
