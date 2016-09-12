@@ -19,7 +19,7 @@ import org.snowjak.rays.shape.Shape;
  * @author snowjak88
  *
  */
-public class PhongReflectionLightingModel implements LightingModel {
+public class PhongLightingModel implements LightingModel {
 
 	@Override
 	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
@@ -34,7 +34,8 @@ public class PhongReflectionLightingModel implements LightingModel {
 		// And we only care about the first (closest) intersection that isn't
 		// too close.
 		Optional<Intersection<Shape>> firstIntersect = intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0).findFirst();
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.findFirst();
 		if (!firstIntersect.isPresent())
 			return Optional.empty();
 		Intersection<Shape> intersect = firstIntersect.get();
@@ -44,12 +45,11 @@ public class PhongReflectionLightingModel implements LightingModel {
 		RawColor intersectSpecularColor = intersect.getSpecular(intersect.getPoint());
 		RawColor intersectEmissiveColor = intersect.getEmissive(intersect.getPoint());
 		double shininess = intersect.getDiffuseColorScheme().getShininess(intersect.getPoint());
-		double reflectivity = intersect.getDiffuseColorScheme().getReflectivity(intersect.getPoint());
 
 		//
 		// totalX = total light of type X seen by this Ray
-		RawColor totalAmbient = new RawColor(), totalReflection = new RawColor(), totalDiffuse = new RawColor(),
-				totalSpecular = new RawColor(), totalEmissive = new RawColor();
+		RawColor totalAmbient = new RawColor(), totalDiffuse = new RawColor(), totalSpecular = new RawColor(),
+				totalEmissive = new RawColor();
 
 		//
 		//
@@ -139,17 +139,6 @@ public class PhongReflectionLightingModel implements LightingModel {
 		}
 
 		//
-		//
-		// ... and partially a function of the light reflected on the surface
-		// from somewhere else.
-		Optional<RawColor> shapeReflectionColor = getReflectiveShapeDiffuseColor(intersect);
-
-		if (shapeReflectionColor.isPresent()) {
-			totalDiffuse = totalDiffuse.multiplyScalar(1d - reflectivity);
-			totalReflection = totalReflection.add(shapeReflectionColor.get());
-		}
-
-		//
 		// If a shape is giving off emissive light, then that emissive light is
 		// simply added to everything else.
 		totalEmissive = intersectEmissiveColor;
@@ -158,35 +147,9 @@ public class PhongReflectionLightingModel implements LightingModel {
 		//
 		// Finally, combine all the different kinds of light into a single
 		// total.
-		RawColor totalColor = totalAmbient.add(totalReflection).add(totalDiffuse).add(totalSpecular).add(totalEmissive);
+		RawColor totalColor = totalAmbient.add(totalDiffuse).add(totalSpecular).add(totalEmissive);
 
 		return Optional.of(totalColor);
-	}
-
-	private Optional<RawColor> getReflectiveShapeDiffuseColor(Intersection<Shape> intersection) {
-
-		double shapeReflectivity = intersection.getDiffuseColorScheme().getReflectivity(intersection.getPoint());
-
-		Ray originalRay = intersection.getRay();
-
-		if (originalRay.getRecursiveLevel() >= World.MAX_RAY_RECURSION || Double.compare(shapeReflectivity, 0d) <= 0)
-			return Optional.empty();
-
-		Vector3D intersectPoint = intersection.getPoint();
-		Vector3D eyeVector = intersection.getRay().getOrigin().subtract(intersectPoint);
-		Vector3D reflectedEyeVector = getReflection(eyeVector.negate().normalize(), intersection.getNormal())
-				.normalize();
-
-		Ray reflectedRay = new Ray(intersectPoint, reflectedEyeVector, originalRay.getRecursiveLevel() + 1);
-		List<Intersection<Shape>> intersections = World.getSingleton().getShapeIntersections(reflectedRay);
-		Optional<RawColor> reflection = World.getSingleton().getLightingModel().determineRayColor(reflectedRay,
-				intersections);
-
-		RawColor reflectedColor = new RawColor();
-		if (reflection.isPresent())
-			reflectedColor = reflection.get().multiplyScalar(shapeReflectivity);
-
-		return Optional.of(reflectedColor);
 	}
 
 	private Vector3D getReflection(Vector3D v, Vector3D normal) {
