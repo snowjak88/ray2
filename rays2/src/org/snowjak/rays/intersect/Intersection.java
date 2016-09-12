@@ -4,6 +4,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.HasColorScheme;
+import org.snowjak.rays.material.Material;
 
 /**
  * Represents a point of contact between an object (i.e., an
@@ -25,6 +26,8 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	private S intersected;
 
 	private ColorScheme diffuseColorScheme, specularColorScheme, emissiveColorScheme;
+
+	private Material leavingMaterial, enteringMaterial;
 
 	/**
 	 * Create a new Intersection using (expressed in global coordinates) the
@@ -70,9 +73,12 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	 * @param diffuseColorScheme
 	 * @param specularColorScheme
 	 * @param emissiveColorScheme
+	 * @param leavingMaterial
+	 * @param enteringMaterial
 	 */
 	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, ColorScheme diffuseColorScheme,
-			ColorScheme specularColorScheme, ColorScheme emissiveColorScheme) {
+			ColorScheme specularColorScheme, ColorScheme emissiveColorScheme, Material leavingMaterial,
+			Material enteringMaterial) {
 		this.point = point;
 		this.normal = normal;
 		this.distanceFromRayOrigin = point.distance(ray.getOrigin());
@@ -81,6 +87,8 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 		this.diffuseColorScheme = diffuseColorScheme;
 		this.specularColorScheme = specularColorScheme;
 		this.emissiveColorScheme = emissiveColorScheme;
+		this.leavingMaterial = leavingMaterial;
+		this.enteringMaterial = enteringMaterial;
 	}
 
 	/**
@@ -97,9 +105,12 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	 * @param diffuseColorScheme
 	 * @param specularColorScheme
 	 * @param emissiveColorScheme
+	 * @param leavingMaterial
+	 * @param enteringMaterial
 	 */
 	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, double distanceFromRayOrigin,
-			ColorScheme diffuseColorScheme, ColorScheme specularColorScheme, ColorScheme emissiveColorScheme) {
+			ColorScheme diffuseColorScheme, ColorScheme specularColorScheme, ColorScheme emissiveColorScheme,
+			Material leavingMaterial, Material enteringMaterial) {
 		this.point = point;
 		this.normal = normal;
 		this.distanceFromRayOrigin = distanceFromRayOrigin;
@@ -108,6 +119,8 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 		this.diffuseColorScheme = diffuseColorScheme;
 		this.specularColorScheme = specularColorScheme;
 		this.emissiveColorScheme = emissiveColorScheme;
+		this.leavingMaterial = leavingMaterial;
+		this.enteringMaterial = enteringMaterial;
 	}
 
 	/**
@@ -185,5 +198,23 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme) {
 
 		this.emissiveColorScheme = emissiveColorScheme;
+	}
+
+	/**
+	 * @return the Material that this Intersection is leaving (proceeding along
+	 *         the Ray from its origin)
+	 */
+	public Material getLeavingMaterial() {
+
+		return leavingMaterial;
+	}
+
+	/**
+	 * @return the Material that this Intersection is entering (proceeding along
+	 *         the Ray from its origin)
+	 */
+	public Material getEnteringMaterial() {
+
+		return enteringMaterial;
 	}
 }

@@ -12,6 +12,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Group;
 import org.snowjak.rays.shape.Shape;
 
@@ -65,6 +66,7 @@ public class Union extends Shape {
 		setDiffuseColorScheme(null);
 		setSpecularColorScheme(null);
 		setEmissiveColorScheme(null);
+		setMaterial(null);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -78,7 +80,8 @@ public class Union extends Shape {
 		// flatten that list of lists into a single list of intersections,
 		// and sort it by distance.
 		List<Intersection<Shape>> intersections = children.parallelStream()
-				.map(s -> s.getIntersectionsIncludingBehind(transformedRay)).flatMap(l -> l.parallelStream())
+				.map(s -> s.getIntersectionsIncludingBehind(transformedRay))
+				.flatMap(l -> l.parallelStream())
 				.map(i -> localToWorld(i))
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
@@ -88,38 +91,124 @@ public class Union extends Shape {
 
 		//
 		//
-		// Scan through the list of Intersections.
-		// We are interested in those corresponding to overlapping Shapes --
-		// specifically, we want to get the Intersections at the beginning and
-		// end of each overlapping group.
+		//
+		Material unionOverrideMaterial = getMaterial();
+		//
+		//
+		//
 		List<Intersection<Shape>> results = new LinkedList<>();
 		Set<Shape> currentlyIn = new HashSet<>();
+		int intersectCounter = 0;
 		for (Intersection<Shape> currentIntersect : intersections) {
 
+			intersectCounter++;
 			//
-			// Each Intersection represents a point at which we cross a Shape
+			//
+			// We want to ensure that each Material can blend smoothly with the
+			// next Material on this ray-path.
+			// So -- will this Intersection's Material blend into another?
+			Material newMaterial = null;
+			Material oldMaterial = null;
+			if (unionOverrideMaterial == null) {
+				//
+				// This Union does not have a Material of its own.
+				// Therefore, this Intersection marks the start of a blend from
+				// one Material to another.
+				//
+				if (intersectCounter < intersections.size()) {
+					Material nextMaterial = intersections.get(intersectCounter).getIntersected().getMaterial();
+					Vector3D nextPoint = intersections.get(intersectCounter).getPoint();
+					newMaterial = Material.blend(currentIntersect.getIntersected().getMaterial(),
+							currentIntersect.getPoint(), nextMaterial, nextPoint);
+				} else {
+					newMaterial = Material.AIR;
+				}
+
+				if (intersectCounter > 1) {
+					Material previousMaterial = intersections.get(intersectCounter - 2).getIntersected().getMaterial();
+					Vector3D previousPoint = intersections.get(intersectCounter - 2).getPoint();
+					oldMaterial = Material.blend(previousMaterial, previousPoint,
+							currentIntersect.getIntersected().getMaterial(), currentIntersect.getPoint());
+				} else {
+					oldMaterial = Material.AIR;
+				}
+			} else {
+				//
+				// Because this Union has a Material of its own, that Material
+				// will override other Materials.
+				newMaterial = getMaterial();
+				oldMaterial = getMaterial();
+			}
+
+			//
+			// Each Intersection marks the point at which we cross a shape
 			// boundary.
-			//
-			// At each point: are we crossing *into* or *out of* that Shape?
+			// With the current intersection, are we entering or leaving the
+			// reported shape?
 			if (currentlyIn.contains(currentIntersect.getIntersected())) {
 				//
-				// We are in this Shape, so we're leaving it now.
+				// Leaving a shape!
 				currentlyIn.remove(currentIntersect.getIntersected());
 				//
-				// Does this mean that we've left all Shapes behind? So we're
-				// out of the overlapping group?
-				if (currentlyIn.isEmpty())
-					results.add(currentIntersect);
+				// Now -- only if this Union has an overriding Material do we
+				// care about culling interior Intersections.
+				//
+				if (unionOverrideMaterial != null) {
+					//
+					// Since we're culling interior Intersections -- is this
+					// Intersection completely interior? Are we still inside of
+					// other child-shapes?
+					if (!currentlyIn.isEmpty())
+						// No! We're transitioning out of all child-shapes!
+						// Record this Intersection
+						results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
+								currentIntersect.getRay(), currentIntersect.getIntersected(),
+								currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
+								currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
+								oldMaterial, newMaterial));
+				} else {
+					//
+					// We are *not* culling interior Intersections.
+					// So add this Intersection to the list!
+					results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
+							currentIntersect.getRay(), currentIntersect.getIntersected(),
+							currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
+							currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
+							oldMaterial, newMaterial));
+				}
 
 			} else {
 				//
-				// We are not yet in this Shape, crossing into it now.
+				// Entering a shape!
 				//
-				// Are we just starting an overlapping group?
-				if (currentlyIn.isEmpty())
-					results.add(currentIntersect);
+				// Are we culling interior Intersections?
+				if (unionOverrideMaterial != null) {
+					//
+					// Yes!
+					// Is this intersection interior?
+					if (currentlyIn.isEmpty()) {
+						// This intersection is *not* interior.
+						// So add it to the list!
+						results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
+								currentIntersect.getRay(), currentIntersect.getIntersected(),
+								currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
+								currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
+								oldMaterial, newMaterial));
+					}
+				} else {
+					//
+					// We're not culling interior Intersections.
+					// So add this to the list.
+					results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
+							currentIntersect.getRay(), currentIntersect.getIntersected(),
+							currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
+							currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
+							oldMaterial, newMaterial));
+				}
+
 				currentlyIn.add(currentIntersect.getIntersected());
 			}
+
 		}
 
 		//
@@ -140,7 +229,8 @@ public class Union extends Shape {
 			ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
 					: i.getEmissiveColorScheme();
 
-			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive);
+			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive,
+					i.getLeavingMaterial(), i.getEnteringMaterial());
 		}).collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
 	}
 
@@ -176,6 +266,8 @@ public class Union extends Shape {
 				.map(s -> s.getIntersections(new Ray(localPoint, s.getLocation().subtract(localPoint).normalize())))
 				.flatMap(li -> li.stream())
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.findFirst().get().getNormal();
+				.findFirst()
+				.get()
+				.getNormal();
 	}
 }

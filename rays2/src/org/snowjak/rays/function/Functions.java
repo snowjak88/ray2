@@ -57,6 +57,42 @@ public class Functions {
 	}
 
 	/**
+	 * Create a new function that linearly-interpolates between two colors based
+	 * on the point's distance from two control points.
+	 * 
+	 * @param color1
+	 * @param p1
+	 * @param color2
+	 * @param p2
+	 * @return a new linear-interpolation function
+	 */
+	public static Function<Vector3D, RawColor> lerp(RawColor color1, Vector3D p1, RawColor color2, Vector3D p2) {
+
+		return (v) -> {
+			double dotProduct = p2.subtract(p1).normalize().dotProduct(v.subtract(p1)), distance = p2.distance(p1);
+			return Functions.lerp(color1, color2, dotProduct / distance);
+		};
+	}
+
+	/**
+	 * Create a new function that linearly-interpolates between two
+	 * double-values based on the point's distance from two control points.
+	 * 
+	 * @param value1
+	 * @param p1
+	 * @param value2
+	 * @param p2
+	 * @return a new linear-interpolation function
+	 */
+	public static Function<Vector3D, Double> lerp(Double value1, Vector3D p1, Double value2, Vector3D p2) {
+
+		return (v) -> {
+			double dotProduct = p2.subtract(p1).normalize().dotProduct(v.subtract(p1)), distance = p2.distance(p1);
+			return Functions.lerp(value1, value2, dotProduct / distance);
+		};
+	}
+
+	/**
 	 * Compute the checkerboard function for the given point.
 	 * <p>
 	 * The checkerboard function implements the following algorithm:
@@ -315,11 +351,25 @@ public class Functions {
 	 * @param v1
 	 * @param v2
 	 * @param w
-	 * @return the new linear-interpolation function
+	 * @return the new linearly-interpolated value
 	 */
-	public static double linearInterpolate(double v1, double v2, double w) {
+	public static double lerp(double v1, double v2, double w) {
 
 		return v1 * (1d - w) + v2 * w;
+	}
+
+	/**
+	 * Computers a linear-interpolation between two colors.
+	 * 
+	 * @param v1
+	 * @param v2
+	 * @param w
+	 * @return the new linearly-interpolated color
+	 */
+	public static RawColor lerp(RawColor v1, RawColor v2, double w) {
+
+		w = min(max(w, 0d), 1d);
+		return v1.multiplyScalar(1d - w).add(v2.multiplyScalar(w));
 	}
 
 	/**

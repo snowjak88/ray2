@@ -61,7 +61,8 @@ public class Scale implements Transformer {
 		return new Intersection<S>(localToWorld(intersection.getPoint()),
 				localToWorld(intersection.getNormal()).normalize(), localToWorld(intersection.getRay()),
 				intersection.getIntersected(), intersection.getDiffuseColorScheme(),
-				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
+				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme(),
+				intersection.getLeavingMaterial(), intersection.getEnteringMaterial());
 	}
 
 	@Override
@@ -70,7 +71,8 @@ public class Scale implements Transformer {
 		return new Intersection<S>(worldToLocal(intersection.getPoint()),
 				worldToLocal(intersection.getNormal()).normalize(), worldToLocal(intersection.getRay()),
 				intersection.getIntersected(), intersection.getDiffuseColorScheme(),
-				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme());
+				intersection.getSpecularColorScheme(), intersection.getEmissiveColorScheme(),
+				intersection.getLeavingMaterial(), intersection.getEnteringMaterial());
 	}
 
 	@Override

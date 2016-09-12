@@ -12,6 +12,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.material.Material;
 
 /**
  * Represents a Sphere, centered on (0,0,0) (absent any transformations you may
@@ -97,21 +98,29 @@ public class Sphere extends Shape {
 		List<Intersection<Shape>> results = new LinkedList<>();
 
 		if (Double.compare(FastMath.abs(intersectionDistance1), World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere1 = transformedRay.getVector().scalarMultiply(intersectionDistance1)
+			Vector3D intersectPointOnSphere1 = transformedRay.getVector()
+					.scalarMultiply(intersectionDistance1)
 					.add(transformedRay.getOrigin());
 
 			Vector3D normal1 = intersectPointOnSphere1.normalize();
+			double normalSign = FastMath.signum(transformedRay.getVector().negate().dotProduct(normal1));
+			normal1 = normal1.scalarMultiply(normalSign);
 			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, transformedRay, this,
-					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme())));
+					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(),
+					Material.AIR, getMaterial())));
 		}
 
 		if (Double.compare(FastMath.abs(intersectionDistance2), World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere2 = transformedRay.getVector().scalarMultiply(intersectionDistance2)
+			Vector3D intersectPointOnSphere2 = transformedRay.getVector()
+					.scalarMultiply(intersectionDistance2)
 					.add(transformedRay.getOrigin());
 
 			Vector3D normal2 = intersectPointOnSphere2.normalize();
+			double normalSign = FastMath.signum(transformedRay.getVector().negate().dotProduct(normal2));
+			normal2 = normal2.scalarMultiply(normalSign);
 			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this,
-					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme())));
+					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(),
+					Material.AIR, getMaterial())));
 		}
 
 		return results;

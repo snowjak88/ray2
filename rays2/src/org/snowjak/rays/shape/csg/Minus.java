@@ -15,6 +15,7 @@ import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -54,6 +55,7 @@ public class Minus extends Shape {
 		this.setDiffuseColorScheme(null);
 		this.setSpecularColorScheme(null);
 		this.setEmissiveColorScheme(null);
+		this.setMaterial(null);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -68,7 +70,7 @@ public class Minus extends Shape {
 		// If it doesn't intersect the Minuend, then there's no point in testing
 		// all our subtrahends as well.
 		List<Intersection<Shape>> childIntersections = minuend.getIntersectionsIncludingBehind(localRay)
-				.parallelStream().filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.parallelStream()
 				.collect(Collectors.toCollection(LinkedList::new));
 
 		if (childIntersections.isEmpty())
@@ -81,9 +83,9 @@ public class Minus extends Shape {
 		// Literally: get the list of Intersections for each subtrahend,
 		// flat-map those lists into a single list of Intersections.
 
-		childIntersections.addAll(subtrahends.parallelStream().map(s -> s.getIntersectionsIncludingBehind(localRay))
+		childIntersections.addAll(subtrahends.parallelStream()
+				.map(s -> s.getIntersectionsIncludingBehind(localRay))
 				.flatMap(li -> li.stream())
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
 				.collect(Collectors.toCollection(ArrayList::new)));
 
 		//
@@ -118,9 +120,46 @@ public class Minus extends Shape {
 
 		List<Intersection<Shape>> results = new LinkedList<>();
 		//
+		int intersectCounter = 0;
 		for (Intersection<Shape> currentIntersect : childIntersections) {
+			intersectCounter++;
 
 			Shape intersectedShape = currentIntersect.getIntersected();
+
+			Material minusOverrideMaterial = getMaterial();
+			Material oldMaterial = null;
+			Material newMaterial = null;
+
+			if (minusOverrideMaterial == null) {
+
+				//
+				// This Minus does not have a Material of its own.
+				// Therefore, each Intersection marks a boundary between two
+				// blends, each fading from one Material to another.
+				if (intersectCounter < childIntersections.size()) {
+					Material nextMaterial = childIntersections.get(intersectCounter).getIntersected().getMaterial();
+					Vector3D nextPoint = childIntersections.get(intersectCounter).getPoint();
+					newMaterial = Material.blend(currentIntersect.getIntersected().getMaterial(),
+							currentIntersect.getPoint(), nextMaterial, nextPoint);
+				} else {
+					newMaterial = Material.AIR;
+				}
+
+				if (intersectCounter > 1) {
+					Material previousMaterial = childIntersections.get(intersectCounter - 2)
+							.getIntersected()
+							.getMaterial();
+					Vector3D previousPoint = childIntersections.get(intersectCounter - 2).getPoint();
+					oldMaterial = Material.blend(previousMaterial, previousPoint,
+							currentIntersect.getIntersected().getMaterial(), currentIntersect.getPoint());
+				} else {
+					oldMaterial = Material.AIR;
+				}
+
+			} else {
+				oldMaterial = minusOverrideMaterial;
+				newMaterial = minusOverrideMaterial;
+			}
 			//
 			// We're crossing a boundary. Which boundary?
 			// Does it belong to the minuend?
@@ -134,7 +173,19 @@ public class Minus extends Shape {
 					//
 					// No -- not in any subtrahend. So record this minuend
 					// transition!
-					results.add(currentIntersect);
+					//
+					// Now -- are we already in the minuend and therefore
+					// exiting it?
+					if (currentlyInMinuend)
+						newMaterial = Material.AIR;
+					else
+						oldMaterial = Material.AIR;
+					currentlyInMinuend = !currentlyInMinuend;
+
+					results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
+							currentIntersect.getRay(), currentIntersect.getIntersected(),
+							currentIntersect.getDiffuseColorScheme(), currentIntersect.getSpecularColorScheme(),
+							currentIntersect.getEmissiveColorScheme(), oldMaterial, newMaterial));
 				} else {
 					//
 					// Yes -- we're already in at least one subtrahend.
@@ -142,8 +193,6 @@ public class Minus extends Shape {
 					// already recorded transitioning into the subtrahend.
 					// So don't record the current intersection.
 				}
-
-				currentlyInMinuend = !currentlyInMinuend;
 
 			} else {
 
@@ -161,11 +210,12 @@ public class Minus extends Shape {
 					if (currentlyInMinuend(currentIntersect.getPoint()) && currentlyInSubtrahends.isEmpty()) {
 						//
 						// Yes! So record this transition.
-						// HOWEVER -- we need to flip the reported normal.
-						results.add(new Intersection<Shape>(currentIntersect.getPoint(),
-								currentIntersect.getNormal().negate(), currentIntersect.getRay(),
-								currentIntersect.getIntersected(), currentIntersect.getDiffuseColorScheme(),
-								currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme()));
+						oldMaterial = Material.AIR;
+
+						results.add(new Intersection<Shape>(currentIntersect.getPoint(), currentIntersect.getNormal(),
+								currentIntersect.getRay(), currentIntersect.getIntersected(),
+								currentIntersect.getDiffuseColorScheme(), currentIntersect.getSpecularColorScheme(),
+								currentIntersect.getEmissiveColorScheme(), oldMaterial, newMaterial));
 					} else {
 						//
 						// No! either we're still in at least one subtrahend, or
@@ -180,7 +230,13 @@ public class Minus extends Shape {
 					// outside all subtrahends?
 					// If so, then record this transition.
 					if (currentlyInMinuend(currentIntersect.getPoint()) && currentlyInSubtrahends.isEmpty()) {
-						results.add(currentIntersect);
+
+						newMaterial = Material.AIR;
+
+						results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
+								currentIntersect.getRay(), currentIntersect.getIntersected(),
+								currentIntersect.getDiffuseColorScheme(), currentIntersect.getSpecularColorScheme(),
+								currentIntersect.getEmissiveColorScheme(), oldMaterial, newMaterial));
 					} else {
 						//
 						// No! either we're already in at least one subtrahend,
@@ -209,7 +265,8 @@ public class Minus extends Shape {
 			ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
 					: i.getEmissiveColorScheme();
 
-			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive);
+			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive,
+					i.getLeavingMaterial(), i.getEnteringMaterial());
 		}).map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
 
 	}
@@ -226,7 +283,8 @@ public class Minus extends Shape {
 
 	private List<Shape> getContainingSubtrahends(Vector3D point) {
 
-		return subtrahends.parallelStream().filter(s -> s.isInside(point))
+		return subtrahends.parallelStream()
+				.filter(s -> s.isInside(point))
 				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
@@ -245,7 +303,9 @@ public class Minus extends Shape {
 
 		return getIntersections(localToWorld(new Ray(localPoint, localPoint.normalize()))).stream()
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.findFirst().get().getNormal();
+				.findFirst()
+				.get()
+				.getNormal();
 	}
 
 }

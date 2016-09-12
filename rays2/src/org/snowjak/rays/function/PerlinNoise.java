@@ -78,19 +78,19 @@ public class PerlinNoise {
 		int y0 = (int) y, y1 = (int) y + 1;
 		int z0 = (int) z, z1 = (int) z + 1;
 
-		double lerp_x_y0_z0 = Functions.linearInterpolate(getPerlinDotProduct(x0, y0, z0, x, y, z),
+		double lerp_x_y0_z0 = Functions.lerp(getPerlinDotProduct(x0, y0, z0, x, y, z),
 				getPerlinDotProduct(x1, y0, z0, x, y, z), fx);
-		double lerp_x_y1_z0 = Functions.linearInterpolate(getPerlinDotProduct(x0, y1, z0, x, y, z),
+		double lerp_x_y1_z0 = Functions.lerp(getPerlinDotProduct(x0, y1, z0, x, y, z),
 				getPerlinDotProduct(x1, y1, z0, x, y, z), fx);
-		double lerp_x_y0_z1 = Functions.linearInterpolate(getPerlinDotProduct(x0, y0, z1, x, y, z),
+		double lerp_x_y0_z1 = Functions.lerp(getPerlinDotProduct(x0, y0, z1, x, y, z),
 				getPerlinDotProduct(x1, y0, z1, x, y, z), fx);
-		double lerp_x_y1_z1 = Functions.linearInterpolate(getPerlinDotProduct(x0, y1, z1, x, y, z),
+		double lerp_x_y1_z1 = Functions.lerp(getPerlinDotProduct(x0, y1, z1, x, y, z),
 				getPerlinDotProduct(x1, y1, z1, x, y, z), fx);
 
-		double lerp_y_z0 = Functions.linearInterpolate(lerp_x_y0_z0, lerp_x_y1_z0, fy);
-		double lerp_y_z1 = Functions.linearInterpolate(lerp_x_y0_z1, lerp_x_y1_z1, fy);
+		double lerp_y_z0 = Functions.lerp(lerp_x_y0_z0, lerp_x_y1_z0, fy);
+		double lerp_y_z1 = Functions.lerp(lerp_x_y0_z1, lerp_x_y1_z1, fy);
 
-		double lerp = Functions.linearInterpolate(lerp_y_z0, lerp_y_z1, fz);
+		double lerp = Functions.lerp(lerp_y_z0, lerp_y_z1, fz);
 
 		return lerp;
 	}

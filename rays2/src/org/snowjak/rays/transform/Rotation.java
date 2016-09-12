@@ -78,7 +78,8 @@ public class Rotation implements Transformer {
 		return new Intersection<S>(localToWorld(intersection.getPoint()), localToWorld(intersection.getNormal()),
 				localToWorld(intersection.getRay()), intersection.getIntersected(),
 				intersection.getDiffuseColorScheme(), intersection.getSpecularColorScheme(),
-				intersection.getEmissiveColorScheme());
+				intersection.getEmissiveColorScheme(), intersection.getLeavingMaterial(),
+				intersection.getEnteringMaterial());
 	}
 
 	@Override
@@ -87,7 +88,8 @@ public class Rotation implements Transformer {
 		return new Intersection<S>(worldToLocal(intersection.getPoint()), worldToLocal(intersection.getNormal()),
 				worldToLocal(intersection.getRay()), intersection.getIntersected(),
 				intersection.getDiffuseColorScheme(), intersection.getSpecularColorScheme(),
-				intersection.getEmissiveColorScheme());
+				intersection.getEmissiveColorScheme(), intersection.getLeavingMaterial(),
+				intersection.getEnteringMaterial());
 	}
 
 	@Override

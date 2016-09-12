@@ -9,6 +9,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.material.Material;
 
 /**
  * Represents a plane, by default oriented normal to the Y-axis.
@@ -74,7 +75,8 @@ public class Plane extends Shape {
 			Vector3D normal = Vector3D.PLUS_J.scalarMultiply(normalSign).normalize();
 
 			results.add(localToWorld(new Intersection<Shape>(intersectionPoint, normal, transformedRay, this,
-					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme())));
+					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(),
+					Material.AIR, getMaterial())));
 
 		}
 

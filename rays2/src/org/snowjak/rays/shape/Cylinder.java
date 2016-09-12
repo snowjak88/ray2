@@ -11,6 +11,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.material.Material;
 import org.snowjak.rays.transform.Translation;
 
 /**
@@ -121,20 +122,24 @@ public class Cylinder extends Shape {
 			// Remember that a circle is x^2 + y^2 = r^2
 			// or, for points inside the circle:
 			// x^2 + y^2 <= r^2
-			results.addAll(minusYCap.getIntersectionsIncludingBehind(localRay).parallelStream()
+			results.addAll(minusYCap.getIntersectionsIncludingBehind(localRay)
+					.parallelStream()
 					.filter(i -> Double.compare(
 							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
 					.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
-							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme()))
+							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(),
+							getMaterial()))
 					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
 		if (isPlusYCapped) {
-			results.addAll(plusYCap.getIntersectionsIncludingBehind(localRay).parallelStream()
+			results.addAll(plusYCap.getIntersectionsIncludingBehind(localRay)
+					.parallelStream()
 					.filter(i -> Double.compare(
 							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
 					.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
-							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme()))
+							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(),
+							getMaterial()))
 					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
@@ -155,7 +160,7 @@ public class Cylinder extends Shape {
 			normal = normal.scalarMultiply(normalSign);
 
 			results.add(new Intersection<Shape>(intersectionPoint1, normal, localRay, this, getDiffuseColorScheme(),
-					getSpecularColorScheme(), getEmissiveColorScheme()));
+					getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), getMaterial()));
 		}
 
 		if (onlyOneSolution && results.size() == 1)
@@ -168,10 +173,37 @@ public class Cylinder extends Shape {
 			normal = normal.scalarMultiply(normalSign);
 
 			results.add(new Intersection<Shape>(intersectionPoint2, normal, localRay, this, getDiffuseColorScheme(),
-					getSpecularColorScheme(), getEmissiveColorScheme()));
+					getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), getMaterial()));
 		}
 
-		return results.parallelStream().map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
+		return results.parallelStream()
+				.map(i -> localToWorld(i))
+				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
+				.map(i -> {
+					if (i.getDistanceFromRayOrigin() == results.stream()
+							.map(ii -> ii.getDistanceFromRayOrigin())
+							.min(Double::compare)
+							.get())
+						return new Intersection<>(i.getPoint(), i.getNormal(), i.getRay(), i.getIntersected(),
+								i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
+								i.getEmissiveColorScheme(), Material.AIR, i.getEnteringMaterial());
+					else
+						return i;
+
+				})
+				.map(i -> {
+					if (i.getDistanceFromRayOrigin() == results.stream()
+							.map(ii -> ii.getDistanceFromRayOrigin())
+							.max(Double::compare)
+							.get())
+						return new Intersection<>(i.getPoint(), i.getNormal(), i.getRay(), i.getIntersected(),
+								i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
+								i.getEmissiveColorScheme(), i.getLeavingMaterial(), Material.AIR);
+					else
+						return i;
+
+				})
+				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
 	@Override

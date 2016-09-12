@@ -14,6 +14,7 @@ import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -53,6 +54,7 @@ public class Intersect extends Shape {
 		this.setDiffuseColorScheme(null);
 		this.setSpecularColorScheme(null);
 		this.setEmissiveColorScheme(null);
+		this.setMaterial(null);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -69,8 +71,10 @@ public class Intersect extends Shape {
 		// Intersections by distance, and collect into a new list.
 		Ray localRay = worldToLocal(ray);
 		List<Intersection<Shape>> childIntersections = children.parallelStream()
-				.map(s -> s.getIntersectionsIncludingBehind(localRay)).flatMap(li -> li.stream())
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0).sequential()
+				.map(s -> s.getIntersectionsIncludingBehind(localRay))
+				.flatMap(li -> li.stream())
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.sequential()
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.collect(Collectors.toCollection(LinkedList::new));
 
@@ -87,13 +91,56 @@ public class Intersect extends Shape {
 		//
 		// Test to see if the given Ray starts inside of any of our
 		// child Shapes.
-		children.parallelStream().filter(s -> s.isInside(localRay.getOrigin())).forEach(s -> currentlyIn.add(s));
+		// children.parallelStream().filter(s ->
+		// s.isInside(localRay.getOrigin())).forEach(s -> currentlyIn.add(s));
 
 		List<Intersection<Shape>> results = new LinkedList<>();
 		//
+		int intersectCounter = 0;
 		for (Intersection<Shape> currentIntersect : childIntersections) {
 
+			intersectCounter++;
 			Shape intersectedShape = currentIntersect.getIntersected();
+
+			Material intersectOverrideMaterial = getMaterial();
+			Material oldMaterial = null;
+			Material newMaterial = null;
+
+			if (intersectOverrideMaterial == null) {
+
+				//
+				// This Intersect does not have a Material of its own.
+				// Therefore, each Intersection marks a boundary between two
+				// blends, each fading from one Material to another.
+				if (intersectCounter < childIntersections.size()) {
+					Material nextMaterial = childIntersections.get(intersectCounter).getIntersected().getMaterial();
+					Vector3D nextPoint = childIntersections.get(intersectCounter).getPoint();
+					newMaterial = Material.blend(currentIntersect.getIntersected().getMaterial(),
+							currentIntersect.getPoint(), nextMaterial, nextPoint);
+				} else {
+					newMaterial = Material.AIR;
+				}
+
+				if (intersectCounter > 1) {
+					Material previousMaterial = childIntersections.get(intersectCounter - 2)
+							.getIntersected()
+							.getMaterial();
+					Vector3D previousPoint = childIntersections.get(intersectCounter - 2).getPoint();
+					oldMaterial = Material.blend(previousMaterial, previousPoint,
+							currentIntersect.getIntersected().getMaterial(), currentIntersect.getPoint());
+				} else {
+					oldMaterial = Material.AIR;
+				}
+
+			} else {
+				oldMaterial = intersectOverrideMaterial;
+				newMaterial = intersectOverrideMaterial;
+			}
+
+			//
+			//
+			//
+
 			//
 			// We're crossing a boundary. Are we currently inside and coming
 			// out?
@@ -102,7 +149,11 @@ public class Intersect extends Shape {
 				//
 				//
 				if (currentlyIn.containsAll(children))
-					results.add(currentIntersect);
+					results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
+							currentIntersect.getRay(), currentIntersect.getIntersected(),
+							currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
+							currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
+							oldMaterial, Material.AIR));
 
 				currentlyIn.remove(intersectedShape);
 
@@ -117,7 +168,11 @@ public class Intersect extends Shape {
 				// crossing into one of them -- then we're entering the
 				// Intersect.
 				if (currentlyIn.containsAll(children))
-					results.add(currentIntersect);
+					results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
+							currentIntersect.getRay(), currentIntersect.getIntersected(),
+							currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
+							currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
+							Material.AIR, newMaterial));
 			}
 		}
 
@@ -136,7 +191,8 @@ public class Intersect extends Shape {
 			ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
 					: i.getEmissiveColorScheme();
 
-			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive);
+			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive,
+					i.getLeavingMaterial(), i.getEnteringMaterial());
 		}).map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
 
 	}
@@ -158,6 +214,8 @@ public class Intersect extends Shape {
 				.map(s -> s.getIntersections(new Ray(localPoint, s.getLocation().subtract(localPoint).normalize())))
 				.flatMap(li -> li.stream())
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.findFirst().get().getNormal();
+				.findFirst()
+				.get()
+				.getNormal();
 	}
 }

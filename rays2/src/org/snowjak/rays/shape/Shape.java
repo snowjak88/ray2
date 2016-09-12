@@ -16,6 +16,8 @@ import org.snowjak.rays.color.HasColorScheme;
 import org.snowjak.rays.color.SimpleColorScheme;
 import org.snowjak.rays.intersect.Intersectable;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.material.HasMaterial;
+import org.snowjak.rays.material.Material;
 import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
 
@@ -28,7 +30,8 @@ import javafx.scene.paint.Color;
  * @author snowjak88
  *
  */
-public abstract class Shape implements Transformable, Locatable, Intersectable, HasColorScheme, Prototype<Shape> {
+public abstract class Shape
+		implements Transformable, Locatable, Intersectable, HasColorScheme, HasMaterial, Prototype<Shape> {
 
 	/**
 	 * By default, the ambient and diffuse color-schemes will take this value.
@@ -49,6 +52,8 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 
 	private ColorScheme diffuseColorScheme = DEFAULT_COLOR_SCHEME, specularColorScheme = DEFAULT_SPECULAR_COLOR_SCHEME,
 			emissiveColorScheme = DEFAULT_EMISSIVE_COLOR_SCHEME;
+
+	private Material material = new Material();
 
 	/**
 	 * Default, no-action constructor.
@@ -142,6 +147,18 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme) {
 
 		this.emissiveColorScheme = emissiveColorScheme;
+	}
+
+	@Override
+	public Material getMaterial() {
+
+		return material;
+	}
+
+	@Override
+	public void setMaterial(Material material) {
+
+		this.material = material;
 	}
 
 	/**
