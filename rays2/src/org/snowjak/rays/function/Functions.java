@@ -6,8 +6,13 @@ import static org.apache.commons.math3.util.FastMath.min;
 import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.round;
 
+import java.util.function.Function;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
+import org.snowjak.rays.color.RawColor;
+
+import javafx.scene.paint.Color;
 
 /**
  * Specifies a number of functions, useful for creating complicated effects via
@@ -17,6 +22,39 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
  *
  */
 public class Functions {
+
+	/**
+	 * Create a new function that simply returns a constant RawColor value.
+	 * 
+	 * @param color
+	 * @return a new constant-RawColor function
+	 */
+	public static Function<Vector3D, RawColor> constant(RawColor color) {
+
+		return (v) -> color;
+	}
+
+	/**
+	 * Create a new function that simply returns a constant RawColor value.
+	 * 
+	 * @param color
+	 * @return a new constant-RawColor function
+	 */
+	public static Function<Vector3D, RawColor> constant(Color color) {
+
+		return constant(new RawColor(color));
+	}
+
+	/**
+	 * Create a new function that simply returns a constant double value.
+	 * 
+	 * @param value
+	 * @return a new constant-double function
+	 */
+	public static Function<Vector3D, Double> constant(Double value) {
+
+		return (v) -> value;
+	}
 
 	/**
 	 * Compute the checkerboard function for the given point.
