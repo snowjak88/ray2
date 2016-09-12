@@ -33,7 +33,7 @@ public class Material implements Transformable, Prototype<Material> {
 	/**
 	 * Predefined Material: totally transparent, with a refractive index of 1.0
 	 */
-	public static final Material AIR = new Material(Functions.constant(Color.BLACK), Functions.constant(1d),
+	public static final Material AIR = new Material(Functions.constant(Color.WHITE), Functions.constant(1d),
 			Functions.constant(1d));
 
 	/**
@@ -50,7 +50,7 @@ public class Material implements Transformable, Prototype<Material> {
 	public static Material blend(Material material1, Vector3D point1, Material material2, Vector3D point2) {
 
 		return new Material(
-				Functions.lerp(material1.getSurfaceColor(point1), point1, material2.getSurfaceColor(point2), point2),
+				Functions.lerp(material1.getColor(point1), point1, material2.getColor(point2), point2),
 				Functions.lerp(material1.getTransparency(point1), point1, material2.getTransparency(point2), point2),
 				Functions.lerp(material1.getRefractiveIndex(point1), point1, material2.getRefractiveIndex(point2),
 						point2));
@@ -156,12 +156,15 @@ public class Material implements Transformable, Prototype<Material> {
 	 * @param localPoint
 	 * @return this Material's surface-color at the given point
 	 */
-	public RawColor getSurfaceColor(Vector3D localPoint) {
+	public RawColor getColor(Vector3D localPoint) {
 
 		return color.apply(localPoint);
 	}
 
 	/**
+	 * "Transparency" is the fraction of light, per unit-length, that is
+	 * transmitted through this material
+	 * 
 	 * @return this Material's transparency-fraction function
 	 */
 	public Function<Vector3D, Double> getTransparency() {
@@ -170,6 +173,9 @@ public class Material implements Transformable, Prototype<Material> {
 	}
 
 	/**
+	 * "Transparency" is the fraction of light, per unit-length, that is
+	 * transmitted through this material
+	 * 
 	 * @param localPoint
 	 * @return this Material's transparency-fraction at the given point
 	 */

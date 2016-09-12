@@ -94,6 +94,7 @@ public class Sphere extends Shape {
 		// v * (t_ca + t_hc) + P
 		//
 		double intersectionDistance1 = t_ca - t_hc, intersectionDistance2 = t_ca + t_hc;
+		boolean isIntersectionDistance1Smaller = (intersectionDistance1 < intersectionDistance2);
 
 		List<Intersection<Shape>> results = new LinkedList<>();
 
@@ -104,10 +105,15 @@ public class Sphere extends Shape {
 
 			Vector3D normal1 = intersectPointOnSphere1.normalize();
 			double normalSign = FastMath.signum(transformedRay.getVector().negate().dotProduct(normal1));
-			normal1 = normal1.scalarMultiply(normalSign);
+			normal1 = normal1.scalarMultiply(normalSign).normalize();
+
+			Material leaving = Material.AIR, entering = Material.AIR;
+			if (isIntersectionDistance1Smaller)
+				entering = getMaterial();
+
 			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, transformedRay, this,
-					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(),
-					Material.AIR, getMaterial())));
+					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(), leaving,
+					entering)));
 		}
 
 		if (Double.compare(FastMath.abs(intersectionDistance2), World.DOUBLE_ERROR) >= 0) {
@@ -117,10 +123,15 @@ public class Sphere extends Shape {
 
 			Vector3D normal2 = intersectPointOnSphere2.normalize();
 			double normalSign = FastMath.signum(transformedRay.getVector().negate().dotProduct(normal2));
-			normal2 = normal2.scalarMultiply(normalSign);
+			normal2 = normal2.scalarMultiply(normalSign).normalize();
+
+			Material leaving = Material.AIR, entering = Material.AIR;
+			if (isIntersectionDistance1Smaller)
+				leaving = getMaterial();
+
 			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this,
-					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(),
-					getMaterial(), Material.AIR)));
+					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(), leaving,
+					entering)));
 		}
 
 		return results;

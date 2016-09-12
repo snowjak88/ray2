@@ -6,10 +6,15 @@ import static org.apache.commons.math3.util.FastMath.min;
 import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.round;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
+import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.color.RawColor;
 
 import javafx.scene.paint.Color;
@@ -54,6 +59,84 @@ public class Functions {
 	public static Function<Vector3D, Double> constant(Double value) {
 
 		return (v) -> value;
+	}
+
+	/**
+	 * Given a list of colors and their respective thresholds, return a color
+	 * which is either:
+	 * <ul>
+	 * <li>linearly-interpolated between two list-items, if the given value is
+	 * equal or between the list of doubles</li>
+	 * <li>the lowest or highest colors, if the given value is outside the list
+	 * of doubles</li>
+	 * </ul>
+	 * <p>
+	 * For example, given the color-list:
+	 * 
+	 * <pre>
+	 * { { 0.0, WHITE }, { 0.5, RED }, { 1.0, BLUE } }
+	 * </pre>
+	 * 
+	 * and the input {@code 0.4}, the function would return the value RGB {0.2,
+	 * 0.2, 1.0) -- i.e., 0.4/0.5 or 80% of the way from WHITE to RED
+	 * </p>
+	 * 
+	 * @param colors
+	 * @return a function which selects a color from a list based on a double
+	 *         lookup value
+	 */
+	@SafeVarargs
+	public static Function<Double, RawColor> blend(Pair<Double, Color>... colors) {
+
+		return blend(Arrays.asList(colors));
+	}
+
+	/**
+	 * Given a list of colors and their respective thresholds, return a color
+	 * which is either:
+	 * <ul>
+	 * <li>linearly-interpolated between two list-items, if the given value is
+	 * equal or between the list of doubles</li>
+	 * <li>the lowest or highest colors, if the given value is outside the list
+	 * of doubles</li>
+	 * </ul>
+	 * <p>
+	 * For example, given the color-list:
+	 * 
+	 * <pre>
+	 * { { 0.0, WHITE }, { 0.5, RED }, { 1.0, BLUE } }
+	 * </pre>
+	 * 
+	 * and the input {@code 0.4}, the function would return the value RGB {0.2,
+	 * 0.2, 1.0) -- i.e., 0.4/0.5 or 80% of the way from WHITE to RED
+	 * </p>
+	 * 
+	 * @param colors
+	 * @return a function which selects a color from a list based on a double
+	 *         lookup value
+	 */
+	public static Function<Double, RawColor> blend(List<Pair<Double, Color>> colors) {
+
+		return (d) -> {
+			Pair<Double, Color> lower = null, higher = null;
+			for (Pair<Double, Color> pair : colors.stream()
+					.sorted((p1, p2) -> Double.compare(p1.getKey(), p2.getKey()))
+					.collect(Collectors.toCollection(LinkedList::new))) {
+				lower = higher;
+				higher = pair;
+
+				if (lower != null) {
+					if (higher.getKey() >= d && lower.getKey() <= d)
+						return lerp(new RawColor(lower.getValue()), new RawColor(higher.getValue()),
+								(d - lower.getKey()) / (higher.getKey() - lower.getKey()));
+					else if (lower.getKey() > d)
+						return new RawColor(lower.getValue());
+				}
+
+			}
+
+			return new RawColor(higher.getValue());
+		};
 	}
 
 	/**
