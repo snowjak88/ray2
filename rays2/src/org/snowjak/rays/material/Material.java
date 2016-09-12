@@ -24,17 +24,17 @@ import javafx.scene.paint.Color;
  */
 public class Material implements Transformable, Prototype<Material> {
 
-	private Function<Vector3D, RawColor> surfaceColor, internalColor, reflectiveColor;
+	private Function<Vector3D, RawColor> color;
 
-	private Function<Vector3D, Double> transparency, reflectivity, refractiveIndex;
+	private Function<Vector3D, Double> transparency, refractiveIndex;
 
 	private Deque<Transformer> transformers = new LinkedList<>();
 
 	/**
 	 * Predefined Material: totally transparent, with a refractive index of 1.0
 	 */
-	public static final Material AIR = new Material(Functions.constant(Color.WHITE), Functions.constant(Color.WHITE),
-			Functions.constant(Color.WHITE), Functions.constant(1d), Functions.constant(0d), Functions.constant(1d));
+	public static final Material AIR = new Material(Functions.constant(Color.BLACK), Functions.constant(1d),
+			Functions.constant(1d));
 
 	/**
 	 * Create a new Material by linearly-interpolating all visual properties of
@@ -51,11 +51,7 @@ public class Material implements Transformable, Prototype<Material> {
 
 		return new Material(
 				Functions.lerp(material1.getSurfaceColor(point1), point1, material2.getSurfaceColor(point2), point2),
-				Functions.lerp(material1.getInternalColor(point1), point1, material2.getInternalColor(point2), point2),
-				Functions.lerp(material1.getReflectiveColor(point1), point1, material2.getReflectiveColor(point2),
-						point2),
 				Functions.lerp(material1.getTransparency(point1), point1, material2.getTransparency(point2), point2),
-				Functions.lerp(material1.getReflectivity(point1), point1, material2.getReflectivity(point2), point2),
 				Functions.lerp(material1.getRefractiveIndex(point1), point1, material2.getRefractiveIndex(point2),
 						point2));
 	}
@@ -64,29 +60,21 @@ public class Material implements Transformable, Prototype<Material> {
 	 * Create a new Material.
 	 */
 	public Material() {
-		this(Functions.constant(Color.HOTPINK), Functions.constant(Color.WHITE), Functions.constant(Color.WHITE),
-				Functions.constant(0d), Functions.constant(0d), Functions.constant(1d));
+		this(Functions.constant(Color.HOTPINK), Functions.constant(0d), Functions.constant(1d));
 	}
 
 	/**
 	 * Create a new Material with the specified visual properties.
 	 * 
 	 * @param surfaceColor
-	 * @param internalColor
-	 * @param reflectiveColor
 	 * @param transparency
-	 * @param reflectivity
 	 * @param refractiveIndex
 	 */
-	public Material(Function<Vector3D, RawColor> surfaceColor, Function<Vector3D, RawColor> internalColor,
-			Function<Vector3D, RawColor> reflectiveColor, Function<Vector3D, Double> transparency,
-			Function<Vector3D, Double> reflectivity, Function<Vector3D, Double> refractiveIndex) {
+	public Material(Function<Vector3D, RawColor> surfaceColor, Function<Vector3D, Double> transparency,
+			Function<Vector3D, Double> refractiveIndex) {
 
-		this.surfaceColor = surfaceColor;
-		this.internalColor = internalColor;
-		this.reflectiveColor = reflectiveColor;
+		this.color = surfaceColor;
 		this.transparency = transparency;
-		this.reflectivity = reflectivity;
 		this.refractiveIndex = refractiveIndex;
 	}
 
@@ -103,7 +91,7 @@ public class Material implements Transformable, Prototype<Material> {
 	 */
 	public void setSurfaceColor(Function<Vector3D, RawColor> surfaceColor) {
 
-		this.surfaceColor = surfaceColor;
+		this.color = surfaceColor;
 	}
 
 	/**
@@ -113,47 +101,7 @@ public class Material implements Transformable, Prototype<Material> {
 	 */
 	public void setSurfaceColor(RawColor surfaceColor) {
 
-		this.surfaceColor = Functions.constant(surfaceColor);
-	}
-
-	/**
-	 * Set this Material's internal-color function
-	 * 
-	 * @param internalColor
-	 */
-	public void setInternalColor(Function<Vector3D, RawColor> internalColor) {
-
-		this.internalColor = internalColor;
-	}
-
-	/**
-	 * Set this Material's internal-color function to a constant color
-	 * 
-	 * @param internalColor
-	 */
-	public void setInternalColor(RawColor internalColor) {
-
-		this.internalColor = Functions.constant(internalColor);
-	}
-
-	/**
-	 * Set this Material's reflective-color function
-	 * 
-	 * @param reflectiveColor
-	 */
-	public void setReflectiveColor(Function<Vector3D, RawColor> reflectiveColor) {
-
-		this.reflectiveColor = reflectiveColor;
-	}
-
-	/**
-	 * Set this Material's reflective-color function to a constant color
-	 * 
-	 * @param reflectiveColor
-	 */
-	public void setReflectiveColor(RawColor reflectiveColor) {
-
-		this.reflectiveColor = Functions.constant(reflectiveColor);
+		this.color = Functions.constant(surfaceColor);
 	}
 
 	/**
@@ -174,26 +122,6 @@ public class Material implements Transformable, Prototype<Material> {
 	public void setTransparency(double transparency) {
 
 		this.transparency = Functions.constant(transparency);
-	}
-
-	/**
-	 * Set this Material's reflectivity-fraction function
-	 * 
-	 * @param reflectivity
-	 */
-	public void setReflectivity(Function<Vector3D, Double> reflectivity) {
-
-		this.reflectivity = reflectivity;
-	}
-
-	/**
-	 * Set this Material's reflectivity-fraction function to a constant value
-	 * 
-	 * @param reflectivity
-	 */
-	public void setReflectivity(double reflectivity) {
-
-		this.reflectivity = Functions.constant(reflectivity);
 	}
 
 	/**
@@ -221,7 +149,7 @@ public class Material implements Transformable, Prototype<Material> {
 	 */
 	public Function<Vector3D, RawColor> getSurfaceColor() {
 
-		return surfaceColor;
+		return color;
 	}
 
 	/**
@@ -230,41 +158,7 @@ public class Material implements Transformable, Prototype<Material> {
 	 */
 	public RawColor getSurfaceColor(Vector3D localPoint) {
 
-		return surfaceColor.apply(localPoint);
-	}
-
-	/**
-	 * @return this Material's internal-color function
-	 */
-	public Function<Vector3D, RawColor> getInternalColor() {
-
-		return internalColor;
-	}
-
-	/**
-	 * @param localPoint
-	 * @return this Material's internal-color at the given point
-	 */
-	public RawColor getInternalColor(Vector3D localPoint) {
-
-		return internalColor.apply(localPoint);
-	}
-
-	/**
-	 * @return this Material's reflective-color function
-	 */
-	public Function<Vector3D, RawColor> getReflectiveColor() {
-
-		return reflectiveColor;
-	}
-
-	/**
-	 * @param localPoint
-	 * @return this Material's reflective-color at the given point
-	 */
-	public RawColor getReflectiveColor(Vector3D localPoint) {
-
-		return reflectiveColor.apply(localPoint);
+		return color.apply(localPoint);
 	}
 
 	/**
@@ -282,23 +176,6 @@ public class Material implements Transformable, Prototype<Material> {
 	public double getTransparency(Vector3D localPoint) {
 
 		return transparency.apply(localPoint);
-	}
-
-	/**
-	 * @return this Material's reflectivity-fraction function
-	 */
-	public Function<Vector3D, Double> getReflectivity() {
-
-		return reflectivity;
-	}
-
-	/**
-	 * @param localPoint
-	 * @return this Material's reflectivity-fraction at the given point
-	 */
-	public double getReflectivity(Vector3D localPoint) {
-
-		return reflectivity.apply(localPoint);
 	}
 
 	/**
@@ -321,8 +198,7 @@ public class Material implements Transformable, Prototype<Material> {
 	@Override
 	public Material copy() {
 
-		Material copy = new Material(surfaceColor, internalColor, reflectiveColor, transparency, reflectivity,
-				refractiveIndex);
+		Material copy = new Material(color, transparency, refractiveIndex);
 		copy.getTransformers().addAll(getTransformers());
 		return copy;
 	}

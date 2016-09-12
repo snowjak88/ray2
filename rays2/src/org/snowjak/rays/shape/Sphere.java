@@ -120,7 +120,7 @@ public class Sphere extends Shape {
 			normal2 = normal2.scalarMultiply(normalSign);
 			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this,
 					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(),
-					Material.AIR, getMaterial())));
+					getMaterial(), Material.AIR)));
 		}
 
 		return results;
