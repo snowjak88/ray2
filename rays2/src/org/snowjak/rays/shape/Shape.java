@@ -175,6 +175,7 @@ public abstract class Shape
 		copy.setDiffuseColorScheme(this.getDiffuseColorScheme().copy());
 		copy.setSpecularColorScheme(this.getSpecularColorScheme().copy());
 		copy.setEmissiveColorScheme(this.getEmissiveColorScheme().copy());
+		copy.setMaterial(this.getMaterial().copy());
 		copy.getTransformers().addAll(this.getTransformers());
 		return copy;
 	}
