@@ -47,9 +47,10 @@ public class SphericalEnvironmentMap implements EnvironmentMap {
 	@Override
 	public RawColor getColorAt(double u, double v) {
 
-		int u0 = (int) (u * image.getWidth()), u1 = (u0 + 1) % ((int) image.getWidth());
-		int v0 = (int) (image.getHeight() - v * image.getHeight()),
-				v1 = (v0 - 1 < 0 ? (int) image.getHeight() - 1 : v0 - 1);
+		double width = image.getWidth() - 1d, height = image.getHeight() - 1d;
+
+		int u0 = (int) (u * width), u1 = (u0 + 1) % ((int) width);
+		int v0 = (int) (height - v * height), v1 = (v0 - 1 < 0 ? (int) height - 1 : v0 - 1);
 
 		double fu = u - floor(u), fv = v - floor(v);
 
