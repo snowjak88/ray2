@@ -126,7 +126,7 @@ public class Functions {
 				higher = pair;
 
 				if (lower != null) {
-					if (higher.getKey() >= d && lower.getKey() < d)
+					if (higher.getKey() > d && lower.getKey() <= d)
 						return lerp(new RawColor(lower.getValue()), new RawColor(higher.getValue()),
 								(d - lower.getKey()) / (higher.getKey() - lower.getKey()));
 					else if (lower.getKey() > d)
