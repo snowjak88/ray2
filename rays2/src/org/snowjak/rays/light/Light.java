@@ -6,9 +6,11 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Locatable;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.RawColor;
+import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.transform.Transformable;
@@ -55,6 +57,8 @@ public class Light implements Transformable, Locatable {
 
 	private Function<Ray, RawColor> ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction;
 
+	private Function<Vector3D, Double> intensityFunction;
+
 	private BiFunction<Light, Intersection<Shape>, Double> exposureFunction;
 
 	/**
@@ -65,10 +69,11 @@ public class Light implements Transformable, Locatable {
 	 * @param ambientIntensity
 	 * @param diffuseIntensity
 	 * @param specularIntensity
+	 * @param intensity
 	 */
-	public Light(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity) {
+	public Light(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity, double intensity) {
 		this(CONSTANT_COLOR(ambientIntensity), CONSTANT_COLOR(diffuseIntensity), CONSTANT_COLOR(specularIntensity),
-				DEFAULT_EXPOSURE_FUNCTION());
+				DEFAULT_EXPOSURE_FUNCTION(), Functions.constant(intensity));
 	}
 
 	/**
@@ -79,11 +84,12 @@ public class Light implements Transformable, Locatable {
 	 * @param diffuseIntensity
 	 * @param specularIntensity
 	 * @param exposureFunction
+	 * @param intensity
 	 */
 	public Light(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity,
-			BiFunction<Light, Intersection<Shape>, Double> exposureFunction) {
+			BiFunction<Light, Intersection<Shape>, Double> exposureFunction, double intensity) {
 		this(CONSTANT_COLOR(ambientIntensity), CONSTANT_COLOR(diffuseIntensity), CONSTANT_COLOR(specularIntensity),
-				exposureFunction);
+				exposureFunction, Functions.constant(intensity));
 	}
 
 	/**
@@ -102,11 +108,12 @@ public class Light implements Transformable, Locatable {
 	 * @param ambientIntensityFunction
 	 * @param diffuseIntensityFunction
 	 * @param specularIntensityFunction
+	 * @param intensityFunction
 	 */
 	public Light(Function<Ray, RawColor> ambientIntensityFunction, Function<Ray, RawColor> diffuseIntensityFunction,
-			Function<Ray, RawColor> specularIntensityFunction) {
-		this(ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction,
-				DEFAULT_EXPOSURE_FUNCTION());
+			Function<Ray, RawColor> specularIntensityFunction, Function<Vector3D, Double> intensityFunction) {
+		this(ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction, DEFAULT_EXPOSURE_FUNCTION(),
+				intensityFunction);
 	}
 
 	/**
@@ -123,14 +130,17 @@ public class Light implements Transformable, Locatable {
 	 * @param diffuseIntensityFunction
 	 * @param specularIntensityFunction
 	 * @param exposureFunction
+	 * @param intensityFunction
 	 */
 	public Light(Function<Ray, RawColor> ambientIntensityFunction, Function<Ray, RawColor> diffuseIntensityFunction,
 			Function<Ray, RawColor> specularIntensityFunction,
-			BiFunction<Light, Intersection<Shape>, Double> exposureFunction) {
+			BiFunction<Light, Intersection<Shape>, Double> exposureFunction,
+			Function<Vector3D, Double> intensityFunction) {
 		this.ambientIntensityFunction = ambientIntensityFunction;
 		this.diffuseIntensityFunction = diffuseIntensityFunction;
 		this.specularIntensityFunction = specularIntensityFunction;
 		this.exposureFunction = exposureFunction;
+		this.intensityFunction = intensityFunction;
 	}
 
 	/**
@@ -173,6 +183,11 @@ public class Light implements Transformable, Locatable {
 
 		Ray localRay = worldToLocal(ray);
 		return specularIntensityFunction.apply(localRay);
+	}
+
+	protected double getIntensity(Vector3D v) {
+
+		return intensityFunction.apply(v);
 	}
 
 	/**
@@ -221,11 +236,7 @@ public class Light implements Transformable, Locatable {
 	 * <p>
 	 * 
 	 * <pre>
-	 * (l, i) -> l.getLocation()
-	 *                   .subtract(i.getPoint())
-	 *                   .normalize()
-	 *            .dotProduct(i.getNormal()
-	 *                         .normalize());
+	 * (l, i) -> (vector of l -> i.point) . i.normal * intensity * falloff
 	 * </pre>
 	 * </p>
 	 * 
@@ -233,7 +244,9 @@ public class Light implements Transformable, Locatable {
 	 */
 	public static BiFunction<Light, Intersection<Shape>, Double> DEFAULT_EXPOSURE_FUNCTION() {
 
-		return (l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal());
+		return (l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal())
+				* l.getIntensity(i.getRay().getVector())
+				* (1d / (4d * FastMath.PI * l.getLocation().distance(i.getPoint())));
 	}
 
 }

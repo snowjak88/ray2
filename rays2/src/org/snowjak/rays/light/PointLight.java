@@ -2,6 +2,7 @@ package org.snowjak.rays.light;
 
 import java.util.function.Function;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.RawColor;
 
@@ -26,9 +27,11 @@ public class PointLight extends Light {
 	 * @param ambientIntensity
 	 * @param diffuseIntensity
 	 * @param specularIntensity
+	 * @param intensity
 	 */
-	public PointLight(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity) {
-		super(ambientIntensity, diffuseIntensity, specularIntensity);
+	public PointLight(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity,
+			double intensity) {
+		super(ambientIntensity, diffuseIntensity, specularIntensity, intensity);
 	}
 
 	/**
@@ -41,10 +44,12 @@ public class PointLight extends Light {
 	 * @param ambientIntensityFunction
 	 * @param diffuseIntensityFunction
 	 * @param specularIntensityFunction
+	 * @param intensityFunction
 	 */
 	public PointLight(Function<Ray, RawColor> ambientIntensityFunction,
-			Function<Ray, RawColor> diffuseIntensityFunction, Function<Ray, RawColor> specularIntensityFunction) {
-		super(ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction);
+			Function<Ray, RawColor> diffuseIntensityFunction, Function<Ray, RawColor> specularIntensityFunction,
+			Function<Vector3D, Double> intensityFunction) {
+		super(ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction, intensityFunction);
 	}
 
 }

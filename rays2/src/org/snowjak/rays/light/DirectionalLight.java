@@ -6,6 +6,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
+import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.transform.Transformer;
 
 /**
@@ -34,10 +35,14 @@ public final class DirectionalLight extends Light {
 	 * @param ambientIntensityFunction
 	 * @param diffuseIntensityFunction
 	 * @param specularIntensityFunction
+	 * @param intensityFunction
 	 */
 	public DirectionalLight(Vector3D direction, Function<Ray, RawColor> ambientIntensityFunction,
-			Function<Ray, RawColor> diffuseIntensityFunction, Function<Ray, RawColor> specularIntensityFunction) {
-		super(ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction);
+			Function<Ray, RawColor> diffuseIntensityFunction, Function<Ray, RawColor> specularIntensityFunction,
+			Function<Vector3D, Double> intensityFunction) {
+		super(ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction,
+				(l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal()),
+				intensityFunction);
 		this.direction = direction.normalize();
 	}
 
@@ -49,11 +54,12 @@ public final class DirectionalLight extends Light {
 	 * @param ambientIntensity
 	 * @param diffuseIntensity
 	 * @param specularIntensity
+	 * @param intensity
 	 */
 	public DirectionalLight(Vector3D direction, RawColor ambientIntensity, RawColor diffuseIntensity,
-			RawColor specularIntensity) {
+			RawColor specularIntensity, double intensity) {
 		this(direction, CONSTANT_COLOR(ambientIntensity), CONSTANT_COLOR(diffuseIntensity),
-				CONSTANT_COLOR(specularIntensity));
+				CONSTANT_COLOR(specularIntensity), Functions.constant(intensity));
 	}
 
 	@Override
