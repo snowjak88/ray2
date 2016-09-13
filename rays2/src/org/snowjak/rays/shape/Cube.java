@@ -2,6 +2,7 @@ package org.snowjak.rays.shape;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -69,6 +70,9 @@ public class Cube extends Shape {
 	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
 
 		Ray transformedRay = worldToLocal(ray);
+
+		if (!isWithinBoundingSphere(transformedRay, 2d))
+			return Collections.emptyList();
 
 		List<Intersection<Shape>> results = planes.parallelStream()
 				.map(p -> p.getIntersectionsIncludingBehind(transformedRay))

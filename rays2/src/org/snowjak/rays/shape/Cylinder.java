@@ -66,6 +66,10 @@ public class Cylinder extends Shape {
 	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
 
 		Ray localRay = worldToLocal(ray);
+		
+		if (!isWithinBoundingSphere(localRay, 2d))
+			return Collections.emptyList();
+		
 		Vector3D localLocation = worldToLocal(getLocation());
 		List<Intersection<Shape>> results = new LinkedList<>();
 		//

@@ -1,5 +1,7 @@
 package org.snowjak.rays.shape;
 
+import static org.apache.commons.math3.util.FastMath.pow;
+
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,6 +9,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Locatable;
 import org.snowjak.rays.Prototype;
 import org.snowjak.rays.Ray;
@@ -33,6 +36,8 @@ import javafx.scene.paint.Color;
 public abstract class Shape
 		implements Transformable, Locatable, Intersectable, HasColorScheme, HasMaterial, Prototype<Shape> {
 
+	protected static final double ROOT_2 = FastMath.sqrt(2d);
+	
 	/**
 	 * By default, the ambient and diffuse color-schemes will take this value.
 	 */
@@ -191,5 +196,44 @@ public abstract class Shape
 	 */
 	@Override
 	public abstract Shape copy();
+
+	/**
+	 * Perform a quick check to see if this (object-local) {@link Ray} will
+	 * intersect a bounding-sphere of a given radius, located at (0,0,0). Can be
+	 * used as a quick-and-dirty Ray-rejection test for more complex Shapes.
+	 * 
+	 * @param localRay
+	 * @param radius_squared
+	 * @return
+	 */
+	protected boolean isWithinBoundingSphere(Ray localRay, double radius_squared) {
+
+		//
+		// O = sphere origin
+		// P = ray origin
+		//
+		//
+		// L = O - P
+		//
+		Vector3D L = localRay.getOrigin().negate();
+		//
+		// v = ray vector (normalized)
+		//
+		// t_ca = v dot-product L
+		//
+		// t_ca = v . L
+		double t_ca = localRay.getVector().dotProduct(L);
+		//
+		// d = shortest distance from center of sphere to ray
+		//
+		// d^2 = |L|^2 - t_ca^2
+		//
+		double d2 = L.getNormSq() - pow(t_ca, 2d);
+		//
+		// r = sphere's radius
+		//
+		// Now -- if d > r, then this ray does *not* intersect this sphere!
+		return Double.compare(d2, radius_squared) <= 0;
+	}
 
 }
