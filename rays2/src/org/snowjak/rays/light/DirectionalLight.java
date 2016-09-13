@@ -38,11 +38,10 @@ public final class DirectionalLight extends Light {
 	 * @param intensityFunction
 	 */
 	public DirectionalLight(Vector3D direction, Function<Ray, RawColor> ambientIntensityFunction,
-			Function<Ray, RawColor> diffuseIntensityFunction, Function<Ray, RawColor> specularIntensityFunction,
-			Function<Vector3D, Double> intensityFunction) {
+			Function<Ray, RawColor> diffuseIntensityFunction, Function<Ray, RawColor> specularIntensityFunction) {
 		super(ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction,
 				(l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal()),
-				intensityFunction);
+				Functions.constant(1d));
 		this.direction = direction.normalize();
 	}
 
@@ -59,7 +58,7 @@ public final class DirectionalLight extends Light {
 	public DirectionalLight(Vector3D direction, RawColor ambientIntensity, RawColor diffuseIntensity,
 			RawColor specularIntensity, double intensity) {
 		this(direction, CONSTANT_COLOR(ambientIntensity), CONSTANT_COLOR(diffuseIntensity),
-				CONSTANT_COLOR(specularIntensity), Functions.constant(intensity));
+				CONSTANT_COLOR(specularIntensity));
 	}
 
 	@Override
