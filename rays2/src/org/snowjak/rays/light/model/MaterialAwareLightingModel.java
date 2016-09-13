@@ -1,6 +1,8 @@
 package org.snowjak.rays.light.model;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static org.apache.commons.math3.util.FastMath.cos;
+import static org.apache.commons.math3.util.FastMath.pow;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,12 +11,29 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
-import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
 
-import javafx.scene.paint.Color;
-
+/**
+ * A {@link LightingModel} that implements the Schlick approximation to the
+ * Fresnel equations.
+ * <p>
+ * The Fresnel equations model the relative proportion of reflected vs.
+ * refracted light between two materials of differing indices of refraction. The
+ * Schlick approximation simplifies these equations by ignoring the change in
+ * phase-angle that reflected and refracted light undergoes.
+ * </p>
+ * <p>
+ * This LightingModel does not model sub-surface scattering, nor does it do an
+ * especially rigorous job of handling surface colors. It ignores the effect of
+ * intervening materials (i.e., the Material sitting between the ray's origin
+ * and the first intersection), and relies on a {@link PhongLightingModel} to
+ * derive the lighting at a point on an object's surface.
+ * </p>
+ * 
+ * @author snowjak88
+ *
+ */
 public class MaterialAwareLightingModel implements LightingModel {
 
 	private LightingModel child = new PhongLightingModel();
@@ -34,7 +53,7 @@ public class MaterialAwareLightingModel implements LightingModel {
 		Vector3D n = intersect.getNormal();
 		double theta_i = Vector3D.angle(i.negate(), n);
 
-		if (ray.getRecursiveLevel() > World.MAX_RAY_RECURSION) {
+		if (ray.getRecursiveLevel() > World.getSingleton().getMaxRayRecursion()) {
 			return child.determineRayColor(ray, intersections);
 		}
 
@@ -87,9 +106,6 @@ public class MaterialAwareLightingModel implements LightingModel {
 					.determineRayColor(reflectedRay, reflectedIntersections)
 					.orElse(new RawColor());
 
-			Optional<RawColor> surfaceColor = child.determineRayColor(ray, intersections);
-			if (surfaceColor.isPresent())
-				reflectedColor.add(surfaceColor.get().multiplyScalar(reflectance));
 		}
 		if (transmittance > 0d) {
 			List<Intersection<Shape>> refractedIntersections = World.getSingleton().getShapeIntersections(refractedRay);
@@ -98,17 +114,11 @@ public class MaterialAwareLightingModel implements LightingModel {
 					.determineRayColor(refractedRay, refractedIntersections)
 					.orElse(new RawColor());
 
-			if (!refractedIntersections.isEmpty()) {
-
-				double refractedDistance = refractedIntersections.get(0).getDistanceFromRayOrigin();
-				double refractedFalloff = (1d / refractedDistance)
-						* intersect.getEnteringMaterial().getTransparency(point);
-
-				RawColor interiorColor = intersect.getEnteringMaterial().getColor(point);
-
-				refractedColor = refractedColor.multiply(interiorColor.multiplyScalar(refractedFalloff));
-
-			}
+			double surfaceReflectivity = intersect.getEnteringMaterial().getReflectivity(point);
+			Optional<RawColor> surfaceColor = child.determineRayColor(ray, intersections);
+			if (surfaceColor.isPresent())
+				refractedColor = refractedColor.multiplyScalar(1d - surfaceReflectivity)
+						.add(surfaceColor.get().multiplyScalar(surfaceReflectivity));
 		}
 
 		reflectedColor = reflectedColor.multiplyScalar(reflectance);

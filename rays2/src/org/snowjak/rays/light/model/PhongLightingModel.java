@@ -41,7 +41,7 @@ public class PhongLightingModel implements LightingModel {
 		Intersection<Shape> intersect = firstIntersect.get();
 		//
 		// What are the configured colors for this shape?
-		RawColor intersectDiffuseColor = intersect.getDiffuse(intersect.getPoint());
+		RawColor intersectDiffuseColor = intersect.getEnteringMaterial().getColor(intersect.getPoint());
 		RawColor intersectSpecularColor = intersect.getSpecular(intersect.getPoint());
 		RawColor intersectEmissiveColor = intersect.getEmissive(intersect.getPoint());
 		double shininess = intersect.getDiffuseColorScheme().getShininess(intersect.getPoint());
