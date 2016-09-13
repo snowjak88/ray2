@@ -29,7 +29,7 @@ public class LightBlockingTestbed {
 
 		world.getShapes().add(new Plane());
 
-		Light worldLight = new Light(new RawColor(), new RawColor(), new RawColor());
+		Light worldLight = new Light(new RawColor(), new RawColor(), new RawColor(), 0d);
 		worldLight.getTransformers().add(new Translation(0d, 5d, 0d));
 		world.getLights().add(worldLight);
 
