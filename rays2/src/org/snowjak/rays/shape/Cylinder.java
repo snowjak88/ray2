@@ -90,10 +90,6 @@ public class Cylinder extends Shape {
 
 		double t_hc = FastMath.sqrt(r2 - d2);
 
-		boolean onlyOneSolution = false;
-		if (Double.compare(t_hc, World.DOUBLE_ERROR) <= 0)
-			onlyOneSolution = true;
-
 		double t1_2d = t_ca - t_hc;
 		double t2_2d = t_ca + t_hc;
 		//
@@ -110,13 +106,44 @@ public class Cylinder extends Shape {
 
 		//
 		//
+		// Now we've determined the intersection(s) to the cylinder in 3D-space.
+		// Time to see if those intersections are within the bounds of this
+		// cylinder.
+		//
+		if (Double.compare(intersectionPoint1.getY(), -1d) >= 0 && Double.compare(intersectionPoint1.getY(), 1d) <= 0) {
+
+			// We need to ensure that the reported surface normal is facing
+			// toward the intersecting ray.
+			// After all, it is possible to see on both sides of the
+			// cylinder's surface.
+			Vector3D normal = new Vector3D(intersectionPoint1.getX(), 0d, intersectionPoint1.getZ()).normalize();
+			double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
+			normal = normal.scalarMultiply(Double.compare(normalSign, 0d) != 0 ? normalSign : 1d);
+
+			results.add(new Intersection<Shape>(intersectionPoint1, normal, localRay, this, getDiffuseColorScheme(),
+					getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), getMaterial()));
+		}
+
+		if (Double.compare(intersectionPoint2.getY(), -1d) >= 0 && Double.compare(intersectionPoint2.getY(), 1d) <= 0) {
+
+			Vector3D normal = new Vector3D(intersectionPoint2.getX(), 0d, intersectionPoint2.getZ()).normalize();
+			double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
+			normal = normal.scalarMultiply(Double.compare(normalSign, 0d) != 0 ? normalSign : 1d);
+
+			results.add(new Intersection<Shape>(intersectionPoint2, normal, localRay, this, getDiffuseColorScheme(),
+					getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), getMaterial()));
+		}
+
+		//
+		//
 		// Now -- are the ends of this cylinder capped?
 		//
 		// Test each of the capped ends for an intersection.
 		// If any intersection exists, test if it lies within the circle of this
 		// cylinder.
 		//
-		if (isMinusYCapped) {
+
+		if (isMinusYCapped && !results.isEmpty()) {
 
 			//
 			// Remember that a circle is x^2 + y^2 = r^2
@@ -132,7 +159,7 @@ public class Cylinder extends Shape {
 					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
-		if (isPlusYCapped) {
+		if (isPlusYCapped && !results.isEmpty()) {
 			results.addAll(plusYCap.getIntersectionsIncludingBehind(localRay)
 					.parallelStream()
 					.filter(i -> Double.compare(
@@ -143,62 +170,43 @@ public class Cylinder extends Shape {
 					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
-		//
-		//
-		// Now we've determined the intersection(s) to the cylinder in 3D-space.
-		// Time to see if those intersections are within the bounds of this
-		// cylinder.
-		//
-		if (Double.compare(intersectionPoint1.getY(), -1d) >= 0 && Double.compare(intersectionPoint1.getY(), 1d) <= 0) {
-
-			// We need to ensure that the reported surface normal is facing
-			// toward the intersecting ray.
-			// After all, it is possible to see on both sides of the
-			// cylinder's surface.
-			Vector3D normal = new Vector3D(intersectionPoint1.getX(), 0d, intersectionPoint1.getZ()).normalize();
-			double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
-			normal = normal.scalarMultiply(normalSign);
-
-			results.add(new Intersection<Shape>(intersectionPoint1, normal, localRay, this, getDiffuseColorScheme(),
-					getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), getMaterial()));
-		}
-
-		if (onlyOneSolution && results.size() == 1)
-			return results;
-
-		if (Double.compare(intersectionPoint2.getY(), -1d) >= 0 && Double.compare(intersectionPoint2.getY(), 1d) <= 0) {
-
-			Vector3D normal = new Vector3D(intersectionPoint2.getX(), 0d, intersectionPoint2.getZ()).normalize();
-			double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
-			normal = normal.scalarMultiply(normalSign);
-
-			results.add(new Intersection<Shape>(intersectionPoint2, normal, localRay, this, getDiffuseColorScheme(),
-					getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), getMaterial()));
+		if (results.size() == 1) {
+			Intersection<Shape> intersect = results.get(0);
+			Vector3D newPoint = intersect.getPoint()
+					.add(intersect.getRay().getVector().scalarMultiply(World.DOUBLE_ERROR));
+			results.add(new Intersection<Shape>(newPoint, intersect.getNormal(), intersect.getRay(), this,
+					intersect.getDistanceFromRayOrigin(), intersect.getDiffuseColorScheme(),
+					intersect.getSpecularColorScheme(), intersect.getEmissiveColorScheme(), getMaterial(),
+					getMaterial()));
 		}
 
 		return results.parallelStream()
 				.map(i -> localToWorld(i))
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.map(i -> {
-					if (i.getDistanceFromRayOrigin() == results.stream()
-							.map(ii -> ii.getDistanceFromRayOrigin())
-							.min(Double::compare)
-							.get())
-						return new Intersection<>(i.getPoint(), i.getNormal(), i.getRay(), i.getIntersected(),
+					if (Double.compare(
+							FastMath.abs(i.getDistanceFromRayOrigin() - results.stream()
+									.map(ii -> ii.getDistanceFromRayOrigin())
+									.min(Double::compare)
+									.get()),
+							World.DOUBLE_ERROR) <= 0)
+						return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
 								i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
-								i.getEmissiveColorScheme(), Material.AIR, i.getEnteringMaterial());
+								i.getEmissiveColorScheme(), Material.AIR, getMaterial());
 					else
 						return i;
 
 				})
 				.map(i -> {
-					if (i.getDistanceFromRayOrigin() == results.stream()
-							.map(ii -> ii.getDistanceFromRayOrigin())
-							.max(Double::compare)
-							.get())
-						return new Intersection<>(i.getPoint(), i.getNormal(), i.getRay(), i.getIntersected(),
+					if (Double.compare(
+							FastMath.abs(i.getDistanceFromRayOrigin() - results.stream()
+									.map(ii -> ii.getDistanceFromRayOrigin())
+									.max(Double::compare)
+									.get()),
+							World.DOUBLE_ERROR) <= 0)
+						return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
 								i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
-								i.getEmissiveColorScheme(), i.getLeavingMaterial(), Material.AIR);
+								i.getEmissiveColorScheme(), getMaterial(), Material.AIR);
 					else
 						return i;
 
