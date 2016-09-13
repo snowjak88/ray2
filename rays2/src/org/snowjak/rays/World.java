@@ -41,9 +41,11 @@ public class World {
 	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
 	 * model, e.g., reflection.
 	 */
-	public static final int MAX_RAY_RECURSION = 8;
+	public static final int DEFAULT_MAX_RAY_RECURSION = 8;
 
 	private static World INSTANCE = null;
+
+	private int maxRayRecursion = DEFAULT_MAX_RAY_RECURSION;
 
 	private Camera camera = null;
 
@@ -138,6 +140,28 @@ public class World {
 	public void setLightingModel(LightingModel lightingModel) {
 
 		this.lightingModel = lightingModel;
+	}
+
+	/**
+	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
+	 * model, e.g., reflection.
+	 * 
+	 * @return allowed depth of ray recursion
+	 */
+	public int getMaxRayRecursion() {
+
+		return maxRayRecursion;
+	}
+
+	/**
+	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
+	 * model, e.g., reflection.
+	 * 
+	 * @param maxRayRecursion
+	 */
+	public void setMaxRayRecursion(int maxRayRecursion) {
+
+		this.maxRayRecursion = maxRayRecursion;
 	}
 
 }
