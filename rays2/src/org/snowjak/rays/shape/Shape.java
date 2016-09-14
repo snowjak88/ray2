@@ -37,7 +37,7 @@ public abstract class Shape
 		implements Transformable, Locatable, Intersectable, HasColorScheme, HasMaterial, Prototype<Shape> {
 
 	protected static final double ROOT_2 = FastMath.sqrt(2d);
-	
+
 	/**
 	 * By default, the ambient and diffuse color-schemes will take this value.
 	 */
@@ -206,7 +206,7 @@ public abstract class Shape
 	 * @param radius_squared
 	 * @return
 	 */
-	protected boolean isWithinBoundingSphere(Ray localRay, double radius_squared) {
+	protected boolean isIntersectWithBoundingSphere(Ray localRay, double radius_squared) {
 
 		//
 		// O = sphere origin
@@ -214,8 +214,11 @@ public abstract class Shape
 		//
 		//
 		// L = O - P
+		// but O is (0,0,0)
+		// and negating P is irrelevant.
+		// so L = P
 		//
-		Vector3D L = localRay.getOrigin().negate();
+		Vector3D L = localRay.getOrigin();
 		//
 		// v = ray vector (normalized)
 		//

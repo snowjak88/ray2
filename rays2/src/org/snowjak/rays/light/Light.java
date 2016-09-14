@@ -207,6 +207,17 @@ public class Light implements Transformable, Locatable {
 		return exposureFunction.apply(this, localIntersection);
 	}
 
+	/**
+	 * @see #getExposure(Intersection)
+	 * @param point
+	 * @param normal
+	 * @return the "exposure" this light is able to provide to the given point.
+	 */
+	public double getExposure(Vector3D point, Vector3D normal) {
+
+		return getExposure(new Intersection<Shape>(point, normal, new Ray(point, normal), null));
+	}
+
 	@Override
 	public Deque<Transformer> getTransformers() {
 

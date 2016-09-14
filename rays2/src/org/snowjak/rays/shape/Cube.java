@@ -71,19 +71,15 @@ public class Cube extends Shape {
 
 		Ray transformedRay = worldToLocal(ray);
 
-		if (!isWithinBoundingSphere(transformedRay, 2d))
+		if (!isIntersectWithBoundingSphere(transformedRay, 3d))
 			return Collections.emptyList();
 
 		List<Intersection<Shape>> results = planes.parallelStream()
 				.map(p -> p.getIntersectionsIncludingBehind(transformedRay))
 				.flatMap(li -> li.parallelStream())
-				.filter(i -> Double.compare(i.getPoint().getX() + 1d, -World.DOUBLE_ERROR) >= 0
-						&& Double.compare(i.getPoint().getY() + 1d, -World.DOUBLE_ERROR) >= 0
-						&& Double.compare(i.getPoint().getZ() + 1d, -World.DOUBLE_ERROR) >= 0)
-
-				.filter(i -> Double.compare(i.getPoint().getX() - 1d, World.DOUBLE_ERROR) <= 0
-						&& Double.compare(i.getPoint().getY() - 1d, World.DOUBLE_ERROR) <= 0
-						&& Double.compare(i.getPoint().getZ() - 1d, World.DOUBLE_ERROR) <= 0)
+				.filter(i -> Double.compare(FastMath.abs(i.getPoint().getX()) - 1d, World.DOUBLE_ERROR) <= 0
+						&& Double.compare(FastMath.abs(i.getPoint().getY()) - 1d, World.DOUBLE_ERROR) <= 0
+						&& Double.compare(FastMath.abs(i.getPoint().getZ()) - 1d, World.DOUBLE_ERROR) <= 0)
 
 				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
 						getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(),
@@ -91,6 +87,7 @@ public class Cube extends Shape {
 				.map(i -> localToWorld(i))
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.collect(Collectors.toCollection(LinkedList::new));
+
 		return results.parallelStream().map(i -> {
 			if (i.getDistanceFromRayOrigin() == results.stream()
 					.map(ii -> ii.getDistanceFromRayOrigin())
@@ -119,12 +116,9 @@ public class Cube extends Shape {
 
 		Vector3D localPoint = worldToLocal(point);
 
-		return (Double.compare(localPoint.getX() + 1d, -World.DOUBLE_ERROR) >= 0
-				&& Double.compare(localPoint.getY() + 1d, -World.DOUBLE_ERROR) >= 0
-				&& Double.compare(localPoint.getZ() + 1d, -World.DOUBLE_ERROR) >= 0)
-				&& (Double.compare(localPoint.getX() - 1d, World.DOUBLE_ERROR) <= 0
-						&& Double.compare(localPoint.getY() - 1d, World.DOUBLE_ERROR) <= 0
-						&& Double.compare(localPoint.getZ() - 1d, World.DOUBLE_ERROR) <= 0);
+		return (Double.compare(FastMath.abs(localPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
+				&& Double.compare(FastMath.abs(localPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
+				&& Double.compare(FastMath.abs(localPoint.getZ()) - 1d, World.DOUBLE_ERROR) <= 0);
 	}
 
 	@Override

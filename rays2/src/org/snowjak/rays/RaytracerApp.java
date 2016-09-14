@@ -19,6 +19,8 @@ import org.snowjak.rays.shape.Cylinder;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.shape.Sphere;
+import org.snowjak.rays.shape.csg.Minus;
+import org.snowjak.rays.shape.perturb.NormalPerturber;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
@@ -56,46 +58,28 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
-		Material material = new Material(Functions.constant(Color.RED), Functions.constant(0.5),
-				Functions.constant(0.5d), Functions.constant(4d));
+		Material material = new Material(Functions.constant(Color.RED), Functions.constant(0.1d),
+				Functions.constant(0.1d), Functions.constant(1.3d));
 
-		Shape spherePrototype = new Sphere();
-		spherePrototype.setMaterial(material);
+		Sphere sphereCutout = new Sphere();
+		sphereCutout.getTransformers().add(new Scale(1.25, 1.25, 1.25));
+		Shape shape = new Minus(new Cube(), sphereCutout);
+		shape.setMaterial(material);
+		shape.getTransformers().add(new Scale(4d, 4d, 4d));
 
-		Shape cubePrototype = new Cube();
-		cubePrototype.setMaterial(material);
+		Shape bumpyShape = new NormalPerturber((n,
+				i) -> n.add(Vector3D.crossProduct(n, n.orthogonal())
+						.scalarMultiply(Functions.turbulence(i.getPoint().scalarMultiply(4d), 8) / 10d)).normalize(),
+				shape);
+		world.getShapes().add(bumpyShape);
 
-		Shape cylinderPrototype = new Cylinder(true);
-		cylinderPrototype.setMaterial(material);
-
-		for (int x = -14; x <= 14; x += 6) {
-			for (int z = 0; z <= 28; z += 6) {
-
-				Shape shapeCopy = null;
-				switch (((x + 14) + z * 28) / 6 % 3) {
-				case 0:
-					shapeCopy = cylinderPrototype.copy();
-					break;
-				case 1:
-					shapeCopy = cubePrototype.copy();
-					break;
-				case 2:
-					shapeCopy = spherePrototype.copy();
-				}
-
-				shapeCopy.getTransformers().add(new Scale(2d, 2d, 2d));
-				shapeCopy.getMaterial().setSurfaceColor(
-						new RawColor(Color.hsb(((double) ((x + 14) + z) / (28d + 28d)) * 360d, 1d, 1d)));
-				shapeCopy.getTransformers().add(new Translation(x, 0d, z));
-				world.getShapes().add(shapeCopy);
-			}
-		}
-
-		Shape plane = new Plane();
-		plane.setMaterial(new Material(
+		Material beneathPlaneMaterial = new Material(
 				(v) -> Functions.blend(new Pair<>(0d, Color.BLACK), new Pair<>(1d, Color.WHITE))
 						.apply(Functions.checkerboard(v)),
-				Functions.constant(1d), Functions.constant(1d), Functions.constant(1.5d)));
+				Functions.constant(1d), Functions.constant(1d), Functions.constant(1.1d));
+
+		Plane plane = new Plane();
+		plane.setMinusMaterial(beneathPlaneMaterial);
 		plane.getTransformers().add(new Translation(0d, -4d, 0d));
 		world.getShapes().add(plane);
 
@@ -105,8 +89,8 @@ public class RaytracerApp extends Application {
 		world.getLights().add(light);
 
 		Camera camera = new Camera(4.0, 60.0);
-		camera.getTransformers().add(new Translation(0d, 1d, -14d));
-		camera.getTransformers().add(new Rotation(-12.5d, 0d, 0d));
+		camera.getTransformers().add(new Translation(0d, 1d, -10d));
+		camera.getTransformers().add(new Rotation(-5d, 0d, 0d));
 		camera.getTransformers().add(new Rotation(0d, 15d, 0d));
 		world.setCamera(camera);
 
