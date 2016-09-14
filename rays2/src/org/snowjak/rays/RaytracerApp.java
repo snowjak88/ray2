@@ -57,18 +57,14 @@ public class RaytracerApp extends Application {
 		World world = World.getSingleton();
 
 		Material material = new Material(Functions.constant(Color.RED), Functions.constant(0.1d),
-				Functions.constant(0.5d), Functions.constant(1.8d));
+				Functions.constant(0.1d), Functions.constant(1.8d));
 
 		Shape cube = new Cube();
 
-		Sphere sphereCutout = new Sphere();
-		sphereCutout.getTransformers().add(new Scale(1.25, 1.25, 1.25));
-
-		Shape shape = new Minus(cube, sphereCutout);
-		shape.setMaterial(material);
-		shape.getTransformers().add(new Scale(4d, 4d, 4d));
-		shape.getTransformers().add(new Translation(0d, 0.01, 0d));
-		world.getShapes().add(shape);
+		Sphere sphere = new Sphere();
+		sphere.getTransformers().add(new Scale(4d, 4d, 4d));
+		sphere.setMaterial(material);
+		world.getShapes().add(sphere);
 
 		Material beneathPlaneMaterial = new Material(
 				(v) -> Functions.blend(new Pair<>(0d, Color.BLACK), new Pair<>(1d, Color.WHITE))
