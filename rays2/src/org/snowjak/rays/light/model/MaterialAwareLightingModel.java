@@ -6,6 +6,8 @@ import static org.apache.commons.math3.util.FastMath.min;
 import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,7 +17,6 @@ import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.intersect.Intersection;
-import org.snowjak.rays.light.Light;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Shape;
 
@@ -41,7 +42,8 @@ import org.snowjak.rays.shape.Shape;
  */
 public class MaterialAwareLightingModel implements LightingModel {
 
-	private LightingModel child = new PhongLightingModel();
+	private Collection<LightingModel> childLightingModels = Arrays.asList(new AmbientLightingModel(),
+			new LambertianDiffuseLightingModel());
 
 	@Override
 	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
@@ -59,7 +61,8 @@ public class MaterialAwareLightingModel implements LightingModel {
 		double theta_i = Vector3D.angle(i.negate(), n);
 
 		if (ray.getRecursiveLevel() > World.getSingleton().getMaxRayRecursion()) {
-			return child.determineRayColor(ray, intersections);
+			return childLightingModels.parallelStream().map(lm -> lm.determineRayColor(ray, intersections)).reduce(
+					Optional.of(new RawColor()), (o1, o2) -> Optional.of(o1.get().add(o2.get())));
 		}
 
 		//
@@ -120,69 +123,28 @@ public class MaterialAwareLightingModel implements LightingModel {
 					.orElse(new RawColor());
 
 			double materialDepth = 1d;
-			if (!refractedIntersections.isEmpty()) {
+			if (!refractedIntersections.isEmpty())
 				materialDepth = refractedIntersections.get(0).getDistanceFromRayOrigin();
-			}
+
 			Material scatteringMaterial = intersect.getEnteringMaterial();
 
 			double reflectedFromInterveningScattering = max(
 					min(scatteringMaterial.getDensity(intersect.getPoint()) * materialDepth, 1d), 0d);
 			double transmittedThroughInterveningScattering = 1d - reflectedFromInterveningScattering;
 
-			RawColor reflectedInterveningColor = lightIntersection(intersect);
-			// child.determineRayColor(ray, intersections).get();
+			RawColor reflectedInterveningColor = childLightingModels.parallelStream()
+					.map(lm -> lm.determineRayColor(ray, intersections))
+					.map(o -> o.get())
+					.reduce(new RawColor(), (c1, c2) -> c1.add(c2))
+					.multiplyScalar(max(min(scatteringMaterial.getDensity(intersect.getPoint()), 1d), 0d));
 			refractedColor = Functions.lerp(reflectedInterveningColor, refractedColor,
 					transmittedThroughInterveningScattering);
-
-			// double surfaceReflectivity =
-			// intersect.getEnteringMaterial().getReflectivity(point);
-			// Optional<RawColor> surfaceColor =
-			// child.determineRayColor(ray,
-			// intersections);
-			// if (surfaceColor.isPresent())
-			// refractedColor = refractedColor.multiplyScalar(1d -
-			// surfaceReflectivity)
-			// .add(surfaceColor.get().multiplyScalar(surfaceReflectivity));
-
 		}
 
 		reflectedColor = reflectedColor.multiplyScalar(reflectance);
 		refractedColor = refractedColor.multiplyScalar(transmittance);
 
 		return Optional.of(reflectedColor.add(refractedColor));
-	}
-
-	private RawColor lightIntersection(Intersection<Shape> intersection) {
-
-		Vector3D point = intersection.getPoint();
-		Vector3D normal = intersection.getNormal();
-		RawColor totalLightAtPoint = new RawColor();
-
-		for (Light light : World.getSingleton().getLights()) {
-
-			Ray toLightRay = new Ray(point, light.getLocation().subtract(point));
-
-			totalLightAtPoint = totalLightAtPoint.add(light.getAmbientIntensity(toLightRay));
-
-			boolean isOccludingIntersections = World.getSingleton()
-					.getShapeIntersections(toLightRay)
-					.parallelStream()
-					.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0);
-			if (isOccludingIntersections)
-				continue;
-
-			double exposure = light.getExposure(point, normal);
-
-			if (Double.compare(exposure, 0d) <= 0)
-				continue;
-
-			totalLightAtPoint = totalLightAtPoint.add(light.getDiffuseIntensity(toLightRay).multiplyScalar(exposure));
-
-		}
-
-		RawColor pointColor = intersection.getEnteringMaterial().getColor(point);
-
-		return totalLightAtPoint.multiply(pointColor);
 	}
 
 	private Vector3D getNormalPart(Vector3D v, Vector3D normal) {

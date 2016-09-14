@@ -13,8 +13,7 @@ import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
 
 /**
- * Implements the Phong Reflection Model, plus some additional functionality to
- * include reflective lighting via recursive raycasting.
+ * Implements the Phong Reflection Model.
  * 
  * @author snowjak88
  *

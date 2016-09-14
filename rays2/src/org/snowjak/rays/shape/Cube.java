@@ -77,10 +77,7 @@ public class Cube extends Shape {
 		List<Intersection<Shape>> results = planes.parallelStream()
 				.map(p -> p.getIntersectionsIncludingBehind(transformedRay))
 				.flatMap(li -> li.parallelStream())
-				.filter(i -> Double.compare(FastMath.abs(i.getPoint().getX()) - 1d, World.DOUBLE_ERROR) <= 0
-						&& Double.compare(FastMath.abs(i.getPoint().getY()) - 1d, World.DOUBLE_ERROR) <= 0
-						&& Double.compare(FastMath.abs(i.getPoint().getZ()) - 1d, World.DOUBLE_ERROR) <= 0)
-
+				.filter(i -> isInsideLocal(i.getPoint()))
 				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
 						getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(),
 						getMaterial()))
@@ -95,7 +92,7 @@ public class Cube extends Shape {
 					.get())
 				return new Intersection<>(i.getPoint(), i.getNormal(), i.getRay(), i.getIntersected(),
 						i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
-						i.getEmissiveColorScheme(), Material.AIR, i.getEnteringMaterial());
+						i.getEmissiveColorScheme(), Material.AIR, getMaterial());
 			else
 				return i;
 		}).map(i -> {
@@ -105,7 +102,7 @@ public class Cube extends Shape {
 					.get())
 				return new Intersection<>(i.getPoint(), i.getNormal(), i.getRay(), i.getIntersected(),
 						i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
-						i.getEmissiveColorScheme(), i.getLeavingMaterial(), Material.AIR);
+						i.getEmissiveColorScheme(), getMaterial(), Material.AIR);
 			else
 				return i;
 		}).collect(Collectors.toCollection(LinkedList::new));
@@ -114,7 +111,10 @@ public class Cube extends Shape {
 	@Override
 	public boolean isInside(Vector3D point) {
 
-		Vector3D localPoint = worldToLocal(point);
+		return isInsideLocal(worldToLocal(point));
+	}
+
+	private boolean isInsideLocal(Vector3D localPoint) {
 
 		return (Double.compare(FastMath.abs(localPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
 				&& Double.compare(FastMath.abs(localPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0

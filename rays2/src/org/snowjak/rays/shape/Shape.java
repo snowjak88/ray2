@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Locatable;
 import org.snowjak.rays.Prototype;
 import org.snowjak.rays.Ray;
@@ -35,8 +34,6 @@ import javafx.scene.paint.Color;
  */
 public abstract class Shape
 		implements Transformable, Locatable, Intersectable, HasColorScheme, HasMaterial, Prototype<Shape> {
-
-	protected static final double ROOT_2 = FastMath.sqrt(2d);
 
 	/**
 	 * By default, the ambient and diffuse color-schemes will take this value.

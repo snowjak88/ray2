@@ -94,8 +94,6 @@ public class Plane extends Shape {
 			// V.y*t = 0 - P.y
 			// t = -P.y/V.y
 			//
-			// If t < 0, then this ray is heading the wrong way! and will not
-			// intersect.
 			//
 			double t = -transformedRay.getOrigin().getY() / transformedRay.getVector().getY();
 

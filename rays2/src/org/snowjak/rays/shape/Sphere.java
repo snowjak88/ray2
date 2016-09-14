@@ -94,7 +94,7 @@ public class Sphere extends Shape {
 		// v * (t_ca + t_hc) + P
 		//
 		double intersectionDistance1 = t_ca - t_hc, intersectionDistance2 = t_ca + t_hc;
-		boolean isIntersectionDistance1Smaller = (intersectionDistance1 < intersectionDistance2);
+		boolean isIntersectionDistance1Smaller = Double.compare(intersectionDistance1, intersectionDistance2) < 0;
 
 		List<Intersection<Shape>> results = new LinkedList<>();
 
@@ -110,6 +110,8 @@ public class Sphere extends Shape {
 			Material leaving = Material.AIR, entering = Material.AIR;
 			if (isIntersectionDistance1Smaller)
 				entering = getMaterial();
+			else
+				leaving = getMaterial();
 
 			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere1, normal1, transformedRay, this,
 					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(), leaving,
@@ -128,6 +130,8 @@ public class Sphere extends Shape {
 			Material leaving = Material.AIR, entering = Material.AIR;
 			if (isIntersectionDistance1Smaller)
 				leaving = getMaterial();
+			else
+				entering = getMaterial();
 
 			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this,
 					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(), leaving,

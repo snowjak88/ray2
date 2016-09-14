@@ -15,12 +15,10 @@ import org.snowjak.rays.light.model.MaterialAwareLightingModel;
 import org.snowjak.rays.light.model.SphericalEnvironmentMap;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Cube;
-import org.snowjak.rays.shape.Cylinder;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.shape.Sphere;
 import org.snowjak.rays.shape.csg.Minus;
-import org.snowjak.rays.shape.perturb.NormalPerturber;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
@@ -59,19 +57,18 @@ public class RaytracerApp extends Application {
 		World world = World.getSingleton();
 
 		Material material = new Material(Functions.constant(Color.RED), Functions.constant(0.1d),
-				Functions.constant(0.1d), Functions.constant(1.3d));
+				Functions.constant(0.5d), Functions.constant(1.8d));
+
+		Shape cube = new Cube();
 
 		Sphere sphereCutout = new Sphere();
 		sphereCutout.getTransformers().add(new Scale(1.25, 1.25, 1.25));
-		Shape shape = new Minus(new Cube(), sphereCutout);
+
+		Shape shape = new Minus(cube, sphereCutout);
 		shape.setMaterial(material);
 		shape.getTransformers().add(new Scale(4d, 4d, 4d));
-
-		Shape bumpyShape = new NormalPerturber((n,
-				i) -> n.add(Vector3D.crossProduct(n, n.orthogonal())
-						.scalarMultiply(Functions.turbulence(i.getPoint().scalarMultiply(4d), 8) / 10d)).normalize(),
-				shape);
-		world.getShapes().add(bumpyShape);
+		shape.getTransformers().add(new Translation(0d, 0.01, 0d));
+		world.getShapes().add(shape);
 
 		Material beneathPlaneMaterial = new Material(
 				(v) -> Functions.blend(new Pair<>(0d, Color.BLACK), new Pair<>(1d, Color.WHITE))
@@ -91,7 +88,7 @@ public class RaytracerApp extends Application {
 		Camera camera = new Camera(4.0, 60.0);
 		camera.getTransformers().add(new Translation(0d, 1d, -10d));
 		camera.getTransformers().add(new Rotation(-5d, 0d, 0d));
-		camera.getTransformers().add(new Rotation(0d, 15d, 0d));
+		camera.getTransformers().add(new Rotation(0d, 30d, 0d));
 		world.setCamera(camera);
 
 		world.setLightingModel(new EnvironmentMapDecoratingLightingModel(

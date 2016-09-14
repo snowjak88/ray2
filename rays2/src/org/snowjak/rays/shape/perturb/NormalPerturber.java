@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -74,12 +76,60 @@ public class NormalPerturber extends Shape {
 
 		return child.getIntersectionsIncludingBehind(worldToLocal(ray))
 				.parallelStream()
-				.map(i -> localToWorld(i))
 				.map(i -> new Intersection<>(i.getPoint(), normalPerturbationFunction.apply(i.getNormal(), i),
 						i.getRay(), i.getIntersected(), i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(),
 						i.getSpecularColorScheme(), i.getEmissiveColorScheme(), i.getLeavingMaterial(),
 						i.getEnteringMaterial()))
+				.map(i -> localToWorld(i))
 				.collect(Collectors.toCollection(LinkedList::new));
+	}
+
+	@Override
+	public ColorScheme getDiffuseColorScheme() {
+
+		return child.getDiffuseColorScheme();
+	}
+
+	@Override
+	public void setDiffuseColorScheme(ColorScheme diffuseColorScheme) {
+
+		child.setDiffuseColorScheme(diffuseColorScheme);
+	}
+
+	@Override
+	public ColorScheme getSpecularColorScheme() {
+
+		return child.getSpecularColorScheme();
+	}
+
+	@Override
+	public void setSpecularColorScheme(ColorScheme specularColorScheme) {
+
+		child.setSpecularColorScheme(specularColorScheme);
+	}
+
+	@Override
+	public ColorScheme getEmissiveColorScheme() {
+
+		return child.getEmissiveColorScheme();
+	}
+
+	@Override
+	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme) {
+
+		child.setEmissiveColorScheme(emissiveColorScheme);
+	}
+
+	@Override
+	public Material getMaterial() {
+
+		return child.getMaterial();
+	}
+
+	@Override
+	public void setMaterial(Material material) {
+
+		child.setMaterial(material);
 	}
 
 	@Override
