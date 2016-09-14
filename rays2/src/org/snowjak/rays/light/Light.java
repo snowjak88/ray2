@@ -61,6 +61,8 @@ public class Light implements Transformable, Locatable {
 
 	private BiFunction<Light, Intersection<Shape>, Double> exposureFunction;
 
+	private BiFunction<Light, Vector3D, Double> falloffFunction;
+
 	/**
 	 * Create a new Light with given light intensities, and the normal exposure
 	 * function (i.e., cosine of angle between light and surface-normal
@@ -73,7 +75,7 @@ public class Light implements Transformable, Locatable {
 	 */
 	public Light(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity, double intensity) {
 		this(CONSTANT_COLOR(ambientIntensity), CONSTANT_COLOR(diffuseIntensity), CONSTANT_COLOR(specularIntensity),
-				DEFAULT_EXPOSURE_FUNCTION(), Functions.constant(intensity));
+				DEFAULT_EXPOSURE_FUNCTION(), Functions.constant(intensity), DEFAULT_FALLOFF_FUNCTION());
 	}
 
 	/**
@@ -89,7 +91,7 @@ public class Light implements Transformable, Locatable {
 	public Light(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity,
 			BiFunction<Light, Intersection<Shape>, Double> exposureFunction, double intensity) {
 		this(CONSTANT_COLOR(ambientIntensity), CONSTANT_COLOR(diffuseIntensity), CONSTANT_COLOR(specularIntensity),
-				exposureFunction, Functions.constant(intensity));
+				exposureFunction, Functions.constant(intensity), DEFAULT_FALLOFF_FUNCTION());
 	}
 
 	/**
@@ -113,7 +115,7 @@ public class Light implements Transformable, Locatable {
 	public Light(Function<Ray, RawColor> ambientIntensityFunction, Function<Ray, RawColor> diffuseIntensityFunction,
 			Function<Ray, RawColor> specularIntensityFunction, Function<Vector3D, Double> intensityFunction) {
 		this(ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction, DEFAULT_EXPOSURE_FUNCTION(),
-				intensityFunction);
+				intensityFunction, DEFAULT_FALLOFF_FUNCTION());
 	}
 
 	/**
@@ -131,16 +133,18 @@ public class Light implements Transformable, Locatable {
 	 * @param specularIntensityFunction
 	 * @param exposureFunction
 	 * @param intensityFunction
+	 * @param falloffFunction
 	 */
 	public Light(Function<Ray, RawColor> ambientIntensityFunction, Function<Ray, RawColor> diffuseIntensityFunction,
 			Function<Ray, RawColor> specularIntensityFunction,
 			BiFunction<Light, Intersection<Shape>, Double> exposureFunction,
-			Function<Vector3D, Double> intensityFunction) {
+			Function<Vector3D, Double> intensityFunction, BiFunction<Light, Vector3D, Double> falloffFunction) {
 		this.ambientIntensityFunction = ambientIntensityFunction;
 		this.diffuseIntensityFunction = diffuseIntensityFunction;
 		this.specularIntensityFunction = specularIntensityFunction;
 		this.exposureFunction = exposureFunction;
 		this.intensityFunction = intensityFunction;
+		this.falloffFunction = falloffFunction;
 	}
 
 	/**
@@ -218,6 +222,17 @@ public class Light implements Transformable, Locatable {
 		return getExposure(new Intersection<Shape>(point, normal, new Ray(point, normal), null));
 	}
 
+	/**
+	 * Calculate this light's falloff-fraction as seen by the given point.
+	 * 
+	 * @param point
+	 * @return this light's falloff
+	 */
+	public double getFalloff(Vector3D point) {
+
+		return falloffFunction.apply(this, point);
+	}
+
 	@Override
 	public Deque<Transformer> getTransformers() {
 
@@ -228,6 +243,36 @@ public class Light implements Transformable, Locatable {
 	public Vector3D getLocation() {
 
 		return localToWorld(Vector3D.ZERO);
+	}
+
+	public void setAmbientIntensityFunction(Function<Ray, RawColor> ambientIntensityFunction) {
+
+		this.ambientIntensityFunction = ambientIntensityFunction;
+	}
+
+	public void setDiffuseIntensityFunction(Function<Ray, RawColor> diffuseIntensityFunction) {
+
+		this.diffuseIntensityFunction = diffuseIntensityFunction;
+	}
+
+	public void setSpecularIntensityFunction(Function<Ray, RawColor> specularIntensityFunction) {
+
+		this.specularIntensityFunction = specularIntensityFunction;
+	}
+
+	public void setIntensityFunction(Function<Vector3D, Double> intensityFunction) {
+
+		this.intensityFunction = intensityFunction;
+	}
+
+	public void setExposureFunction(BiFunction<Light, Intersection<Shape>, Double> exposureFunction) {
+
+		this.exposureFunction = exposureFunction;
+	}
+
+	public void setFalloffFunction(BiFunction<Light, Vector3D, Double> falloffFunction) {
+
+		this.falloffFunction = falloffFunction;
 	}
 
 	/**
@@ -256,8 +301,27 @@ public class Light implements Transformable, Locatable {
 	public static BiFunction<Light, Intersection<Shape>, Double> DEFAULT_EXPOSURE_FUNCTION() {
 
 		return (l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal())
-				* l.getIntensity(i.getRay().getVector())
-				* (1d / (4d * FastMath.PI * l.getLocation().distance(i.getPoint())));
+				* l.getIntensity(i.getRay().getVector()) * l.getFalloff(i.getPoint());
+	}
+
+	/**
+	 * Create a {@link BiFunction} which implements the area-rule falloff
+	 * function:
+	 * 
+	 * <pre>
+	 *                1
+	 * falloff = ------------
+	 *            4 * pi * d
+	 * </pre>
+	 * 
+	 * where {@code d} = the distance between the light's location and
+	 * {@code point}
+	 * 
+	 * @return the area-rule falloff function
+	 */
+	public static BiFunction<Light, Vector3D, Double> DEFAULT_FALLOFF_FUNCTION() {
+
+		return (l, v) -> 1d / (4d * FastMath.PI * l.getLocation().distance(v));
 	}
 
 }

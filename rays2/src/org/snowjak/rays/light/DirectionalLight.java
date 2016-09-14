@@ -41,7 +41,7 @@ public final class DirectionalLight extends Light {
 			Function<Ray, RawColor> diffuseIntensityFunction, Function<Ray, RawColor> specularIntensityFunction) {
 		super(ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction,
 				(l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal()),
-				Functions.constant(1d));
+				Functions.constant(1d), (l, v) -> 1d);
 		this.direction = direction.normalize();
 	}
 
