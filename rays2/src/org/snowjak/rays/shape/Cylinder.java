@@ -24,35 +24,12 @@ import org.snowjak.rays.transform.Translation;
  */
 public class Cylinder extends Shape {
 
-	private boolean isMinusYCapped, isPlusYCapped;
-
 	private Plane minusYCap, plusYCap;
 
 	/**
-	 * Create a new Cylinder, with open (uncapped) ends.
+	 * Create a new Cylinder.
 	 */
 	public Cylinder() {
-		this(false);
-	}
-
-	/**
-	 * Create a new Cylinder, specifying if both ends are to be capped or not.
-	 * 
-	 * @param isCapped
-	 */
-	public Cylinder(boolean isCapped) {
-		this(isCapped, isCapped);
-	}
-
-	/**
-	 * Create a new Cylinder, specifying if each end is to be capped or not.
-	 * 
-	 * @param isMinusYCapped
-	 * @param isPlusYCapped
-	 */
-	public Cylinder(boolean isMinusYCapped, boolean isPlusYCapped) {
-		this.isMinusYCapped = isMinusYCapped;
-		this.isPlusYCapped = isPlusYCapped;
 
 		this.minusYCap = new Plane();
 		minusYCap.getTransformers().add(new Translation(0d, -1d, 0d));
@@ -66,10 +43,10 @@ public class Cylinder extends Shape {
 	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
 
 		Ray localRay = worldToLocal(ray);
-		
-		if (!isWithinBoundingSphere(localRay, 2d))
+
+		if (!isIntersectWithBoundingSphere(localRay, 2d))
 			return Collections.emptyList();
-		
+
 		Vector3D localLocation = worldToLocal(getLocation());
 		List<Intersection<Shape>> results = new LinkedList<>();
 		//
@@ -147,7 +124,7 @@ public class Cylinder extends Shape {
 		// cylinder.
 		//
 
-		if (isMinusYCapped && !results.isEmpty()) {
+		if (!results.isEmpty()) {
 
 			//
 			// Remember that a circle is x^2 + y^2 = r^2
@@ -163,7 +140,7 @@ public class Cylinder extends Shape {
 					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
-		if (isPlusYCapped && !results.isEmpty()) {
+		if (!results.isEmpty()) {
 			results.addAll(plusYCap.getIntersectionsIncludingBehind(localRay)
 					.parallelStream()
 					.filter(i -> Double.compare(
@@ -172,16 +149,6 @@ public class Cylinder extends Shape {
 							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(),
 							getMaterial()))
 					.collect(Collectors.toCollection(LinkedList::new)));
-		}
-
-		if (results.size() == 1) {
-			Intersection<Shape> intersect = results.get(0);
-			Vector3D newPoint = intersect.getPoint()
-					.add(intersect.getRay().getVector().scalarMultiply(World.DOUBLE_ERROR));
-			results.add(new Intersection<Shape>(newPoint, intersect.getNormal(), intersect.getRay(), this,
-					intersect.getDistanceFromRayOrigin(), intersect.getDiffuseColorScheme(),
-					intersect.getSpecularColorScheme(), intersect.getEmissiveColorScheme(), getMaterial(),
-					getMaterial()));
 		}
 
 		return results.parallelStream()
@@ -221,7 +188,7 @@ public class Cylinder extends Shape {
 	@Override
 	public Cylinder copy() {
 
-		Cylinder newCylinder = new Cylinder(this.isMinusYCapped, this.isPlusYCapped);
+		Cylinder newCylinder = new Cylinder();
 		newCylinder = configureCopy(newCylinder);
 
 		return newCylinder;
