@@ -19,6 +19,38 @@ import org.snowjak.rays.material.Material;
  */
 public class Plane extends Shape {
 
+	private Material plusMaterial, minusMaterial;
+
+	/**
+	 * Construct a new Plane, passing through (0,0,0) and normal to the Y-axis.
+	 * <p>
+	 * Note that, at present, this Plane is invisible, as its plus- and
+	 * minus-Materials are both set to the default Material
+	 * ({@link Material#AIR}). If this Plane should be visible, you should
+	 * configure it further with {@link #setPlusMaterial(Material)} and
+	 * {@link #setMinusMaterial(Material)}.
+	 * </p>
+	 * 
+	 * @see #Plane(Material, Material)
+	 */
+	public Plane() {
+		this(Material.AIR, Material.AIR);
+	}
+
+	/**
+	 * Construct a new Plane, passing through (0,0,0) and normal to the Y-axis.
+	 * This plane delineates a boundary between two Materials -- one on the +Y
+	 * side of the plane ({@code plusMaterial}) and one on the -Y side
+	 * ({@code minusMaterial}).
+	 * 
+	 * @param plusMaterial
+	 * @param minusMaterial
+	 */
+	public Plane(Material plusMaterial, Material minusMaterial) {
+		this.plusMaterial = plusMaterial;
+		this.minusMaterial = minusMaterial;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
@@ -75,18 +107,72 @@ public class Plane extends Shape {
 			Vector3D normal = Vector3D.PLUS_J.scalarMultiply(Double.compare(normalSign, 0d) != 0 ? normalSign : 1d)
 					.normalize();
 
+			Material leavingMaterial, enteringMaterial;
+			if (Double.compare(normalSign, 0d) < 0) {
+				leavingMaterial = minusMaterial;
+				enteringMaterial = plusMaterial;
+			} else {
+				leavingMaterial = plusMaterial;
+				enteringMaterial = minusMaterial;
+			}
+
 			results.add(localToWorld(new Intersection<Shape>(intersectionPoint, normal, transformedRay, this,
 					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(),
-					Material.AIR, getMaterial())));
-
-			results.add(localToWorld(new Intersection<Shape>(
-					intersectionPoint.add(transformedRay.getVector().scalarMultiply(World.DOUBLE_ERROR)),
-					normal, transformedRay, this, this.getDiffuseColorScheme(), this.getSpecularColorScheme(),
-					this.getEmissiveColorScheme(), getMaterial(), Material.AIR)));
+					leavingMaterial, enteringMaterial)));
 
 		}
 
 		return results;
+	}
+
+	@Override
+	public Material getMaterial() {
+
+		throw new UnsupportedOperationException(
+				"Plane primitive has two Materials, not one -- use getMinusMaterial() and getPlusMaterial()");
+	}
+
+	@Override
+	public void setMaterial(Material material) {
+
+		throw new UnsupportedOperationException(
+				"Plane primitive has two Materials, not one -- use setMinusMaterial() and setPlusMaterial()");
+	}
+
+	/**
+	 * @return the Material assigned to the (local) Y+ side of this plane
+	 */
+	public Material getPlusMaterial() {
+
+		return plusMaterial;
+	}
+
+	/**
+	 * Set the Material assigned to the (local) Y+ side of this plane.
+	 * 
+	 * @param plusMaterial
+	 */
+	public void setPlusMaterial(Material plusMaterial) {
+
+		this.plusMaterial = plusMaterial;
+	}
+
+	/**
+	 * @return the Material assigned to the (local) Y- side of this plane
+	 */
+	public Material getMinusMaterial() {
+
+		return minusMaterial;
+	}
+
+	/**
+	 * Set the Material assigned to the (local) Y- side of this plane
+	 * 
+	 * @param minusMaterial
+	 */
+	public void setMinusMaterial(Material minusMaterial) {
+
+		this.minusMaterial = minusMaterial;
 	}
 
 	@Override
@@ -111,7 +197,7 @@ public class Plane extends Shape {
 	@Override
 	public Plane copy() {
 
-		Plane newPlane = new Plane();
+		Plane newPlane = new Plane(this.getPlusMaterial(), this.getMinusMaterial());
 		newPlane = configureCopy(newPlane);
 		return newPlane;
 	}
