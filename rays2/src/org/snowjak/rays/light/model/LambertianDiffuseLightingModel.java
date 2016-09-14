@@ -44,6 +44,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 			boolean isOccludingIntersections = World.getSingleton()
 					.getShapeIntersections(toLightRay)
 					.parallelStream()
+					.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), light.getLocation().distance(point)) < 0)
 					.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0);
 			if (isOccludingIntersections)
 				continue;
