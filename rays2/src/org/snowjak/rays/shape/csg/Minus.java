@@ -104,9 +104,6 @@ public class Minus extends Shape {
 		Set<Shape> currentlyInSubtrahends = new HashSet<>();
 		boolean currentlyInMinuend = false;
 
-		if (!childIntersections.isEmpty())
-			this.getClass();
-
 		//
 		// Test to see if the given Ray starts inside of any of our
 		// subtrahends.
@@ -199,7 +196,8 @@ public class Minus extends Shape {
 				// Crossing a subtrahend boundary!
 				//
 				// Are we crossing in, or out?
-				if (getContainingSubtrahends(currentIntersect.getPoint()).contains(intersectedShape)) {
+				if (currentlyInSubtrahends.contains(intersectedShape)
+						|| getContainingSubtrahends(currentIntersect.getPoint()).contains(intersectedShape)) {
 					//
 					// Crossing out of this subtrahend.
 					currentlyInSubtrahends.remove(intersectedShape);
