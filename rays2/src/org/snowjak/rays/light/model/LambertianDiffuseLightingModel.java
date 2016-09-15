@@ -19,6 +19,25 @@ import org.snowjak.rays.shape.Shape;
  */
 public class LambertianDiffuseLightingModel implements LightingModel {
 
+	private boolean doLightOccluding;
+
+	/**
+	 * Construct a new {@link LambertianDiffuseLightingModel}.
+	 */
+	public LambertianDiffuseLightingModel() {
+		this(true);
+	}
+
+	/**
+	 * Construct a new {@link LambertianDiffuseLightingModel}, specifying
+	 * whether to check for light-occlusion when lighting points.
+	 * 
+	 * @param doLightOccluding
+	 */
+	public LambertianDiffuseLightingModel(boolean doLightOccluding) {
+		this.doLightOccluding = doLightOccluding;
+	}
+
 	@Override
 	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
@@ -41,11 +60,14 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 
 			Ray toLightRay = new Ray(point, light.getLocation().subtract(point));
 
-			boolean isOccludingIntersections = World.getSingleton()
-					.getShapeIntersections(toLightRay)
-					.parallelStream()
-					.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), light.getLocation().distance(point)) < 0)
-					.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0);
+			boolean isOccludingIntersections = false;
+			if (doLightOccluding)
+				isOccludingIntersections = World.getSingleton()
+						.getShapeIntersections(toLightRay)
+						.parallelStream()
+						.filter(i -> Double.compare(i.getDistanceFromRayOrigin(),
+								light.getLocation().distance(point)) < 0)
+						.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0);
 			if (isOccludingIntersections)
 				continue;
 
@@ -58,7 +80,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 
 		}
 
-		RawColor pointColor = intersection.getEnteringMaterial().getColor(point);
+		RawColor pointColor = intersection.getDiffuse(point);
 
 		return totalLightAtPoint.multiply(pointColor);
 	}
