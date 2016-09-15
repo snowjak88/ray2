@@ -4,7 +4,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
-import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Shape;
