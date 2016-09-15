@@ -20,7 +20,8 @@ import org.snowjak.rays.shape.Shape;
 
 /**
  * A {@link LightingModel} that implements the Schlick approximation to the
- * Fresnel equations.
+ * Fresnel equations for reflection and refraction for the interface between two
+ * materials of differing indices of refraction.
  * <p>
  * The Fresnel equations model the relative proportion of reflected vs.
  * refracted light between two materials of differing indices of refraction. The
@@ -31,17 +32,27 @@ import org.snowjak.rays.shape.Shape;
  * This LightingModel does not model sub-surface scattering, nor does it do an
  * especially rigorous job of handling surface colors. It ignores the effect of
  * intervening materials (i.e., the Material sitting between the ray's origin
- * and the first intersection), and relies on a {@link PhongSpecularLightingModel} to
- * derive the lighting at a point on an object's surface.
+ * and the first intersection), and relies on a
+ * {@link PhongSpecularLightingModel} to derive the lighting at a point on an
+ * object's surface.
  * </p>
  * 
  * @author snowjak88
  *
  */
-public class MaterialAwareLightingModel implements LightingModel {
+public class FresnelLightingModel implements LightingModel {
 
-	private CompositingLightingModel ambientAndDiffuseLighting = new AdditiveCompositingLightingModel(
-			new AmbientLightingModel(), new LambertianDiffuseLightingModel());
+	private LightingModel surfaceLightingModel = null;
+
+	/**
+	 * Construct a new {@link FresnelLightingModel}, using the specified
+	 * {@link LightingModel} to compute the radiance of encountered surfaces.
+	 * 
+	 * @param surfaceLightingModel
+	 */
+	public FresnelLightingModel(LightingModel surfaceLightingModel) {
+		this.surfaceLightingModel = surfaceLightingModel;
+	}
 
 	@Override
 	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
@@ -59,7 +70,7 @@ public class MaterialAwareLightingModel implements LightingModel {
 		double theta_i = Vector3D.angle(i.negate(), n);
 
 		if (ray.getRecursiveLevel() > World.getSingleton().getMaxRayRecursion())
-			return ambientAndDiffuseLighting.determineRayColor(ray, intersections);
+			return surfaceLightingModel.determineRayColor(ray, intersections);
 
 		//
 		//
@@ -128,7 +139,7 @@ public class MaterialAwareLightingModel implements LightingModel {
 					min(scatteringMaterial.getDensity(intersect.getPoint()) * materialDepth, 1d), 0d);
 			double transmittedThroughInterveningScattering = 1d - reflectedFromInterveningScattering;
 
-			RawColor reflectedInterveningColor = ambientAndDiffuseLighting.determineRayColor(ray, intersections)
+			RawColor reflectedInterveningColor = surfaceLightingModel.determineRayColor(ray, intersections)
 					.orElse(new RawColor())
 					.multiplyScalar(max(min(scatteringMaterial.getDensity(intersect.getPoint()), 1d), 0d));
 			refractedColor = Functions.lerp(reflectedInterveningColor, refractedColor,
