@@ -63,9 +63,9 @@ public class Union extends Shape {
 	public Union(Collection<Shape> children) {
 		super();
 		this.children.addAll(children);
-		setDiffuseColorScheme(null);
-		setSpecularColorScheme(null);
-		setEmissiveColorScheme(null);
+		setDiffuseColorScheme((ColorScheme) null);
+		setSpecularColorScheme((ColorScheme) null);
+		setEmissiveColorScheme((ColorScheme) null);
 		setMaterial(null);
 	}
 
