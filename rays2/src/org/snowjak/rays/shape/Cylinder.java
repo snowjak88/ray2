@@ -44,7 +44,7 @@ public class Cylinder extends Shape {
 
 		Ray localRay = worldToLocal(ray);
 
-		if (!isIntersectWithBoundingSphere(localRay, 2d))
+		if (!isIntersectWithBoundingSphere(localRay, 3d))
 			return Collections.emptyList();
 
 		Vector3D localLocation = worldToLocal(getLocation());

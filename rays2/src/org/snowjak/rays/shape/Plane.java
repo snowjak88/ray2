@@ -196,7 +196,10 @@ public class Plane extends Shape {
 	public Plane copy() {
 
 		Plane newPlane = new Plane(this.getPlusMaterial(), this.getMinusMaterial());
-		newPlane = configureCopy(newPlane);
+		newPlane.setDiffuseColorScheme(this.getDiffuseColorScheme().copy());
+		newPlane.setSpecularColorScheme(this.getSpecularColorScheme().copy());
+		newPlane.setEmissiveColorScheme(this.getEmissiveColorScheme().copy());
+		newPlane.getTransformers().addAll(this.getTransformers());
 		return newPlane;
 	}
 
