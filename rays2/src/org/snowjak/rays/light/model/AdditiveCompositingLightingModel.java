@@ -50,8 +50,10 @@ public class AdditiveCompositingLightingModel extends CompositingLightingModel {
 	@Override
 	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
-		return getChildren().parallelStream().map(lm -> lm.determineRayColor(ray, intersections)).reduce(
-				Optional.of(new RawColor()), (o1, o2) -> Optional.of(o1.get().add(o2.get())));
+		return getChildren().parallelStream()
+				.map(lm -> lm.determineRayColor(ray, intersections))
+				.filter(o -> o.isPresent())
+				.reduce(Optional.of(new RawColor()), (o1, o2) -> Optional.of(o1.get().add(o2.get())));
 	}
 
 }
