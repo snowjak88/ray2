@@ -13,12 +13,12 @@ import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
 
 /**
- * Implements the Phong Reflection Model.
+ * Implements the Phong specular-reflection model.
  * 
  * @author snowjak88
  *
  */
-public class PhongLightingModel implements LightingModel {
+public class PhongSpecularLightingModel implements LightingModel {
 
 	@Override
 	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
@@ -40,15 +40,12 @@ public class PhongLightingModel implements LightingModel {
 		Intersection<Shape> intersect = firstIntersect.get();
 		//
 		// What are the configured colors for this shape?
-		RawColor intersectDiffuseColor = intersect.getEnteringMaterial().getColor(intersect.getPoint());
 		RawColor intersectSpecularColor = intersect.getSpecular(intersect.getPoint());
-		RawColor intersectEmissiveColor = intersect.getEmissive(intersect.getPoint());
-		double shininess = intersect.getDiffuseColorScheme().getShininess(intersect.getPoint());
+		double shininess = intersect.getSpecularColorScheme().getShininess(intersect.getPoint());
 
 		//
 		// totalX = total light of type X seen by this Ray
-		RawColor totalAmbient = new RawColor(), totalDiffuse = new RawColor(), totalSpecular = new RawColor(),
-				totalEmissive = new RawColor();
+		RawColor totalSpecular = new RawColor();
 
 		//
 		//
@@ -91,13 +88,6 @@ public class PhongLightingModel implements LightingModel {
 					.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0))
 				lightIsVisible = false;
 
-			//
-			//
-			// Calculate the ambient light the current Light contributes to this
-			// ray
-			RawColor lightAmbientIntensity = light.getAmbientIntensity(toLightRay);
-			totalAmbient = totalAmbient.add(lightAmbientIntensity.multiply(intersectDiffuseColor));
-
 			if (lightIsVisible) {
 				//
 				//
@@ -105,9 +95,6 @@ public class PhongLightingModel implements LightingModel {
 				// this ray
 				double lightExposure = light.getExposure(intersect);
 				if (Double.compare(lightExposure, 0d) > 0) {
-					RawColor lightDiffuseIntensity = light.getDiffuseIntensity(toLightRay);
-					totalDiffuse = totalDiffuse
-							.add(lightDiffuseIntensity.multiply(intersectDiffuseColor).multiplyScalar(lightExposure));
 
 					//
 					//
@@ -138,15 +125,10 @@ public class PhongLightingModel implements LightingModel {
 		}
 
 		//
-		// If a shape is giving off emissive light, then that emissive light is
-		// simply added to everything else.
-		totalEmissive = intersectEmissiveColor;
-
-		//
 		//
 		// Finally, combine all the different kinds of light into a single
 		// total.
-		RawColor totalColor = totalAmbient.add(totalDiffuse).add(totalSpecular).add(totalEmissive);
+		RawColor totalColor = totalSpecular;
 
 		return Optional.of(totalColor);
 	}
