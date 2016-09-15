@@ -245,31 +245,63 @@ public class Light implements Transformable, Locatable {
 		return localToWorld(Vector3D.ZERO);
 	}
 
+	/**
+	 * Set this Light's ambient-intensit function
+	 * 
+	 * @param ambientIntensityFunction
+	 */
 	public void setAmbientIntensityFunction(Function<Ray, RawColor> ambientIntensityFunction) {
 
 		this.ambientIntensityFunction = ambientIntensityFunction;
 	}
 
+	/**
+	 * Set this Light's diffuse-intensit function
+	 * 
+	 * @param diffuseIntensityFunction
+	 */
 	public void setDiffuseIntensityFunction(Function<Ray, RawColor> diffuseIntensityFunction) {
 
 		this.diffuseIntensityFunction = diffuseIntensityFunction;
 	}
 
+	/**
+	 * Set this Light's specular-intensit function
+	 * 
+	 * @param specularIntensityFunction
+	 */
 	public void setSpecularIntensityFunction(Function<Ray, RawColor> specularIntensityFunction) {
 
 		this.specularIntensityFunction = specularIntensityFunction;
 	}
 
+	/**
+	 * Set this light's overall-intensity function
+	 * 
+	 * @param intensityFunction
+	 */
 	public void setIntensityFunction(Function<Vector3D, Double> intensityFunction) {
 
 		this.intensityFunction = intensityFunction;
 	}
 
+	/**
+	 * Set this light's exposure function. See
+	 * {@link #DEFAULT_EXPOSURE_FUNCTION()}
+	 * 
+	 * @param exposureFunction
+	 */
 	public void setExposureFunction(BiFunction<Light, Intersection<Shape>, Double> exposureFunction) {
 
 		this.exposureFunction = exposureFunction;
 	}
 
+	/**
+	 * Set this light's falloff function. See
+	 * {@link #DEFAULT_FALLOFF_FUNCTION()}
+	 * 
+	 * @param falloffFunction
+	 */
 	public void setFalloffFunction(BiFunction<Light, Vector3D, Double> falloffFunction) {
 
 		this.falloffFunction = falloffFunction;
