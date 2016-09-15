@@ -1,5 +1,7 @@
 package org.snowjak.rays.color;
 
+import java.util.function.Function;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -83,6 +85,17 @@ public interface HasColorScheme {
 	public void setDiffuseColorScheme(ColorScheme diffuseColorScheme);
 
 	/**
+	 * Set this object's diffuse ColorScheme to use the provided
+	 * {@link Function}
+	 * 
+	 * @param functionalDiffuseColor
+	 */
+	public default void setDiffuseColorScheme(Function<Vector3D, RawColor> functionalDiffuseColor) {
+
+		setDiffuseColorScheme(new FunctionalColorScheme(functionalDiffuseColor));
+	}
+
+	/**
 	 * @return this object's specular {@link ColorScheme}
 	 */
 	public ColorScheme getSpecularColorScheme();
@@ -95,6 +108,17 @@ public interface HasColorScheme {
 	public void setSpecularColorScheme(ColorScheme specularColorScheme);
 
 	/**
+	 * Set this object's specular ColorScheme to use the provided
+	 * {@link Function}
+	 * 
+	 * @param functionalSpecularColor
+	 */
+	public default void setSpecularColorScheme(Function<Vector3D, RawColor> functionalSpecularColor) {
+
+		setSpecularColorScheme(new FunctionalColorScheme(functionalSpecularColor));
+	}
+
+	/**
 	 * @return this object's emissive {@link ColorScheme}
 	 */
 	public ColorScheme getEmissiveColorScheme();
@@ -105,5 +129,16 @@ public interface HasColorScheme {
 	 * @param emissiveColorScheme
 	 */
 	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme);
+
+	/**
+	 * Set this object's emissive ColorScheme to use the provided
+	 * {@link Function}
+	 * 
+	 * @param functionalEmissiveColor
+	 */
+	public default void setEmissiveColorScheme(Function<Vector3D, RawColor> functionalEmissiveColor) {
+
+		setEmissiveColorScheme(new FunctionalColorScheme(functionalEmissiveColor));
+	}
 
 }
