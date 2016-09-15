@@ -60,23 +60,88 @@ public class FresnelLightingModel implements LightingModel {
 		if (intersections.isEmpty())
 			return Optional.empty();
 
-		//
-		//
-		//
-		Intersection<Shape> intersect = intersections.get(0);
-		Vector3D point = intersect.getPoint();
-		Vector3D i = intersect.getRay().getVector();
-		Vector3D n = intersect.getNormal();
-		double theta_i = Vector3D.angle(i.negate(), n);
-
 		if (ray.getRecursiveLevel() > World.getSingleton().getMaxRayRecursion())
 			return surfaceLightingModel.determineRayColor(ray, intersections);
 
 		//
 		//
 		//
-		double n1 = intersect.getLeavingMaterial().getRefractiveIndex(point),
-				n2 = intersect.getEnteringMaterial().getRefractiveIndex(point);
+		Intersection<Shape> intersect = intersections.get(0);
+		FresnelResult fresnel = calculateFresnelResult(intersect);
+		double reflectance = fresnel.getReflectance();
+		double transmittance = fresnel.getTransmittance();
+
+		//
+		//
+		// Now shoot some rays!
+		RawColor reflectedColor = new RawColor(), refractedColor = new RawColor();
+
+		if (reflectance > 0d) {
+			List<Intersection<Shape>> reflectedIntersections = World.getSingleton()
+					.getShapeIntersections(fresnel.getReflectedRay());
+			reflectedColor = World.getSingleton()
+					.getLightingModel()
+					.determineRayColor(fresnel.getReflectedRay(), reflectedIntersections)
+					.orElse(new RawColor());
+
+		}
+		if (transmittance > 0d) {
+			List<Intersection<Shape>> refractedIntersections = World.getSingleton()
+					.getShapeIntersections(fresnel.getRefractedRay());
+			refractedColor = World.getSingleton()
+					.getLightingModel()
+					.determineRayColor(fresnel.getRefractedRay(), refractedIntersections)
+					.orElse(new RawColor());
+
+			double materialDepth = 1d;
+			if (!refractedIntersections.isEmpty())
+				materialDepth = refractedIntersections.get(0).getDistanceFromRayOrigin();
+
+			Material scatteringMaterial = intersect.getEnteringMaterial();
+
+			double reflectedFromInterveningScattering = max(
+					min(scatteringMaterial.getDensity(intersect.getPoint()) * materialDepth, 1d), 0d);
+			double transmittedThroughInterveningScattering = 1d - reflectedFromInterveningScattering;
+
+			RawColor reflectedInterveningColor = scatteringMaterial.getColor(intersect.getPoint())
+					.multiplyScalar(max(min(scatteringMaterial.getDensity(intersect.getPoint()), 1d), 0d));
+			refractedColor = Functions.lerp(reflectedInterveningColor, refractedColor,
+					transmittedThroughInterveningScattering);
+
+			double surfaceTransparency = scatteringMaterial.getSurfaceTransparency(intersect.getPoint());
+			Optional<RawColor> surfaceColor = surfaceLightingModel.determineRayColor(ray, intersections);
+			if (surfaceColor.isPresent())
+				refractedColor = Functions.lerp(surfaceColor.get(), refractedColor, surfaceTransparency);
+		}
+
+		reflectedColor = reflectedColor.multiplyScalar(reflectance);
+		refractedColor = refractedColor.multiplyScalar(transmittance);
+
+		return Optional.of(reflectedColor.add(refractedColor));
+	}
+
+	/**
+	 * Given an Intersection, calculate the Schlick approximation to the Fresnel
+	 * equations and return a {@link FresnelResult} encapsulating the results of
+	 * that approximation.
+	 * 
+	 * @param intersection
+	 * @return a {@link FresnelResult} describing the resulting reflection &
+	 *         refraction
+	 */
+	public FresnelResult calculateFresnelResult(Intersection<Shape> intersection) {
+
+		Ray ray = intersection.getRay();
+		Vector3D point = intersection.getPoint();
+		Vector3D i = intersection.getRay().getVector();
+		Vector3D n = intersection.getNormal();
+		double theta_i = Vector3D.angle(i.negate(), n);
+
+		//
+		//
+		//
+		double n1 = intersection.getLeavingMaterial().getRefractiveIndex(point),
+				n2 = intersection.getEnteringMaterial().getRefractiveIndex(point);
 
 		//
 		//
@@ -107,49 +172,51 @@ public class FresnelLightingModel implements LightingModel {
 
 			reflectance = (r_normal + r_tangent) / 2d;
 		}
-		double transmittance = 1d - reflectance;
 
-		//
-		//
-		// Now shoot some rays!
-		RawColor reflectedColor = new RawColor(), refractedColor = new RawColor();
+		return new FresnelResult(reflectance, 1d - reflectance, reflectedRay, refractedRay);
+	}
 
-		if (reflectance > 0d) {
-			List<Intersection<Shape>> reflectedIntersections = World.getSingleton().getShapeIntersections(reflectedRay);
-			reflectedColor = World.getSingleton()
-					.getLightingModel()
-					.determineRayColor(reflectedRay, reflectedIntersections)
-					.orElse(new RawColor());
+	/**
+	 * A data-bean describing the results of a Fresnel interaction: the results
+	 * for Fresnel reflectance and transmittance, plus a reflected and a
+	 * refracted Ray
+	 * 
+	 * @author snowjak88
+	 *
+	 */
+	@SuppressWarnings("javadoc")
+	public static class FresnelResult {
 
-		}
-		if (transmittance > 0d) {
-			List<Intersection<Shape>> refractedIntersections = World.getSingleton().getShapeIntersections(refractedRay);
-			refractedColor = World.getSingleton()
-					.getLightingModel()
-					.determineRayColor(refractedRay, refractedIntersections)
-					.orElse(new RawColor());
-
-			double materialDepth = 1d;
-			if (!refractedIntersections.isEmpty())
-				materialDepth = refractedIntersections.get(0).getDistanceFromRayOrigin();
-
-			Material scatteringMaterial = intersect.getEnteringMaterial();
-
-			double reflectedFromInterveningScattering = max(
-					min(scatteringMaterial.getDensity(intersect.getPoint()) * materialDepth, 1d), 0d);
-			double transmittedThroughInterveningScattering = 1d - reflectedFromInterveningScattering;
-
-			RawColor reflectedInterveningColor = surfaceLightingModel.determineRayColor(ray, intersections)
-					.orElse(new RawColor())
-					.multiplyScalar(max(min(scatteringMaterial.getDensity(intersect.getPoint()), 1d), 0d));
-			refractedColor = Functions.lerp(reflectedInterveningColor, refractedColor,
-					transmittedThroughInterveningScattering);
+		public FresnelResult(double reflectance, double transmittance, Ray reflectedRay, Ray refractedRay) {
+			this.reflectance = reflectance;
+			this.transmittance = transmittance;
+			this.reflectedRay = reflectedRay;
+			this.refractedRay = refractedRay;
 		}
 
-		reflectedColor = reflectedColor.multiplyScalar(reflectance);
-		refractedColor = refractedColor.multiplyScalar(transmittance);
+		private double reflectance, transmittance;
 
-		return Optional.of(reflectedColor.add(refractedColor));
+		private Ray reflectedRay, refractedRay;
+
+		public double getReflectance() {
+
+			return reflectance;
+		}
+
+		public double getTransmittance() {
+
+			return transmittance;
+		}
+
+		public Ray getReflectedRay() {
+
+			return reflectedRay;
+		}
+
+		public Ray getRefractedRay() {
+
+			return refractedRay;
+		}
 	}
 
 	private Vector3D getNormalPart(Vector3D v, Vector3D normal) {
