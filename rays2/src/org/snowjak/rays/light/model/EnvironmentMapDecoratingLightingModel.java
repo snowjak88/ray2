@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
@@ -38,14 +39,20 @@ public class EnvironmentMapDecoratingLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
-		Optional<RawColor> decoratedColor = decoratedLightingModel.determineRayColor(ray, intersections);
+		Optional<LightingResult> decoratedColor = decoratedLightingModel.determineRayColor(ray, intersections);
 
 		if (decoratedColor.isPresent())
 			return decoratedColor;
 
-		return Optional.of(environmentMap.getColorAt(environmentMap.convert(ray.getVector())));
+		LightingResult result = new LightingResult();
+		result.setEye(ray.getVector());
+		result.setNormal(ray.getVector().negate());
+		result.setPoint(ray.getVector().scalarMultiply(World.WORLD_BOUND));
+		result.setRadiance(environmentMap.getColorAt(environmentMap.convert(ray.getVector())));
+
+		return Optional.of(result);
 	}
 
 	/**

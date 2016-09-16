@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
 
@@ -19,11 +18,20 @@ import org.snowjak.rays.shape.Shape;
 public class FlatLightingModel implements LightingModel {
 
 	@Override
-	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
-		return intersections.stream()
-				.map(i -> i.getIntersected().getDiffuse(i.getIntersected().worldToLocal(i.getPoint())))
-				.findFirst();
+		if (intersections.isEmpty())
+			return Optional.empty();
+
+		Intersection<Shape> intersect = intersections.get(0);
+
+		LightingResult result = new LightingResult();
+		result.setEye(ray.getVector());
+		result.setNormal(intersect.getNormal());
+		result.setPoint(intersect.getPoint());
+		result.setRadiance(intersect.getDiffuse(intersect.getPoint()));
+
+		return Optional.of(result);
 	}
 
 }

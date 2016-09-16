@@ -32,12 +32,12 @@ public interface LightingModel {
 	 * @param intersections
 	 * @return the resulting Color, if any
 	 */
-	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections);
+	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections);
 
 	public static class LightingResult {
-		private Vector3D point, normal, eye;
+		private Vector3D point = Vector3D.ZERO, normal = Vector3D.ZERO, eye = Vector3D.ZERO;
 		private Collection<Light> visibleLights = new LinkedList<>();
-		private RawColor radiance;
+		private RawColor radiance = new RawColor();
 		private Collection<Pair<LightingResult, Double>> contributingResults = new LinkedList<>();
 
 		public Vector3D getPoint() {
@@ -68,10 +68,6 @@ public interface LightingModel {
 			return visibleLights;
 		}
 
-		public void setVisibleLights(Collection<Light> visibleLights) {
-			this.visibleLights = visibleLights;
-		}
-
 		public RawColor getRadiance() {
 			return radiance;
 		}
@@ -82,10 +78,6 @@ public interface LightingModel {
 
 		public Collection<Pair<LightingResult, Double>> getContributingResults() {
 			return contributingResults;
-		}
-
-		public void setContributingResults(Collection<Pair<LightingResult, Double>> contributingResults) {
-			this.contributingResults = contributingResults;
 		}
 	}
 }

@@ -24,18 +24,16 @@ import org.snowjak.rays.shape.Shape;
 public class AmbientLightingModel implements LightingModel {
 
 	@Override
-	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
 		if (intersections.isEmpty())
 			return Optional.empty();
 
 		return Optional.of(lightIntersection(intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
-				.findFirst()
-				.get()));
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0).findFirst().get()));
 	}
 
-	private RawColor lightIntersection(Intersection<Shape> intersection) {
+	private LightingResult lightIntersection(Intersection<Shape> intersection) {
 
 		Vector3D point = intersection.getPoint();
 		RawColor totalLightAtPoint = new RawColor();
@@ -50,7 +48,14 @@ public class AmbientLightingModel implements LightingModel {
 
 		RawColor pointColor = intersection.getEnteringMaterial().getColor(point);
 
-		return totalLightAtPoint.multiply(pointColor);
+		LightingResult result = new LightingResult();
+		result.setEye(intersection.getRay().getVector());
+		result.setNormal(intersection.getNormal());
+		result.setPoint(point);
+		result.setRadiance(totalLightAtPoint.multiply(pointColor));
+		result.getVisibleLights().addAll(World.getSingleton().getLights());
+
+		return result;
 	}
 
 }

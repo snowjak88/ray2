@@ -1,5 +1,7 @@
 package org.snowjak.rays.light.model;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,37 +41,36 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
 		if (intersections.isEmpty())
 			return Optional.empty();
 
 		return Optional.of(lightIntersection(intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
-				.findFirst()
-				.get()));
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0).findFirst().get()));
 	}
 
-	private RawColor lightIntersection(Intersection<Shape> intersection) {
+	private LightingResult lightIntersection(Intersection<Shape> intersection) {
 
 		Vector3D point = intersection.getPoint();
 		Vector3D normal = intersection.getNormal();
 		RawColor totalLightAtPoint = new RawColor();
 
+		Collection<Light> visibleLights = new LinkedList<>();
 		for (Light light : World.getSingleton().getLights()) {
 
 			Ray toLightRay = new Ray(point, light.getLocation().subtract(point));
 
 			boolean isOccludingIntersections = false;
 			if (doLightOccluding)
-				isOccludingIntersections = World.getSingleton()
-						.getShapeIntersections(toLightRay)
-						.parallelStream()
+				isOccludingIntersections = World.getSingleton().getShapeIntersections(toLightRay).parallelStream()
 						.filter(i -> Double.compare(i.getDistanceFromRayOrigin(),
 								light.getLocation().distance(point)) < 0)
 						.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0);
 			if (isOccludingIntersections)
 				continue;
+
+			visibleLights.add(light);
 
 			double exposure = light.getExposure(point, normal);
 
@@ -82,7 +83,14 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 
 		RawColor pointColor = intersection.getDiffuse(point);
 
-		return totalLightAtPoint.multiply(pointColor);
+		LightingResult result = new LightingResult();
+		result.setPoint(point);
+		result.setNormal(normal);
+		result.setEye(intersection.getRay().getVector());
+		result.setRadiance(pointColor);
+		result.getVisibleLights().addAll(visibleLights);
+
+		return result;
 	}
 
 }

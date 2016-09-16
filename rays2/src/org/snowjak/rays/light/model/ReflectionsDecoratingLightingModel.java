@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
-import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
 
@@ -35,44 +35,52 @@ public class ReflectionsDecoratingLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
 		if (intersections.isEmpty())
 			return Optional.empty();
 		//
 		//
-		Optional<RawColor> shapeColor = child.determineRayColor(ray, intersections);
+		Optional<LightingResult> decoratedResult = child.determineRayColor(ray, intersections);
 		//
 		//
-		if (!shapeColor.isPresent())
+		if (!decoratedResult.isPresent())
 			return Optional.empty();
 		//
 		//
-		double reflectivity = intersections.get(0)
-				.getDiffuseColorScheme()
+		double reflectivity = intersections.get(0).getDiffuseColorScheme()
 				.getReflectivity(intersections.get(0).getPoint());
 		if (Double.compare(reflectivity, 0d) <= 0)
-			return shapeColor;
+			return decoratedResult;
 		//
 		//
-		RawColor shapeOriginalColor = shapeColor
-				.orElse(intersections.get(0).getDiffuseColorScheme().getColor(intersections.get(0).getPoint()));
-		RawColor shapeReflectionColor = getReflectiveShapeDiffuseColor(intersections.get(0)).orElse(new RawColor());
+		LightingResult finalResult = new LightingResult();
+		finalResult.setPoint(intersections.get(0).getPoint());
+		finalResult.setNormal(intersections.get(0).getNormal());
+		finalResult.setEye(intersections.get(0).getRay().getVector());
 
-		shapeOriginalColor = shapeOriginalColor.multiplyScalar(1d - reflectivity);
-		shapeReflectionColor.multiplyScalar(reflectivity);
+		finalResult.getContributingResults().add(new Pair<>(decoratedResult.get(), 1d - reflectivity));
+		finalResult.setRadiance(decoratedResult.get().getRadiance().multiplyScalar(1d - reflectivity));
 
-		return Optional.of(shapeOriginalColor.add(shapeReflectionColor));
+		Optional<LightingResult> reflectedResult = getReflectiveShapeDiffuseColor(intersections.get(0));
+		if (reflectedResult.isPresent()) {
+			finalResult.getContributingResults().add(new Pair<>(reflectedResult.get(), reflectivity));
+			finalResult.setRadiance(
+					finalResult.getRadiance().add(reflectedResult.get().getRadiance().multiplyScalar(reflectivity)));
+		}
+
+		return Optional.of(finalResult);
 
 	}
 
-	private Optional<RawColor> getReflectiveShapeDiffuseColor(Intersection<Shape> intersection) {
+	private Optional<LightingResult> getReflectiveShapeDiffuseColor(Intersection<Shape> intersection) {
 
 		double shapeReflectivity = intersection.getDiffuseColorScheme().getReflectivity(intersection.getPoint());
 
 		Ray originalRay = intersection.getRay();
 
-		if (originalRay.getRecursiveLevel() >= World.getSingleton().getMaxRayRecursion() || Double.compare(shapeReflectivity, 0d) <= 0)
+		if (originalRay.getRecursiveLevel() >= World.getSingleton().getMaxRayRecursion()
+				|| Double.compare(shapeReflectivity, 0d) <= 0)
 			return Optional.empty();
 
 		Vector3D intersectPoint = intersection.getPoint();
