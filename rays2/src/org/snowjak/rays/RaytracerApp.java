@@ -10,12 +10,15 @@ import org.snowjak.rays.color.SimpleColorScheme;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.light.DirectionalLight;
 import org.snowjak.rays.light.Light;
+import org.snowjak.rays.light.PointLight;
+import org.snowjak.rays.light.indirect.PhotonMap;
 import org.snowjak.rays.light.model.AdditiveCompositingLightingModel;
 import org.snowjak.rays.light.model.AmbientLightingModel;
 import org.snowjak.rays.light.model.EnvironmentMapDecoratingLightingModel;
 import org.snowjak.rays.light.model.FresnelLightingModel;
 import org.snowjak.rays.light.model.LambertianDiffuseLightingModel;
 import org.snowjak.rays.light.model.PhongSpecularLightingModel;
+import org.snowjak.rays.light.model.PhotonMapDecoratingLightingModel;
 import org.snowjak.rays.light.model.SphericalEnvironmentMap;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Cylinder;
@@ -27,6 +30,7 @@ import org.snowjak.rays.shape.perturb.NormalPerturber;
 import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
+import org.snowjak.rays.ui.AntialiasingScreenDecorator.AA;
 import org.snowjak.rays.ui.impl.JavaFxPixelDrawer;
 
 import javafx.application.Application;
@@ -46,7 +50,8 @@ public class RaytracerApp extends Application {
 	public void start(Stage primaryStage) throws Exception {
 
 		World world = buildWorld();
-		Settings.presetDetailed();
+//		Settings.presetDetailed();
+		Settings.getSingleton().setAntialiasing(AA.x2);
 		Renderer renderer = new Renderer(new JavaFxPixelDrawer(primaryStage));
 
 		primaryStage.setOnCloseRequest((e) -> {
@@ -54,60 +59,43 @@ public class RaytracerApp extends Application {
 			primaryStage.close();
 		});
 
-		Executors.newSingleThreadExecutor().submit(() -> renderer.render(world.getCamera()));
+		Executors.newSingleThreadExecutor().submit(() -> {
+			System.out.println("Building photon-map ...");
+			PhotonMap.getSingleton().add(30000);
+			System.out.println("Rendering ...");
+			renderer.render(world.getCamera());
+		});
 	}
 
 	private World buildWorld() {
 
 		World world = World.getSingleton();
 
-		Material shapeMaterial = new Material(Functions.constant(Color.WHITE), Functions.constant(1d),
-				Functions.constant(0d), Functions.constant(1.8d));
-		Material sphereMaterial = new Material(Functions.constant(Color.GREEN), Functions.constant(0.825d),
-				Functions.constant(0.125), Functions.constant(1.3));
-
-		Shape cylinder = new Cylinder();
-		cylinder.getTransformers().add(new Scale(0.5, 2d, 0.5));
-
-		Shape thing = new Intersect(cylinder, new Sphere());
-		thing.setMaterial(shapeMaterial);
-		thing.setDiffuseColorScheme(new SimpleColorScheme(Color.SILVER));
-		thing.getTransformers().add(new Scale(4d, 4d, 4d));
-		world.getShapes().add(thing);
+		Material sphereMaterial = new Material(Functions.constant(Color.WHITE), Functions.constant(1d),
+				Functions.constant(0d), Functions.constant(1.3));
 
 		Shape sphere = new Sphere();
 		sphere.setMaterial(sphereMaterial);
-		sphere.setDiffuseColorScheme(Functions.constant(Color.GREEN));
 		sphere.getTransformers().add(new Scale(2d, 2d, 2d));
-		sphere.getTransformers().add(new Translation(6d, 0d, 0d));
-		world.getShapes().add(sphere);
-
-		sphere = new Sphere();
-		sphere.setMaterial(sphereMaterial);
-		sphere.setDiffuseColorScheme(Functions.constant(Color.GREEN));
-		sphere.getTransformers().add(new Scale(2d, 2d, 2d));
-		sphere.getTransformers().add(new Translation(-6d, 0d, 0d));
-		world.getShapes().add(sphere);
-
-		sphere = new Sphere();
-		sphere.setMaterial(sphereMaterial);
-		sphere.setDiffuseColorScheme(Functions.constant(Color.GREEN));
-		sphere.getTransformers().add(new Scale(2d, 2d, 2d));
-		sphere.getTransformers().add(new Translation(0d, 0d, 6d));
+		sphere.setDiffuseColorScheme(new SimpleColorScheme(Color.GREEN));
+		sphere.getSpecularColorScheme().setShininess(1d);
 		world.getShapes().add(sphere);
 
 		Plane plane = new Plane();
-		Material beneathPlaneMaterial = new Material(Functions.constant(Color.LIGHTSKYBLUE), Functions.constant(1d),
-				Functions.constant(1d / 3d), Functions.constant(1.3d)), abovePlaneMaterial = Material.AIR;
+		Material beneathPlaneMaterial = new Material(Functions.constant(Color.WHITE), Functions.constant(0d),
+				Functions.constant(1d), Functions.constant(1d));
 		plane.setMinusMaterial(beneathPlaneMaterial);
-		plane.setPlusMaterial(abovePlaneMaterial);
+		plane.setDiffuseColorScheme(
+				(v) -> new RawColor(Functions.lerp(Color.BLACK, Color.WHITE, Functions.checkerboard(v))));
+//				new SimpleColorScheme(Color.SADDLEBROWN));
 		plane.getTransformers().add(new Translation(0d, -2.01d, 0d));
-		world.getShapes().add(new NormalPerturber(
-				(n, i) -> n.add(n.orthogonal().scalarMultiply(Functions.turbulence(i.getPoint(), 8) / 10d)), plane));
+		world.getShapes().add(plane);
 
-		Light light = new DirectionalLight(new Vector3D(1, -10, 1).normalize(),
-				new RawColor(Color.WHITE).multiplyScalar(0.01), new RawColor(Color.BISQUE), new RawColor(Color.BISQUE),
-				6d);
+		Light light = new PointLight(new RawColor(Color.WHITE).multiplyScalar(0.01), new RawColor(Color.WHITE),
+				new RawColor(Color.WHITE), 10d);
+		light.getTransformers().add(new Translation(-10d, 4d, 0d));
+//		Light light = new DirectionalLight(new Vector3D(2, -1, -2), new RawColor(Color.WHITE).multiplyScalar(0.01),
+//				new RawColor(Color.WHITE), new RawColor(Color.WHITE), 1d);
 		world.getLights().add(light);
 
 		Camera camera = new Camera(4.0, 60.0);
@@ -118,8 +106,11 @@ public class RaytracerApp extends Application {
 
 		world.setLightingModel(new EnvironmentMapDecoratingLightingModel(
 				new SphericalEnvironmentMap(new Image("resources/images/spherical-map-field2.jpg")),
-				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
-						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel()))));
+				new FresnelLightingModel(new PhotonMapDecoratingLightingModel(
+						new AdditiveCompositingLightingModel(new AmbientLightingModel(),
+								new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel())))));
+
+		PhotonMap.getSingleton().getAimShapes().add(sphere);
 
 		return world;
 	}

@@ -264,6 +264,10 @@ public class PhotonMap {
 		Collection<Pair<Double, RawColor>> distances = getPhotonsCloseToPoint(point, distance).parallelStream()
 				.map(pl -> new Pair<Double, RawColor>(pl.getKey().distance(point), pl.getValue()))
 				.collect(Collectors.toCollection(LinkedList::new));
+
+		if (distances.isEmpty())
+			return new RawColor();
+
 		Collection<Pair<Double, RawColor>> areaRule = distances.parallelStream()
 				.map(pl -> new Pair<>((double) 1d / (4d * FastMath.PI * pl.getKey()), pl.getValue()))
 				// .map(pl -> new Pair<>((double) totalPhotons / (4d *

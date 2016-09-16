@@ -108,12 +108,12 @@ public class FresnelLightingModel implements LightingModel {
 			// The refracted color is to be mixed with the surface
 			// color, insofar as the surface is transparent
 			double surfaceTransparency = intersect.getEnteringMaterial().getSurfaceTransparency(intersect.getPoint());
+
 			LightingResult surfaceResult = new LightingResult();
 			surfaceResult.setEye(ray);
 			surfaceResult.setPoint(intersect.getPoint());
 			surfaceResult.setNormal(intersect.getNormal());
-			if (surfaceTransparency < 1d)
-				surfaceResult = surfaceLightingModel.determineRayColor(ray, intersections).orElse(surfaceResult);
+			surfaceResult = surfaceLightingModel.determineRayColor(ray, intersections).orElse(surfaceResult);
 			RawColor surfaceColor = surfaceResult.getRadiance();
 
 			//
