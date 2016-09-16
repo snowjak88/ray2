@@ -24,7 +24,7 @@ public interface PixelDrawer extends CanBeShutdown {
 	 */
 	public default Optional<RawColor> getRayColor(int screenX, int screenY, Camera camera) {
 
-		return camera.shootRay(getCameraX(screenX, camera), getCameraY(screenY, camera));
+		return camera.shootRay(getCameraX(screenX, camera), getCameraY(screenY, camera)).map(lr -> lr.getRadiance());
 	}
 
 	/**

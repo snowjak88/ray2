@@ -34,49 +34,70 @@ public interface LightingModel {
 	 */
 	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections);
 
+	/**
+	 * Describes the outcome of executing this LightingModel.
+	 * 
+	 * @author snowjak
+	 *
+	 */
+	@SuppressWarnings("javadoc")
 	public static class LightingResult {
+
 		private Vector3D point = Vector3D.ZERO, normal = Vector3D.ZERO, eye = Vector3D.ZERO;
+
 		private Collection<Light> visibleLights = new LinkedList<>();
+
 		private RawColor radiance = new RawColor();
+
 		private Collection<Pair<LightingResult, Double>> contributingResults = new LinkedList<>();
 
 		public Vector3D getPoint() {
+
 			return point;
 		}
 
 		public void setPoint(Vector3D point) {
+
 			this.point = point;
 		}
 
 		public Vector3D getNormal() {
+
 			return normal;
 		}
 
 		public void setNormal(Vector3D normal) {
+
 			this.normal = normal;
 		}
 
 		public Vector3D getEye() {
+
 			return eye;
 		}
 
 		public void setEye(Vector3D eye) {
+
 			this.eye = eye;
 		}
 
 		public Collection<Light> getVisibleLights() {
+
 			return visibleLights;
 		}
 
 		public RawColor getRadiance() {
+
 			return radiance;
 		}
 
 		public void setRadiance(RawColor radiance) {
+
 			this.radiance = radiance;
 		}
 
 		public Collection<Pair<LightingResult, Double>> getContributingResults() {
+
 			return contributingResults;
 		}
 	}

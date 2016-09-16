@@ -74,7 +74,7 @@ public class AntialiasingScreenDecorator implements PixelDrawer {
 				double scale = distribution.density(FastMath.sqrt(FastMath.pow(dx, 2d) + FastMath.pow(dy, 2d)));
 
 				totalScale += scale;
-				Optional<RawColor> color = camera.shootRay(x, y);
+				Optional<RawColor> color = camera.shootRay(x, y).map(lr -> lr.getRadiance());
 				if (color.isPresent())
 					totalColor = totalColor.add(color.get().multiplyScalar(scale));
 			}
