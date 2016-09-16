@@ -73,7 +73,7 @@ public class FresnelLightingModel implements LightingModel {
 		//
 		// Now shoot some rays!
 		LightingResult finalResult = new LightingResult();
-		finalResult.setEye(ray.getVector());
+		finalResult.setEye(ray);
 		finalResult.setPoint(intersect.getPoint());
 		finalResult.setNormal(intersect.getNormal());
 
@@ -109,10 +109,10 @@ public class FresnelLightingModel implements LightingModel {
 			// color, insofar as the surface is transparent
 			double surfaceTransparency = intersect.getEnteringMaterial().getSurfaceTransparency(intersect.getPoint());
 			LightingResult surfaceResult = new LightingResult();
-			surfaceResult.setEye(ray.getVector());
+			surfaceResult.setEye(ray);
 			surfaceResult.setPoint(intersect.getPoint());
 			surfaceResult.setNormal(intersect.getNormal());
-			if (surfaceTransparency > 0d)
+			if (surfaceTransparency < 1d)
 				surfaceResult = surfaceLightingModel.determineRayColor(ray, intersections).orElse(surfaceResult);
 			RawColor surfaceColor = surfaceResult.getRadiance();
 
@@ -121,17 +121,18 @@ public class FresnelLightingModel implements LightingModel {
 			double finalSurfaceFraction = 1d - surfaceTransparency;
 			double finalRefractedFraction = surfaceTransparency;
 
-			RawColor finalColor = Functions.lerp(surfaceColor, refractedColor, surfaceTransparency);
+			RawColor finalRefractedColor = Functions.lerp(surfaceColor, refractedColor, surfaceTransparency);
 
 			LightingResult transmittedResult = new LightingResult();
-			transmittedResult.setEye(ray.getVector());
+			transmittedResult.setEye(ray);
 			transmittedResult.setPoint(intersect.getPoint());
 			transmittedResult.setNormal(intersect.getNormal());
-			transmittedResult.setRadiance(finalColor);
+			transmittedResult.setRadiance(finalRefractedColor);
 			transmittedResult.getContributingResults().add(new Pair<>(refractedResult, finalRefractedFraction));
 			transmittedResult.getContributingResults().add(new Pair<>(surfaceResult, finalSurfaceFraction));
 
 			finalResult.getContributingResults().add(new Pair<>(transmittedResult, transmittance));
+			refractedColor = finalRefractedColor;
 		}
 
 		reflectedColor = reflectedColor.multiplyScalar(reflectance);

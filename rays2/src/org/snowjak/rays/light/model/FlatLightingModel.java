@@ -26,7 +26,7 @@ public class FlatLightingModel implements LightingModel {
 		Intersection<Shape> intersect = intersections.get(0);
 
 		LightingResult result = new LightingResult();
-		result.setEye(ray.getVector());
+		result.setEye(ray);
 		result.setNormal(intersect.getNormal());
 		result.setPoint(intersect.getPoint());
 		result.setRadiance(intersect.getDiffuse(intersect.getPoint()));

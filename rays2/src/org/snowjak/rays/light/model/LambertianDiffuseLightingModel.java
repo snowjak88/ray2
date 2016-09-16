@@ -47,7 +47,9 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 			return Optional.empty();
 
 		return Optional.of(lightIntersection(intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0).findFirst().get()));
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.findFirst()
+				.get()));
 	}
 
 	private LightingResult lightIntersection(Intersection<Shape> intersection) {
@@ -63,7 +65,9 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 
 			boolean isOccludingIntersections = false;
 			if (doLightOccluding)
-				isOccludingIntersections = World.getSingleton().getShapeIntersections(toLightRay).parallelStream()
+				isOccludingIntersections = World.getSingleton()
+						.getShapeIntersections(toLightRay)
+						.parallelStream()
 						.filter(i -> Double.compare(i.getDistanceFromRayOrigin(),
 								light.getLocation().distance(point)) < 0)
 						.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0);
@@ -86,7 +90,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 		LightingResult result = new LightingResult();
 		result.setPoint(point);
 		result.setNormal(normal);
-		result.setEye(intersection.getRay().getVector());
+		result.setEye(intersection.getRay());
 		result.setRadiance(pointColor);
 		result.getVisibleLights().addAll(visibleLights);
 

@@ -130,7 +130,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 		RawColor totalColor = totalSpecular;
 
 		LightingResult result = new LightingResult();
-		result.setEye(ray.getVector());
+		result.setEye(ray);
 		result.setNormal(intersect.getNormal());
 		result.setPoint(intersect.getPoint());
 		result.setRadiance(totalColor);

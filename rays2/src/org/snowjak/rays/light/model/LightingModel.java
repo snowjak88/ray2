@@ -43,7 +43,9 @@ public interface LightingModel {
 	@SuppressWarnings("javadoc")
 	public static class LightingResult {
 
-		private Vector3D point = Vector3D.ZERO, normal = Vector3D.ZERO, eye = Vector3D.ZERO;
+		private Vector3D point = Vector3D.ZERO, normal = Vector3D.ZERO;
+
+		private Ray eye = new Ray(Vector3D.ZERO, Vector3D.ZERO);
 
 		private Collection<Light> visibleLights = new LinkedList<>();
 
@@ -71,12 +73,12 @@ public interface LightingModel {
 			this.normal = normal;
 		}
 
-		public Vector3D getEye() {
+		public Ray getEye() {
 
 			return eye;
 		}
 
-		public void setEye(Vector3D eye) {
+		public void setEye(Ray eye) {
 
 			this.eye = eye;
 		}

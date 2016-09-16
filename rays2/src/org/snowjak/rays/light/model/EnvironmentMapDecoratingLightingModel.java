@@ -47,7 +47,7 @@ public class EnvironmentMapDecoratingLightingModel implements LightingModel {
 			return decoratedColor;
 
 		LightingResult result = new LightingResult();
-		result.setEye(ray.getVector());
+		result.setEye(ray);
 		result.setNormal(ray.getVector().negate());
 		result.setPoint(ray.getVector().scalarMultiply(2d * World.WORLD_BOUND));
 		result.setRadiance(environmentMap.getColorAt(environmentMap.convert(ray.getVector())));

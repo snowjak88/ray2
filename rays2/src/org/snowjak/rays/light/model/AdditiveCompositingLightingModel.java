@@ -1,12 +1,11 @@
 package org.snowjak.rays.light.model;
 
-import java.util.LinkedList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
@@ -53,16 +52,27 @@ public class AdditiveCompositingLightingModel extends CompositingLightingModel {
 	@Override
 	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
-		Collection<LightingResult> childResults = getChildren().parallelStream()
-				.map(lm -> lm.determineRayColor(ray, intersections)).filter(o -> o.isPresent()).map(o -> o.get())
+		List<LightingResult> childResults = getChildren().parallelStream()
+				.map(lm -> lm.determineRayColor(ray, intersections))
+				.filter(o -> o.isPresent())
+				.map(o -> o.get())
 				.collect(Collectors.toCollection(LinkedList::new));
 
+		if (childResults.isEmpty())
+			return Optional.empty();
+
 		LightingResult result = new LightingResult();
-		result.setEye(ray.getVector());
-		result.getContributingResults().addAll(childResults.parallelStream().map(lr -> new Pair<>(lr, 1d))
-				.collect(Collectors.toCollection(LinkedList::new)));
+		result.setEye(ray);
+		result.setPoint(childResults.get(0).getPoint());
+		result.setNormal(childResults.get(0).getNormal());
 		result.setRadiance(childResults.parallelStream().map(lr -> lr.getRadiance()).reduce(new RawColor(),
 				(c1, c2) -> c1.add(c2)));
+		result.getVisibleLights()
+				.addAll(childResults.parallelStream()
+						.map(lr -> lr.getVisibleLights())
+						.flatMap(lc -> lc.stream())
+						.distinct()
+						.collect(Collectors.toCollection(LinkedList::new)));
 
 		return Optional.of(result);
 

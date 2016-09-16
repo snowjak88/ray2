@@ -57,7 +57,7 @@ public class ReflectionsDecoratingLightingModel implements LightingModel {
 		LightingResult finalResult = new LightingResult();
 		finalResult.setPoint(intersections.get(0).getPoint());
 		finalResult.setNormal(intersections.get(0).getNormal());
-		finalResult.setEye(intersections.get(0).getRay().getVector());
+		finalResult.setEye(intersections.get(0).getRay());
 
 		finalResult.getContributingResults().add(new Pair<>(decoratedResult.get(), 1d - reflectivity));
 		finalResult.setRadiance(decoratedResult.get().getRadiance().multiplyScalar(1d - reflectivity));

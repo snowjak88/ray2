@@ -49,7 +49,7 @@ public class AmbientLightingModel implements LightingModel {
 		RawColor pointColor = intersection.getEnteringMaterial().getColor(point);
 
 		LightingResult result = new LightingResult();
-		result.setEye(intersection.getRay().getVector());
+		result.setEye(intersection.getRay());
 		result.setNormal(intersection.getNormal());
 		result.setPoint(point);
 		result.setRadiance(totalLightAtPoint.multiply(pointColor));
