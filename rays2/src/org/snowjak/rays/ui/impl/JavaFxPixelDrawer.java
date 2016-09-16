@@ -60,7 +60,7 @@ public class JavaFxPixelDrawer extends BasicScreen implements PixelDrawer {
 		WritableImage image = new WritableImage(settings.getImageWidth(), settings.getImageHeight());
 		ImageView imageView = new ImageView(image);
 		Group root = new Group(imageView);
-		Scene scene = new Scene(root, Color.BLACK);
+		Scene scene = new Scene(root, Color.GRAY);
 
 		ContextMenu imageContextMenu = constructImageContextMenu(screenStage, imageView);
 
