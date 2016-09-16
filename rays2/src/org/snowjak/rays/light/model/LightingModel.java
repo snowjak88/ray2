@@ -1,11 +1,16 @@
 package org.snowjak.rays.light.model;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -27,6 +32,60 @@ public interface LightingModel {
 	 * @param intersections
 	 * @return the resulting Color, if any
 	 */
-	public Optional<RawColor> determineRayColor(Ray ray,
-			List<Intersection<Shape>> intersections);
+	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections);
+
+	public static class LightingResult {
+		private Vector3D point, normal, eye;
+		private Collection<Light> visibleLights = new LinkedList<>();
+		private RawColor radiance;
+		private Collection<Pair<LightingResult, Double>> contributingResults = new LinkedList<>();
+
+		public Vector3D getPoint() {
+			return point;
+		}
+
+		public void setPoint(Vector3D point) {
+			this.point = point;
+		}
+
+		public Vector3D getNormal() {
+			return normal;
+		}
+
+		public void setNormal(Vector3D normal) {
+			this.normal = normal;
+		}
+
+		public Vector3D getEye() {
+			return eye;
+		}
+
+		public void setEye(Vector3D eye) {
+			this.eye = eye;
+		}
+
+		public Collection<Light> getVisibleLights() {
+			return visibleLights;
+		}
+
+		public void setVisibleLights(Collection<Light> visibleLights) {
+			this.visibleLights = visibleLights;
+		}
+
+		public RawColor getRadiance() {
+			return radiance;
+		}
+
+		public void setRadiance(RawColor radiance) {
+			this.radiance = radiance;
+		}
+
+		public Collection<Pair<LightingResult, Double>> getContributingResults() {
+			return contributingResults;
+		}
+
+		public void setContributingResults(Collection<Pair<LightingResult, Double>> contributingResults) {
+			this.contributingResults = contributingResults;
+		}
+	}
 }
