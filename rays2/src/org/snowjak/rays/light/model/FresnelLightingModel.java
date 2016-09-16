@@ -1,8 +1,6 @@
 package org.snowjak.rays.light.model;
 
 import static org.apache.commons.math3.util.FastMath.cos;
-import static org.apache.commons.math3.util.FastMath.max;
-import static org.apache.commons.math3.util.FastMath.min;
 import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
@@ -10,12 +8,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.intersect.Intersection;
-import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -55,7 +53,7 @@ public class FresnelLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<RawColor> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
 		if (intersections.isEmpty())
 			return Optional.empty();
@@ -74,50 +72,74 @@ public class FresnelLightingModel implements LightingModel {
 		//
 		//
 		// Now shoot some rays!
+		LightingResult finalResult = new LightingResult();
+		finalResult.setEye(ray.getVector());
+		finalResult.setPoint(intersect.getPoint());
+		finalResult.setNormal(intersect.getNormal());
+
+		LightingResult reflectedResult, refractedResult;
 		RawColor reflectedColor = new RawColor(), refractedColor = new RawColor();
 
 		if (reflectance > 0d) {
 			List<Intersection<Shape>> reflectedIntersections = World.getSingleton()
 					.getShapeIntersections(fresnel.getReflectedRay());
-			reflectedColor = World.getSingleton()
+			reflectedResult = World.getSingleton()
 					.getLightingModel()
 					.determineRayColor(fresnel.getReflectedRay(), reflectedIntersections)
-					.orElse(new RawColor());
+					.orElse(new LightingResult());
+			reflectedColor = reflectedResult.getRadiance();
+
+			finalResult.getContributingResults().add(new Pair<>(reflectedResult, reflectance));
 
 		}
 		if (transmittance > 0d) {
+			//
+			// Get the color of the refracted ray.
 			List<Intersection<Shape>> refractedIntersections = World.getSingleton()
 					.getShapeIntersections(fresnel.getRefractedRay());
-			refractedColor = World.getSingleton()
+			refractedResult = World.getSingleton()
 					.getLightingModel()
 					.determineRayColor(fresnel.getRefractedRay(), refractedIntersections)
-					.orElse(new RawColor());
+					.orElse(new LightingResult());
+			refractedColor = refractedResult.getRadiance();
 
-			double materialDepth = 1d;
-			if (!refractedIntersections.isEmpty())
-				materialDepth = refractedIntersections.get(0).getDistanceFromRayOrigin();
+			//
+			//
+			// The refracted color is to be mixed with the surface
+			// color, insofar as the surface is transparent
+			double surfaceTransparency = intersect.getEnteringMaterial().getSurfaceTransparency(intersect.getPoint());
+			LightingResult surfaceResult = new LightingResult();
+			surfaceResult.setEye(ray.getVector());
+			surfaceResult.setPoint(intersect.getPoint());
+			surfaceResult.setNormal(intersect.getNormal());
+			if (surfaceTransparency > 0d)
+				surfaceResult = surfaceLightingModel.determineRayColor(ray, intersections).orElse(surfaceResult);
+			RawColor surfaceColor = surfaceResult.getRadiance();
 
-			Material scatteringMaterial = intersect.getEnteringMaterial();
+			//
+			//
+			double finalSurfaceFraction = 1d - surfaceTransparency;
+			double finalRefractedFraction = surfaceTransparency;
 
-			double reflectedFromInterveningScattering = max(
-					min(scatteringMaterial.getDensity(intersect.getPoint()) * materialDepth, 1d), 0d);
-			double transmittedThroughInterveningScattering = 1d - reflectedFromInterveningScattering;
+			RawColor finalColor = Functions.lerp(surfaceColor, refractedColor, surfaceTransparency);
 
-			RawColor reflectedInterveningColor = scatteringMaterial.getColor(intersect.getPoint())
-					.multiplyScalar(max(min(scatteringMaterial.getDensity(intersect.getPoint()), 1d), 0d));
-			refractedColor = Functions.lerp(reflectedInterveningColor, refractedColor,
-					transmittedThroughInterveningScattering);
+			LightingResult transmittedResult = new LightingResult();
+			transmittedResult.setEye(ray.getVector());
+			transmittedResult.setPoint(intersect.getPoint());
+			transmittedResult.setNormal(intersect.getNormal());
+			transmittedResult.setRadiance(finalColor);
+			transmittedResult.getContributingResults().add(new Pair<>(refractedResult, finalRefractedFraction));
+			transmittedResult.getContributingResults().add(new Pair<>(surfaceResult, finalSurfaceFraction));
 
-			double surfaceTransparency = scatteringMaterial.getSurfaceTransparency(intersect.getPoint());
-			Optional<RawColor> surfaceColor = surfaceLightingModel.determineRayColor(ray, intersections);
-			if (surfaceColor.isPresent())
-				refractedColor = Functions.lerp(surfaceColor.get(), refractedColor, surfaceTransparency);
+			finalResult.getContributingResults().add(new Pair<>(transmittedResult, transmittance));
 		}
 
 		reflectedColor = reflectedColor.multiplyScalar(reflectance);
 		refractedColor = refractedColor.multiplyScalar(transmittance);
 
-		return Optional.of(reflectedColor.add(refractedColor));
+		finalResult.setRadiance(reflectedColor.add(refractedColor));
+
+		return Optional.of(finalResult);
 	}
 
 	/**
