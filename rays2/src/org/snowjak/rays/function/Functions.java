@@ -456,6 +456,20 @@ public class Functions {
 	}
 
 	/**
+	 * Computers a linear-interpolation between two colors.
+	 * 
+	 * @param v1
+	 * @param v2
+	 * @param w
+	 * @return the new linearly-interpolated color
+	 */
+	public static Color lerp(Color v1, Color v2, double w) {
+
+		RawColor result = lerp(new RawColor(v1), new RawColor(v2), w);
+		return result.toColor();
+	}
+
+	/**
 	 * Evaluates the smoothstep function.
 	 * 
 	 * @param x
