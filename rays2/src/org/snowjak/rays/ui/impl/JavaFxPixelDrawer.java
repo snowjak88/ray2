@@ -12,6 +12,9 @@ import org.snowjak.rays.ui.BasicScreen;
 import org.snowjak.rays.ui.PixelDrawer;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -76,8 +79,18 @@ public class JavaFxPixelDrawer extends BasicScreen implements PixelDrawer {
 		});
 
 		screenStage.setScene(scene);
-
 		screenStage.show();
+
+		screenStage.setMinWidth(screenStage.getWidth());
+		screenStage.setMinHeight(screenStage.getHeight());
+
+		DoubleProperty rootScale = new SimpleDoubleProperty(1.0);
+		rootScale.bind(Bindings.min(scene.widthProperty().divide(image.getWidth()),
+				scene.heightProperty().divide(image.getHeight())));
+		root.scaleXProperty().bind(rootScale);
+		root.scaleYProperty().bind(rootScale);
+		root.translateXProperty().bind(scene.widthProperty().divide(2.0).subtract(image.getWidth() / 2.0));
+		root.translateYProperty().bind(scene.heightProperty().divide(2.0).subtract(image.getHeight() / 2.0));
 
 		this.pixels = image.getPixelWriter();
 	}
