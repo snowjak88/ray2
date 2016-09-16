@@ -73,52 +73,37 @@ public class RaytracerApp extends Application {
 		thing.setMaterial(shapeMaterial);
 		thing.setDiffuseColorScheme(new SimpleColorScheme(Color.SILVER));
 		thing.getTransformers().add(new Scale(4d, 4d, 4d));
-		// world.getShapes().add(thing);
+		world.getShapes().add(thing);
 
 		Shape sphere = new Sphere();
 		sphere.setMaterial(sphereMaterial);
 		sphere.setDiffuseColorScheme(Functions.constant(Color.GREEN));
 		sphere.getTransformers().add(new Scale(2d, 2d, 2d));
 		sphere.getTransformers().add(new Translation(6d, 0d, 0d));
-		// world.getShapes().add(sphere);
+		world.getShapes().add(sphere);
 
 		sphere = new Sphere();
 		sphere.setMaterial(sphereMaterial);
 		sphere.setDiffuseColorScheme(Functions.constant(Color.GREEN));
 		sphere.getTransformers().add(new Scale(2d, 2d, 2d));
 		sphere.getTransformers().add(new Translation(-6d, 0d, 0d));
-		// world.getShapes().add(sphere);
+		world.getShapes().add(sphere);
 
 		sphere = new Sphere();
 		sphere.setMaterial(sphereMaterial);
 		sphere.setDiffuseColorScheme(Functions.constant(Color.GREEN));
 		sphere.getTransformers().add(new Scale(2d, 2d, 2d));
 		sphere.getTransformers().add(new Translation(0d, 0d, 6d));
-		// world.getShapes().add(sphere);
+		world.getShapes().add(sphere);
 
-		RawColor planeStartColor = new RawColor(Color.LIGHTSKYBLUE),
-				planeEndColor = new RawColor(Color.DARKSEAGREEN).multiplyScalar(0.5);
 		Plane plane = new Plane();
-		RawColor planeColor = planeStartColor;
-		Material beneathPlaneMaterial = new Material(Functions.constant(planeColor), Functions.constant(1d),
+		Material beneathPlaneMaterial = new Material(Functions.constant(Color.LIGHTSKYBLUE), Functions.constant(1d),
 				Functions.constant(1d / 3d), Functions.constant(1.3d)), abovePlaneMaterial = Material.AIR;
 		plane.setMinusMaterial(beneathPlaneMaterial);
 		plane.setPlusMaterial(abovePlaneMaterial);
 		plane.getTransformers().add(new Translation(0d, -2.01d, 0d));
 		world.getShapes().add(new NormalPerturber(
 				(n, i) -> n.add(n.orthogonal().scalarMultiply(Functions.turbulence(i.getPoint(), 8) / 10d)), plane));
-
-		for (int i = 1; i <= 3; i++) {
-			plane = plane.copy();
-			planeColor = Functions.lerp(planeStartColor, planeEndColor, ((double) i) / 3d);
-			abovePlaneMaterial = beneathPlaneMaterial.copy();
-			beneathPlaneMaterial = beneathPlaneMaterial.copy();
-			beneathPlaneMaterial.setSurfaceColor(planeColor);
-			plane.setMinusMaterial(beneathPlaneMaterial);
-			plane.setPlusMaterial(abovePlaneMaterial);
-			plane.getTransformers().add(new Translation(0d, -1d, 0d));
-			world.getShapes().add(plane);
-		}
 
 		Light light = new DirectionalLight(new Vector3D(1, -10, 1).normalize(),
 				new RawColor(Color.WHITE).multiplyScalar(0.01), new RawColor(Color.BISQUE), new RawColor(Color.BISQUE),
