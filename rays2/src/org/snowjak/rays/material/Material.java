@@ -33,7 +33,7 @@ public class Material implements Transformable, Prototype<Material> {
 	/**
 	 * Predefined Material: totally transparent, with a refractive index of 1.0
 	 */
-	public static final Material AIR = new Material(Functions.constant(Color.WHITE), Functions.constant(0d),
+	public static final Material AIR = new Material(Functions.constant(Color.WHITE), Functions.constant(1d),
 			Functions.constant(0d), Functions.constant(1d));
 
 	/**
