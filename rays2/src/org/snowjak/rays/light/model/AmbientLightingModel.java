@@ -30,7 +30,9 @@ public class AmbientLightingModel implements LightingModel {
 			return Optional.empty();
 
 		return Optional.of(lightIntersection(intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0).findFirst().get()));
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.findFirst()
+				.get()));
 	}
 
 	private LightingResult lightIntersection(Intersection<Shape> intersection) {
@@ -38,13 +40,8 @@ public class AmbientLightingModel implements LightingModel {
 		Vector3D point = intersection.getPoint();
 		RawColor totalLightAtPoint = new RawColor();
 
-		for (Light light : World.getSingleton().getLights()) {
-
-			Ray toLightRay = new Ray(point, light.getLocation().subtract(point));
-
+		for (Light light : World.getSingleton().getLights())
 			totalLightAtPoint = totalLightAtPoint.add(light.getAmbientColor());
-
-		}
 
 		RawColor pointColor = intersection.getEnteringMaterial().getColor(point);
 

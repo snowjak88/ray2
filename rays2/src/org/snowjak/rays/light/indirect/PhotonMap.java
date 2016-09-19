@@ -120,12 +120,14 @@ public class PhotonMap {
 			Ray photonPath;
 			Optional<LightingResult> photonLightingResult;
 			do {
-				photonPath = new Ray(light.getLocation(), getRandomVector(light.getLocation()), 1);
+				do {
+					photonPath = new Ray(light.getLocation(), getRandomVector(light.getLocation()), 1);
+				} while (!isRayAcceptable(photonPath));
 				photonLightingResult = World.getSingleton().getLightingModel().determineRayColor(photonPath,
 						World.getSingleton().getShapeIntersections(photonPath));
 			} while (!photonLightingResult.isPresent());
 
-			followPhoton(photonPath, photonLightingResult.get());
+			followPhoton(light.getDiffuseColor(), photonPath, photonLightingResult.get(), light, photonCount);
 			totalPhotons++;
 
 			int percentage = (int) (((double) i / (double) photonCount) * 100d);
@@ -147,13 +149,15 @@ public class PhotonMap {
 		return aimShapes.parallelStream().anyMatch(s -> s.getIntersection(photonRay).isPresent());
 	}
 
-	private void followPhoton(Ray ray, LightingResult photonLightingResult) {
+	private void followPhoton(RawColor currentPhotonColor, Ray ray, LightingResult photonLightingResult, Light light,
+			int photonCount) {
 
 		if (ray.getOrigin().getNorm() > World.WORLD_BOUND)
 			return;
 
 		if (photonLightingResult.getContributingResults().isEmpty()) {
-			photonLocations.add(new Pair<>(photonLightingResult.getPoint(), photonLightingResult.getRadiance()));
+			photonLocations.add(new Pair<>(photonLightingResult.getPoint(),
+					currentPhotonColor.multiplyScalar(light.getIntensity(photonLightingResult.getPoint()))));
 			return;
 		}
 
@@ -165,7 +169,10 @@ public class PhotonMap {
 		Ray followingEye = followingResult.getEye();
 		Ray followingPhotonPath = new Ray(followingEye.getOrigin(), followingEye.getVector());
 
-		followPhoton(followingPhotonPath, followingResult);
+		RawColor newPhotonColor = currentPhotonColor;
+		newPhotonColor = currentPhotonColor.multiply(photonLightingResult.getTint());
+
+		followPhoton(newPhotonColor, followingPhotonPath, followingResult, light, photonCount);
 	}
 
 	/**
@@ -261,25 +268,14 @@ public class PhotonMap {
 		if (currentlyPopulating)
 			return new RawColor();
 
-		Collection<Pair<Double, RawColor>> distances = getPhotonsCloseToPoint(point, distance).parallelStream()
-				.map(pl -> new Pair<Double, RawColor>(pl.getKey().distance(point), pl.getValue()))
-				.collect(Collectors.toCollection(LinkedList::new));
-
-		if (distances.isEmpty())
+		Collection<Pair<Vector3D, RawColor>> closePhotons = getPhotonsCloseToPoint(point, distance);
+		if (closePhotons.isEmpty())
 			return new RawColor();
 
-		Collection<Pair<Double, RawColor>> areaRule = distances.parallelStream()
-				.map(pl -> new Pair<>((double) 1d / (4d * FastMath.PI * pl.getKey()), pl.getValue()))
-				// .map(pl -> new Pair<>((double) totalPhotons / (4d *
-				// FastMath.PI * pl.getKey()), pl.getValue()))
-				.collect(Collectors.toCollection(LinkedList::new));
-		Collection<RawColor> scaledColors = areaRule.parallelStream()
-				.map(p -> p.getValue().multiplyScalar(p.getKey()))
-				.collect(Collectors.toCollection(LinkedList::new));
-
-		return scaledColors.parallelStream()
+		return closePhotons.parallelStream()
+				.map(p -> p.getValue().multiplyScalar(1d / (4d * FastMath.PI * distance)))
 				.reduce(new RawColor(), (c1, c2) -> c1.add(c2))
-				.multiplyScalar(1d / (double) distances.size());
+				.multiplyScalar(1d / (double) totalPhotons);
 
 	}
 }
