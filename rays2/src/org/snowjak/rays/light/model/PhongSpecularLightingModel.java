@@ -33,7 +33,8 @@ public class PhongSpecularLightingModel implements LightingModel {
 		// And we only care about the first (closest) intersection that isn't
 		// too close.
 		Optional<Intersection<Shape>> firstIntersect = intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0).findFirst();
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.findFirst();
 		if (!firstIntersect.isPresent())
 			return Optional.empty();
 		Intersection<Shape> intersect = firstIntersect.get();
@@ -114,7 +115,9 @@ public class PhongSpecularLightingModel implements LightingModel {
 					if (Double.compare(specularDotProduct, 0d) > 0) {
 						double specularIntensity = FastMath.pow(specularDotProduct, shininess);
 						RawColor lightSpecularIntensity = light.getSpecularIntensity(toLightRay)
-								.multiplyScalar(specularIntensity);
+								.multiplyScalar(specularIntensity)
+								.multiplyScalar(light.getIntensity(intersect.getPoint())
+										* light.getFalloff(intersect.getPoint()));
 
 						totalSpecular = totalSpecular.add(intersectSpecularColor.multiply(lightSpecularIntensity));
 					}

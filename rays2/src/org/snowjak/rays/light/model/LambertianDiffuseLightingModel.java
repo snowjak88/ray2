@@ -93,7 +93,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 		result.setPoint(point);
 		result.setNormal(normal);
 		result.setEye(intersection.getRay());
-		result.setRadiance(pointColor);
+		result.setRadiance(pointColor.multiply(totalLightAtPoint));
 		result.getVisibleLights().addAll(visibleLights);
 
 		return result;
