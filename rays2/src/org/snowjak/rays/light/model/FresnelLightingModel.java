@@ -123,15 +123,18 @@ public class FresnelLightingModel implements LightingModel {
 
 			RawColor finalRefractedColor = Functions.lerp(surfaceColor, refractedColor, surfaceTransparency);
 
-			LightingResult transmittedResult = new LightingResult();
-			transmittedResult.setEye(ray);
-			transmittedResult.setPoint(intersect.getPoint());
-			transmittedResult.setNormal(intersect.getNormal());
-			transmittedResult.setRadiance(finalRefractedColor);
-			transmittedResult.getContributingResults().add(new Pair<>(refractedResult, finalRefractedFraction));
-			transmittedResult.getContributingResults().add(new Pair<>(surfaceResult, finalSurfaceFraction));
+//			LightingResult transmittedResult = new LightingResult();
+//			transmittedResult.setEye(ray);
+//			transmittedResult.setPoint(intersect.getPoint());
+//			transmittedResult.setNormal(intersect.getNormal());
+//			transmittedResult.setRadiance(finalRefractedColor);
+//			transmittedResult.getContributingResults().add(new Pair<>(refractedResult, finalRefractedFraction));
+//			transmittedResult.getContributingResults().add(new Pair<>(surfaceResult, finalSurfaceFraction));
 
-			finalResult.getContributingResults().add(new Pair<>(transmittedResult, transmittance));
+			// finalResult.getContributingResults().add(new
+			// Pair<>(transmittedResult, transmittance));
+			finalResult.getContributingResults().add(new Pair<>(refractedResult, finalRefractedFraction));
+			finalResult.getContributingResults().add(new Pair<>(surfaceResult, finalSurfaceFraction));
 			refractedColor = finalRefractedColor;
 		}
 
