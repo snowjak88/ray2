@@ -339,8 +339,7 @@ public class Light implements Transformable, Locatable {
 	 */
 	public static BiFunction<Light, Intersection<Shape>, Double> DEFAULT_EXPOSURE_FUNCTION() {
 
-		return (l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal())
-				* l.getIntensity(i.getRay().getVector()) * l.getFalloff(i.getPoint());
+		return (l, i) -> l.getLocation().subtract(i.getPoint()).normalize().dotProduct(i.getNormal());
 	}
 
 	/**
