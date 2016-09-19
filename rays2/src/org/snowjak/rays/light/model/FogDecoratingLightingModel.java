@@ -61,9 +61,9 @@ public class FogDecoratingLightingModel implements LightingModel {
 		Optional<LightingResult> decoratedLightingResult = decoratedModel.determineRayColor(ray, intersections);
 
 		RawColor unfoggedColor;
-		if (decoratedLightingResult.isPresent())
+		if (decoratedLightingResult.isPresent()) {
 			unfoggedColor = decoratedLightingResult.get().getRadiance();
-		else
+		} else
 			unfoggedColor = new RawColor();
 
 		double colorDistance = 0d;

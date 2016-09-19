@@ -114,7 +114,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 					double specularDotProduct = reflectedLightVector.dotProduct(fromEyeVector.normalize());
 					if (Double.compare(specularDotProduct, 0d) > 0) {
 						double specularIntensity = FastMath.pow(specularDotProduct, shininess);
-						RawColor lightSpecularIntensity = light.getSpecularIntensity(toLightRay)
+						RawColor lightSpecularIntensity = light.getSpecularColor()
 								.multiplyScalar(specularIntensity)
 								.multiplyScalar(light.getIntensity(intersect.getPoint())
 										* light.getFalloff(intersect.getPoint()));

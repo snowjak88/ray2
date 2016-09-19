@@ -42,7 +42,7 @@ public class AmbientLightingModel implements LightingModel {
 
 			Ray toLightRay = new Ray(point, light.getLocation().subtract(point));
 
-			totalLightAtPoint = totalLightAtPoint.add(light.getAmbientIntensity(toLightRay));
+			totalLightAtPoint = totalLightAtPoint.add(light.getAmbientColor());
 
 		}
 

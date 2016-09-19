@@ -13,6 +13,8 @@ import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
 
+import javafx.scene.paint.Color;
+
 /**
  * Represents an algorithm which performs lighting-calculations to determine the
  * color resulting from a single Ray. Depending on the complexity of the
@@ -49,7 +51,7 @@ public interface LightingModel {
 
 		private Collection<Light> visibleLights = new LinkedList<>();
 
-		private RawColor radiance = new RawColor();
+		private RawColor radiance = new RawColor(), tint = new RawColor(Color.WHITE);
 
 		private Collection<Pair<LightingResult, Double>> contributingResults = new LinkedList<>();
 
@@ -102,5 +104,16 @@ public interface LightingModel {
 
 			return contributingResults;
 		}
+
+		public RawColor getTint() {
+
+			return tint;
+		}
+
+		public void setTint(RawColor tint) {
+
+			this.tint = tint;
+		}
+
 	}
 }
