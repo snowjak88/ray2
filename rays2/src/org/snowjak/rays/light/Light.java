@@ -189,7 +189,14 @@ public class Light implements Transformable, Locatable {
 		return specularIntensityFunction.apply(localRay);
 	}
 
-	protected double getIntensity(Vector3D v) {
+	/**
+	 * Determine this light's overall intensity-multiplier available to the
+	 * given point.
+	 * 
+	 * @param v
+	 * @return this light's overall intensity
+	 */
+	public double getIntensity(Vector3D v) {
 
 		return intensityFunction.apply(v);
 	}

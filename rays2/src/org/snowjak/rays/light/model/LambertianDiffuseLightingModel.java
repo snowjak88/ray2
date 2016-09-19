@@ -81,7 +81,9 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 			if (Double.compare(exposure, 0d) <= 0)
 				continue;
 
-			totalLightAtPoint = totalLightAtPoint.add(light.getDiffuseIntensity(toLightRay).multiplyScalar(exposure));
+			double intensity = exposure * light.getIntensity(point) * light.getFalloff(point);
+
+			totalLightAtPoint = totalLightAtPoint.add(light.getDiffuseIntensity(toLightRay).multiplyScalar(intensity));
 
 		}
 
