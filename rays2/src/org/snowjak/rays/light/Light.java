@@ -55,7 +55,7 @@ public class Light implements Transformable, Locatable {
 
 	private Deque<Transformer> transformers = new LinkedList<>();
 
-	private Function<Ray, RawColor> ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction;
+	private RawColor ambientColor, diffuseColor, specularColor;
 
 	private Function<Vector3D, Double> intensityFunction;
 
@@ -64,39 +64,8 @@ public class Light implements Transformable, Locatable {
 	private BiFunction<Light, Vector3D, Double> falloffFunction;
 
 	/**
-	 * Create a new Light with given light intensities, and the normal exposure
-	 * function (i.e., cosine of angle between light and surface-normal
-	 * vectors).
-	 * 
-	 * @param ambientIntensity
-	 * @param diffuseIntensity
-	 * @param specularIntensity
-	 * @param intensity
-	 */
-	public Light(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity, double intensity) {
-		this(CONSTANT_COLOR(ambientIntensity), CONSTANT_COLOR(diffuseIntensity), CONSTANT_COLOR(specularIntensity),
-				DEFAULT_EXPOSURE_FUNCTION(), Functions.constant(intensity), DEFAULT_FALLOFF_FUNCTION());
-	}
-
-	/**
-	 * Create a new Light with given light intensities, and a custom
-	 * lighting-exposure function.
-	 * 
-	 * @param ambientIntensity
-	 * @param diffuseIntensity
-	 * @param specularIntensity
-	 * @param exposureFunction
-	 * @param intensity
-	 */
-	public Light(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity,
-			BiFunction<Light, Intersection<Shape>, Double> exposureFunction, double intensity) {
-		this(CONSTANT_COLOR(ambientIntensity), CONSTANT_COLOR(diffuseIntensity), CONSTANT_COLOR(specularIntensity),
-				exposureFunction, Functions.constant(intensity), DEFAULT_FALLOFF_FUNCTION());
-	}
-
-	/**
-	 * Create a new Light with the given intensity-functions for lighting, and
-	 * the normal exposure-function.
+	 * Create a new Light with the given lighting intensity, and the normal
+	 * exposure-function.
 	 * <p>
 	 * Each intensity-function is of the form:
 	 * 
@@ -107,41 +76,58 @@ public class Light implements Transformable, Locatable {
 	 * where {@code ray} = the incoming ray in <em>light-local</em> terms.
 	 * </p>
 	 * 
-	 * @param ambientIntensityFunction
-	 * @param diffuseIntensityFunction
-	 * @param specularIntensityFunction
+	 * @param ambientColor
+	 * @param diffuseColor
+	 * @param specularColor
+	 * @param intensity
 	 * @param intensityFunction
 	 */
-	public Light(Function<Ray, RawColor> ambientIntensityFunction, Function<Ray, RawColor> diffuseIntensityFunction,
-			Function<Ray, RawColor> specularIntensityFunction, Function<Vector3D, Double> intensityFunction) {
-		this(ambientIntensityFunction, diffuseIntensityFunction, specularIntensityFunction, DEFAULT_EXPOSURE_FUNCTION(),
-				intensityFunction, DEFAULT_FALLOFF_FUNCTION());
+	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor, double intensity) {
+		this(ambientColor, diffuseColor, specularColor, DEFAULT_EXPOSURE_FUNCTION(), Functions.constant(intensity),
+				DEFAULT_FALLOFF_FUNCTION());
 	}
 
 	/**
-	 * Create a new Light with the given intensity-functions for lighting, and a
-	 * custom exposure function.
+	 * Create a new Light with the given lighting-intensity function, and the
+	 * normal exposure-function.
 	 * <p>
-	 * The intensity functions are of the form:
+	 * Each intensity-function is of the form:
 	 * 
 	 * <pre>
 	 * intensity = f(ray)
 	 * </pre>
 	 * 
-	 * @param ambientIntensityFunction
-	 * @param diffuseIntensityFunction
-	 * @param specularIntensityFunction
+	 * where {@code ray} = the incoming ray in <em>light-local</em> terms.
+	 * </p>
+	 * 
+	 * @param ambientColor
+	 * @param diffuseColor
+	 * @param specularColor
+	 * @param intensityFunction
+	 */
+	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor,
+			Function<Vector3D, Double> intensityFunction) {
+		this(ambientColor, diffuseColor, specularColor, DEFAULT_EXPOSURE_FUNCTION(), intensityFunction,
+				DEFAULT_FALLOFF_FUNCTION());
+	}
+
+	/**
+	 * Create a new Light with the given lighting intensity-function, and a
+	 * custom exposure function.
+	 * 
+	 * @param ambientColor
+	 * @param diffuseColor
+	 * @param specularColor
 	 * @param exposureFunction
 	 * @param intensityFunction
 	 * @param falloffFunction
 	 */
-	public Light(Function<Ray, RawColor> ambientIntensityFunction, Function<Ray, RawColor> diffuseIntensityFunction,
-			Function<Ray, RawColor> specularIntensityFunction,
+	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor,
 			BiFunction<Light, Intersection<Shape>, Double> exposureFunction,
 			Function<Vector3D, Double> intensityFunction, BiFunction<Light, Vector3D, Double> falloffFunction) {
-		this.ambientIntensityFunction = ambientIntensityFunction;
-		this.diffuseIntensityFunction = diffuseIntensityFunction;
-		this.specularIntensityFunction = specularIntensityFunction;
+		this.ambientColor = ambientColor;
+		this.diffuseColor = diffuseColor;
+		this.specularColor = specularColor;
 		this.exposureFunction = exposureFunction;
 		this.intensityFunction = intensityFunction;
 		this.falloffFunction = falloffFunction;
@@ -151,42 +137,36 @@ public class Light implements Transformable, Locatable {
 	 * Determine the intensity of ambient lighting provided by this Light to the
 	 * given Ray (expressed in the <em>global</em> reference-frame).
 	 * 
-	 * @param ray
 	 * @return the amount of ambient light provided by this Light to the given
 	 *         Ray
 	 */
-	public RawColor getAmbientIntensity(Ray ray) {
+	public RawColor getAmbientColor() {
 
-		Ray localRay = worldToLocal(ray);
-		return ambientIntensityFunction.apply(localRay);
+		return ambientColor;
 	}
 
 	/**
 	 * Determine the intensity of diffuse lighting provided by this Light to the
 	 * given Ray (expressed in the <em>global</em> reference-frame).
 	 * 
-	 * @param ray
 	 * @return the amount of diffuse light provided by this Light to the given
 	 *         Ray
 	 */
-	public RawColor getDiffuseIntensity(Ray ray) {
+	public RawColor getDiffuseColor() {
 
-		Ray localRay = worldToLocal(ray);
-		return diffuseIntensityFunction.apply(localRay);
+		return diffuseColor;
 	}
 
 	/**
 	 * Determine the intensity of specular lighting provided by this Light to
 	 * the given Ray (expressed in the <em>global</em> reference-frame).
 	 * 
-	 * @param ray
 	 * @return the amount of specular light provided by this Light to the given
 	 *         Ray
 	 */
-	public RawColor getSpecularIntensity(Ray ray) {
+	public RawColor getSpecularColor() {
 
-		Ray localRay = worldToLocal(ray);
-		return specularIntensityFunction.apply(localRay);
+		return specularColor;
 	}
 
 	/**
@@ -253,33 +233,33 @@ public class Light implements Transformable, Locatable {
 	}
 
 	/**
-	 * Set this Light's ambient-intensit function
+	 * Set this Light's ambient-lighting function color
 	 * 
-	 * @param ambientIntensityFunction
+	 * @param ambientColor
 	 */
-	public void setAmbientIntensityFunction(Function<Ray, RawColor> ambientIntensityFunction) {
+	public void setAmbientColor(RawColor ambientColor) {
 
-		this.ambientIntensityFunction = ambientIntensityFunction;
+		this.ambientColor = ambientColor;
 	}
 
 	/**
-	 * Set this Light's diffuse-intensit function
+	 * Set this Light's diffuse-lighting color
 	 * 
-	 * @param diffuseIntensityFunction
+	 * @param diffuseColor
 	 */
-	public void setDiffuseIntensityFunction(Function<Ray, RawColor> diffuseIntensityFunction) {
+	public void setDiffuseColor(RawColor diffuseColor) {
 
-		this.diffuseIntensityFunction = diffuseIntensityFunction;
+		this.diffuseColor = diffuseColor;
 	}
 
 	/**
-	 * Set this Light's specular-intensit function
+	 * Set this Light's specular-lighting color
 	 * 
-	 * @param specularIntensityFunction
+	 * @param specularColor
 	 */
-	public void setSpecularIntensityFunction(Function<Ray, RawColor> specularIntensityFunction) {
+	public void setSpecularColor(RawColor specularColor) {
 
-		this.specularIntensityFunction = specularIntensityFunction;
+		this.specularColor = specularColor;
 	}
 
 	/**
