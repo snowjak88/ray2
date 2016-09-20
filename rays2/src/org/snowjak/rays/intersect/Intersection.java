@@ -217,4 +217,77 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 
 		return enteringMaterial;
 	}
+
+	/**
+	 * Set the point that this Intersection occurs at.
+	 * 
+	 * @param point
+	 */
+	public void setPoint(Vector3D point) {
+
+		this.point = point;
+	}
+
+	/**
+	 * Set the normal-vector of the intersected surface.
+	 * 
+	 * @param normal
+	 */
+	public void setNormal(Vector3D normal) {
+
+		this.normal = normal;
+	}
+
+	/**
+	 * Set the distance from the intersecting {@link Ray}'s origin that this
+	 * Intersection occurs at.
+	 * 
+	 * @param distanceFromRayOrigin
+	 */
+	public void setDistanceFromRayOrigin(double distanceFromRayOrigin) {
+
+		this.distanceFromRayOrigin = distanceFromRayOrigin;
+	}
+
+	/**
+	 * Set the {@link Ray} that causes this Intersection to occur.
+	 * 
+	 * @param ray
+	 */
+	public void setRay(Ray ray) {
+
+		this.ray = ray;
+	}
+
+	/**
+	 * Set the object that causes this Intersection to occur.
+	 * 
+	 * @param intersected
+	 */
+	public void setIntersected(S intersected) {
+
+		this.intersected = intersected;
+	}
+
+	/**
+	 * Set the {@link Material} that the intersecting {@link Ray} is "leaving"
+	 * by passing through this Intersection.
+	 * 
+	 * @param leavingMaterial
+	 */
+	public void setLeavingMaterial(Material leavingMaterial) {
+
+		this.leavingMaterial = leavingMaterial;
+	}
+
+	/**
+	 * Set the {@link Material} that the intersecting {@link Ray} is "entering"
+	 * by passing through this Intersection.
+	 * 
+	 * @param enteringMaterial
+	 */
+	public void setEnteringMaterial(Material enteringMaterial) {
+
+		this.enteringMaterial = enteringMaterial;
+	}
 }

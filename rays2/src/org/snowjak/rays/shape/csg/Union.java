@@ -158,23 +158,20 @@ public class Union extends Shape {
 					// Since we're culling interior Intersections -- is this
 					// Intersection completely interior? Are we still inside of
 					// other child-shapes?
-					if (!currentlyIn.isEmpty())
+					if (!currentlyIn.isEmpty()) {
 						// No! We're transitioning out of all child-shapes!
 						// Record this Intersection
-						results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
-								currentIntersect.getRay(), currentIntersect.getIntersected(),
-								currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
-								currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
-								oldMaterial, newMaterial));
+						currentIntersect.setLeavingMaterial(oldMaterial);
+						currentIntersect.setEnteringMaterial(newMaterial);
+						results.add(currentIntersect);
+					}
 				} else {
 					//
 					// We are *not* culling interior Intersections.
 					// So add this Intersection to the list!
-					results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
-							currentIntersect.getRay(), currentIntersect.getIntersected(),
-							currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
-							currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
-							oldMaterial, newMaterial));
+					currentIntersect.setLeavingMaterial(oldMaterial);
+					currentIntersect.setEnteringMaterial(newMaterial);
+					results.add(currentIntersect);
 				}
 
 			} else {
@@ -189,21 +186,17 @@ public class Union extends Shape {
 					if (currentlyIn.isEmpty()) {
 						// This intersection is *not* interior.
 						// So add it to the list!
-						results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
-								currentIntersect.getRay(), currentIntersect.getIntersected(),
-								currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
-								currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
-								oldMaterial, newMaterial));
+						currentIntersect.setLeavingMaterial(oldMaterial);
+						currentIntersect.setEnteringMaterial(newMaterial);
+						results.add(currentIntersect);
 					}
 				} else {
 					//
 					// We're not culling interior Intersections.
 					// So add this to the list.
-					results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
-							currentIntersect.getRay(), currentIntersect.getIntersected(),
-							currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
-							currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
-							oldMaterial, newMaterial));
+					currentIntersect.setLeavingMaterial(oldMaterial);
+					currentIntersect.setEnteringMaterial(newMaterial);
+					results.add(currentIntersect);
 				}
 
 				currentlyIn.add(currentIntersect.getIntersected());
@@ -218,7 +211,7 @@ public class Union extends Shape {
 		//
 		// Finally, we need to convert each result Intersection so that
 		// the reported intersected-Shape is this Union, not the child Shape.
-		return results.stream().sequential().map(i -> {
+		return results.stream().sequential().peek(i -> {
 			//
 			// Has this Union been given its own definitive ColorSchemes, which
 			// will override those of its children?
@@ -229,8 +222,10 @@ public class Union extends Shape {
 			ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
 					: i.getEmissiveColorScheme();
 
-			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive,
-					i.getLeavingMaterial(), i.getEnteringMaterial());
+			i.setIntersected(this);
+			i.setDiffuseColorScheme(diffuse);
+			i.setSpecularColorScheme(specular);
+			i.setEmissiveColorScheme(emissive);
 		}).collect(LinkedList::new, LinkedList::add, LinkedList::addAll);
 	}
 

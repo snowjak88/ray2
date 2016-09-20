@@ -148,12 +148,11 @@ public class Intersect extends Shape {
 
 				//
 				//
-				if (currentlyIn.containsAll(children))
-					results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
-							currentIntersect.getRay(), currentIntersect.getIntersected(),
-							currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
-							currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
-							oldMaterial, Material.AIR));
+				if (currentlyIn.containsAll(children)) {
+					currentIntersect.setLeavingMaterial(oldMaterial);
+					currentIntersect.setEnteringMaterial(Material.AIR);
+					results.add(currentIntersect);
+				}
 
 				currentlyIn.remove(intersectedShape);
 
@@ -167,12 +166,11 @@ public class Intersect extends Shape {
 				// If we are now inside all child-Shapes -- after
 				// crossing into one of them -- then we're entering the
 				// Intersect.
-				if (currentlyIn.containsAll(children))
-					results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
-							currentIntersect.getRay(), currentIntersect.getIntersected(),
-							currentIntersect.getDistanceFromRayOrigin(), currentIntersect.getDiffuseColorScheme(),
-							currentIntersect.getSpecularColorScheme(), currentIntersect.getEmissiveColorScheme(),
-							Material.AIR, newMaterial));
+				if (currentlyIn.containsAll(children)) {
+					currentIntersect.setLeavingMaterial(Material.AIR);
+					currentIntersect.setEnteringMaterial(newMaterial);
+					results.add(currentIntersect);
+				}
 			}
 		}
 
@@ -180,7 +178,7 @@ public class Intersect extends Shape {
 		//
 		// Finally, we need to convert each result Intersection so that
 		// the reported intersected-Shape is this Union, not the child Shape.
-		return results.stream().sequential().map(i -> {
+		return results.stream().sequential().peek(i -> {
 			//
 			// Has this Intersect been given its own definitive ColorSchemes,
 			// which will override those of its children?
@@ -191,8 +189,10 @@ public class Intersect extends Shape {
 			ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
 					: i.getEmissiveColorScheme();
 
-			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive,
-					i.getLeavingMaterial(), i.getEnteringMaterial());
+			i.setIntersected(this);
+			i.setDiffuseColorScheme(diffuse);
+			i.setSpecularColorScheme(specular);
+			i.setEmissiveColorScheme(emissive);
 		}).map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
 
 	}

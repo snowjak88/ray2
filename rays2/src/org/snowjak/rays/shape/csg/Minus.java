@@ -178,10 +178,9 @@ public class Minus extends Shape {
 						oldMaterial = Material.AIR;
 					currentlyInMinuend = !currentlyInMinuend;
 
-					results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
-							currentIntersect.getRay(), currentIntersect.getIntersected(),
-							currentIntersect.getDiffuseColorScheme(), currentIntersect.getSpecularColorScheme(),
-							currentIntersect.getEmissiveColorScheme(), oldMaterial, newMaterial));
+					currentIntersect.setLeavingMaterial(oldMaterial);
+					currentIntersect.setEnteringMaterial(newMaterial);
+					results.add(currentIntersect);
 				} else {
 					//
 					// Yes -- we're already in at least one subtrahend.
@@ -209,10 +208,9 @@ public class Minus extends Shape {
 						// Yes! So record this transition.
 						oldMaterial = Material.AIR;
 
-						results.add(new Intersection<Shape>(currentIntersect.getPoint(), currentIntersect.getNormal(),
-								currentIntersect.getRay(), currentIntersect.getIntersected(),
-								currentIntersect.getDiffuseColorScheme(), currentIntersect.getSpecularColorScheme(),
-								currentIntersect.getEmissiveColorScheme(), oldMaterial, newMaterial));
+						currentIntersect.setLeavingMaterial(oldMaterial);
+						currentIntersect.setEnteringMaterial(newMaterial);
+						results.add(currentIntersect);
 					} else {
 						//
 						// No! either we're still in at least one subtrahend, or
@@ -230,10 +228,9 @@ public class Minus extends Shape {
 
 						newMaterial = Material.AIR;
 
-						results.add(new Intersection<>(currentIntersect.getPoint(), currentIntersect.getNormal(),
-								currentIntersect.getRay(), currentIntersect.getIntersected(),
-								currentIntersect.getDiffuseColorScheme(), currentIntersect.getSpecularColorScheme(),
-								currentIntersect.getEmissiveColorScheme(), oldMaterial, newMaterial));
+						currentIntersect.setLeavingMaterial(oldMaterial);
+						currentIntersect.setEnteringMaterial(newMaterial);
+						results.add(currentIntersect);
 					} else {
 						//
 						// No! either we're already in at least one subtrahend,
@@ -251,7 +248,7 @@ public class Minus extends Shape {
 		//
 		// Finally, we need to convert each result Intersection so that
 		// the reported intersected-Shape is this Union, not the child Shape.
-		return results.stream().sequential().map(i -> {
+		return results.stream().sequential().peek(i -> {
 			//
 			// Has this Intersect been given its own definitive ColorSchemes,
 			// which will override those of its children?
@@ -262,8 +259,10 @@ public class Minus extends Shape {
 			ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
 					: i.getEmissiveColorScheme();
 
-			return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this, diffuse, specular, emissive,
-					i.getLeavingMaterial(), i.getEnteringMaterial());
+			i.setIntersected(this);
+			i.setDiffuseColorScheme(diffuse);
+			i.setSpecularColorScheme(specular);
+			i.setEmissiveColorScheme(emissive);
 		}).map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
 
 	}

@@ -139,9 +139,14 @@ public class Cylinder extends Shape {
 					.parallelStream()
 					.filter(i -> Double.compare(
 							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
-					.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
-							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(),
-							getMaterial()))
+					.peek(i -> {
+						i.setIntersected(this);
+						i.setDiffuseColorScheme(getDiffuseColorScheme());
+						i.setSpecularColorScheme(getSpecularColorScheme());
+						i.setEmissiveColorScheme(getEmissiveColorScheme());
+						i.setLeavingMaterial(getMaterial());
+						i.setEnteringMaterial(getMaterial());
+					})
 					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
@@ -150,42 +155,41 @@ public class Cylinder extends Shape {
 					.parallelStream()
 					.filter(i -> Double.compare(
 							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
-					.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
-							getDiffuseColorScheme(), getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(),
-							getMaterial()))
+					.peek(i -> {
+						i.setDiffuseColorScheme(getDiffuseColorScheme());
+						i.setSpecularColorScheme(getSpecularColorScheme());
+						i.setEmissiveColorScheme(getEmissiveColorScheme());
+						i.setLeavingMaterial(getMaterial());
+						i.setEnteringMaterial(getMaterial());
+						i.setIntersected(this);
+					})
 					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
 		return results.parallelStream()
 				.map(i -> localToWorld(i))
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.map(i -> {
+				.peek(i -> {
 					if (Double.compare(
 							FastMath.abs(i.getDistanceFromRayOrigin() - results.stream()
 									.map(ii -> ii.getDistanceFromRayOrigin())
 									.min(Double::compare)
 									.get()),
-							World.DOUBLE_ERROR) <= 0)
-						return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
-								i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
-								i.getEmissiveColorScheme(), Material.AIR, getMaterial());
-					else
-						return i;
-
+							World.DOUBLE_ERROR) <= 0) {
+						i.setIntersected(this);
+						i.setLeavingMaterial(Material.AIR);
+					}
 				})
-				.map(i -> {
+				.peek(i -> {
 					if (Double.compare(
 							FastMath.abs(i.getDistanceFromRayOrigin() - results.stream()
 									.map(ii -> ii.getDistanceFromRayOrigin())
 									.max(Double::compare)
 									.get()),
-							World.DOUBLE_ERROR) <= 0)
-						return new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
-								i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
-								i.getEmissiveColorScheme(), getMaterial(), Material.AIR);
-					else
-						return i;
-
+							World.DOUBLE_ERROR) <= 0) {
+						i.setIntersected(this);
+						i.setEnteringMaterial(Material.AIR);
+					}
 				})
 				.collect(Collectors.toCollection(LinkedList::new));
 	}
