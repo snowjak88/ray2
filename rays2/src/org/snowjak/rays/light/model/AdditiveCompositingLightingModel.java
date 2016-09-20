@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
@@ -67,6 +68,9 @@ public class AdditiveCompositingLightingModel extends CompositingLightingModel {
 		result.setNormal(childResults.get(0).getNormal());
 		result.setRadiance(childResults.parallelStream().map(lr -> lr.getRadiance()).reduce(new RawColor(),
 				(c1, c2) -> c1.add(c2)));
+		result.getContributingResults().addAll(childResults.parallelStream()
+				.map(lr -> new Pair<>(lr, 1d))
+				.collect(Collectors.toCollection(LinkedList::new)));
 		result.getVisibleLights()
 				.addAll(childResults.parallelStream()
 						.map(lr -> lr.getVisibleLights())

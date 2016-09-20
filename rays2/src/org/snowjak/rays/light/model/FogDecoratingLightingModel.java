@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
@@ -81,6 +82,7 @@ public class FogDecoratingLightingModel implements LightingModel {
 		foggedResult.setPoint(decoratedLightingResult.get().getPoint());
 		foggedResult.setRadiance(foggedColor);
 		foggedResult.getVisibleLights().addAll(decoratedLightingResult.get().getVisibleLights());
+		foggedResult.getContributingResults().add(new Pair<>(decoratedLightingResult.get(), 1d));
 
 		return decoratedLightingResult;
 	}
