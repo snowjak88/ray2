@@ -99,4 +99,22 @@ public class EnvironmentMapDecoratingLightingModel implements LightingModel {
 		 */
 		public RawColor getColorAt(double u, double v);
 	}
+
+	/**
+	 * @return the LightingModel which this
+	 *         {@link EnvironmentMapDecoratingLightingModel} decorates
+	 */
+	public LightingModel getDecoratedLightingModel() {
+
+		return decoratedLightingModel;
+	}
+
+	/**
+	 * @return the {@link EnvironmentMap} instance associated with this
+	 *         {@link EnvironmentMapDecoratingLightingModel}
+	 */
+	public EnvironmentMap getEnvironmentMap() {
+
+		return environmentMap;
+	}
 }

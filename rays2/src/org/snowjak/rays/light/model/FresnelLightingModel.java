@@ -257,4 +257,13 @@ public class FresnelLightingModel implements LightingModel {
 		return v.subtract(getNormalPart(v, normal));
 	}
 
+	/**
+	 * @return the LightingModel this {@link FresnelLightingModel} uses to
+	 *         illuminate object-surfaces
+	 */
+	public LightingModel getSurfaceLightingModel() {
+
+		return surfaceLightingModel;
+	}
+
 }
