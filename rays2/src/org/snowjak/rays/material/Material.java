@@ -26,7 +26,7 @@ public class Material implements Transformable, Prototype<Material> {
 
 	private Function<Vector3D, RawColor> color;
 
-	private Function<Vector3D, Double> surfaceTransparency, density, refractiveIndex;
+	private Function<Vector3D, Double> surfaceTransparency, refractiveIndex;
 
 	private Deque<Transformer> transformers = new LinkedList<>();
 
@@ -34,7 +34,7 @@ public class Material implements Transformable, Prototype<Material> {
 	 * Predefined Material: totally transparent, with a refractive index of 1.0
 	 */
 	public static final Material AIR = new Material(Functions.constant(Color.WHITE), Functions.constant(1d),
-			Functions.constant(0d), Functions.constant(1d));
+			Functions.constant(1d));
 
 	/**
 	 * Create a new Material by linearly-interpolating all visual properties of
@@ -52,7 +52,6 @@ public class Material implements Transformable, Prototype<Material> {
 		return new Material(Functions.lerp(material1.getColor(point1), point1, material2.getColor(point2), point2),
 				Functions.lerp(material1.getSurfaceTransparency(point1), point1,
 						material2.getSurfaceTransparency(point2), point2),
-				Functions.lerp(material1.getDensity(point1), point1, material2.getDensity(point2), point2),
 				Functions.lerp(material1.getRefractiveIndex(point1), point1, material2.getRefractiveIndex(point2),
 						point2));
 	}
@@ -61,7 +60,7 @@ public class Material implements Transformable, Prototype<Material> {
 	 * Create a new Material.
 	 */
 	public Material() {
-		this(Functions.constant(Color.HOTPINK), Functions.constant(0d), Functions.constant(0d), Functions.constant(1d));
+		this(Functions.constant(Color.HOTPINK), Functions.constant(0d), Functions.constant(1d));
 	}
 
 	/**
@@ -69,15 +68,13 @@ public class Material implements Transformable, Prototype<Material> {
 	 * 
 	 * @param surfaceColor
 	 * @param surfaceTransparency
-	 * @param density
 	 * @param refractiveIndex
 	 */
 	public Material(Function<Vector3D, RawColor> surfaceColor, Function<Vector3D, Double> surfaceTransparency,
-			Function<Vector3D, Double> density, Function<Vector3D, Double> refractiveIndex) {
+			Function<Vector3D, Double> refractiveIndex) {
 
 		this.color = surfaceColor;
 		this.surfaceTransparency = surfaceTransparency;
-		this.density = density;
 		this.refractiveIndex = refractiveIndex;
 	}
 
@@ -126,26 +123,6 @@ public class Material implements Transformable, Prototype<Material> {
 	public void setSurfaceTransparency(double surfaceTransparency) {
 
 		this.surfaceTransparency = Functions.constant(surfaceTransparency);
-	}
-
-	/**
-	 * Set this Material's density-fraction function
-	 * 
-	 * @param density
-	 */
-	public void setDensity(Function<Vector3D, Double> density) {
-
-		this.density = density;
-	}
-
-	/**
-	 * Set this Material's density-fraction function to a constant value
-	 * 
-	 * @param density
-	 */
-	public void setDensity(double density) {
-
-		this.density = Functions.constant(density);
 	}
 
 	/**
@@ -204,24 +181,6 @@ public class Material implements Transformable, Prototype<Material> {
 	}
 
 	/**
-	 * 
-	 * @return this Material's density-fraction function
-	 */
-	public Function<Vector3D, Double> getDensity() {
-
-		return density;
-	}
-
-	/**
-	 * @param localPoint
-	 * @return this Material's density-fraction at the given point
-	 */
-	public double getDensity(Vector3D localPoint) {
-
-		return density.apply(localPoint);
-	}
-
-	/**
 	 * @return this Material's refractive-index function
 	 */
 	public Function<Vector3D, Double> getRefractiveIndex() {
@@ -241,7 +200,7 @@ public class Material implements Transformable, Prototype<Material> {
 	@Override
 	public Material copy() {
 
-		Material copy = new Material(color, surfaceTransparency, density, refractiveIndex);
+		Material copy = new Material(color, surfaceTransparency, refractiveIndex);
 		copy.getTransformers().addAll(getTransformers());
 		return copy;
 	}
