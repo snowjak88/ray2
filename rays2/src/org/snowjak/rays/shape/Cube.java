@@ -1,7 +1,6 @@
 package org.snowjak.rays.shape;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,9 +34,6 @@ public class Cube extends Shape {
 	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
 
 		Ray transformedRay = worldToLocal(ray);
-
-		if (!isIntersectWithBoundingSphere(transformedRay, 3d))
-			return Collections.emptyList();
 
 		boolean ignoreX = false, ignoreY = false, ignoreZ = false;
 		double px = transformedRay.getOrigin().getX(), py = transformedRay.getOrigin().getY(),
@@ -144,31 +140,36 @@ public class Cube extends Shape {
 		}
 
 		return results;
-//				.parallelStream()
-//				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-//				.map(i -> {
-//					if (i.getDistanceFromRayOrigin() == results.stream()
-//							.map(ii -> ii.getDistanceFromRayOrigin())
-//							.min(Double::compare)
-//							.get())
-//						return new Intersection<>(i.getPoint(), i.getNormal(), i.getRay(), i.getIntersected(),
-//								i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
-//								i.getEmissiveColorScheme(), Material.AIR, getMaterial());
-//					else
-//						return i;
-//				})
-//				.map(i -> {
-//					if (i.getDistanceFromRayOrigin() == results.stream()
-//							.map(ii -> ii.getDistanceFromRayOrigin())
-//							.max(Double::compare)
-//							.get())
-//						return new Intersection<>(i.getPoint(), i.getNormal(), i.getRay(), i.getIntersected(),
-//								i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(), i.getSpecularColorScheme(),
-//								i.getEmissiveColorScheme(), getMaterial(), Material.AIR);
-//					else
-//						return i;
-//				})
-//				.collect(Collectors.toCollection(LinkedList::new));
+		// .parallelStream()
+		// .sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(),
+		// i2.getDistanceFromRayOrigin()))
+		// .map(i -> {
+		// if (i.getDistanceFromRayOrigin() == results.stream()
+		// .map(ii -> ii.getDistanceFromRayOrigin())
+		// .min(Double::compare)
+		// .get())
+		// return new Intersection<>(i.getPoint(), i.getNormal(), i.getRay(),
+		// i.getIntersected(),
+		// i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(),
+		// i.getSpecularColorScheme(),
+		// i.getEmissiveColorScheme(), Material.AIR, getMaterial());
+		// else
+		// return i;
+		// })
+		// .map(i -> {
+		// if (i.getDistanceFromRayOrigin() == results.stream()
+		// .map(ii -> ii.getDistanceFromRayOrigin())
+		// .max(Double::compare)
+		// .get())
+		// return new Intersection<>(i.getPoint(), i.getNormal(), i.getRay(),
+		// i.getIntersected(),
+		// i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(),
+		// i.getSpecularColorScheme(),
+		// i.getEmissiveColorScheme(), getMaterial(), Material.AIR);
+		// else
+		// return i;
+		// })
+		// .collect(Collectors.toCollection(LinkedList::new));
 	}
 
 	/**
