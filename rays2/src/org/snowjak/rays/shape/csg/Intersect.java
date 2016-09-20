@@ -59,7 +59,7 @@ public class Intersect extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
 
 		//
 		//
@@ -71,7 +71,7 @@ public class Intersect extends Shape {
 		// Intersections by distance, and collect into a new list.
 		Ray localRay = worldToLocal(ray);
 		List<Intersection<Shape>> childIntersections = children.parallelStream()
-				.map(s -> s.getIntersectionsIncludingBehind(localRay))
+				.map(s -> s.getIntersections(localRay, includeBehindRayOrigin))
 				.flatMap(li -> li.stream())
 				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
 				.sequential()

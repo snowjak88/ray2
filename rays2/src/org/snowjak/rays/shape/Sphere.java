@@ -31,7 +31,7 @@ public class Sphere extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
 
 		Ray transformedRay = worldToLocal(ray);
 		//
@@ -96,9 +96,14 @@ public class Sphere extends Shape {
 		double intersectionDistance1 = t_ca - t_hc, intersectionDistance2 = t_ca + t_hc;
 		boolean isIntersectionDistance1Smaller = Double.compare(intersectionDistance1, intersectionDistance2) < 0;
 
+		boolean useIntersection1 = (includeBehindRayOrigin
+				|| Double.compare(intersectionDistance1, World.DOUBLE_ERROR) >= 0),
+				useIntersection2 = (includeBehindRayOrigin
+						|| Double.compare(intersectionDistance2, World.DOUBLE_ERROR) >= 0);
+
 		List<Intersection<Shape>> results = new LinkedList<>();
 
-		if (Double.compare(FastMath.abs(intersectionDistance1), World.DOUBLE_ERROR) >= 0) {
+		if (useIntersection1 && Double.compare(FastMath.abs(intersectionDistance1), World.DOUBLE_ERROR) >= 0) {
 			Vector3D intersectPointOnSphere1 = transformedRay.getVector()
 					.scalarMultiply(intersectionDistance1)
 					.add(transformedRay.getOrigin());
@@ -118,7 +123,7 @@ public class Sphere extends Shape {
 					entering)));
 		}
 
-		if (Double.compare(FastMath.abs(intersectionDistance2), World.DOUBLE_ERROR) >= 0) {
+		if (useIntersection2 && Double.compare(FastMath.abs(intersectionDistance2), World.DOUBLE_ERROR) >= 0) {
 			Vector3D intersectPointOnSphere2 = transformedRay.getVector()
 					.scalarMultiply(intersectionDistance2)
 					.add(transformedRay.getOrigin());

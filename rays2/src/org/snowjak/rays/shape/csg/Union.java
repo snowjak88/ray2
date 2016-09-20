@@ -71,7 +71,7 @@ public class Union extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
 
 		Ray transformedRay = worldToLocal(ray);
 
@@ -80,7 +80,7 @@ public class Union extends Shape {
 		// flatten that list of lists into a single list of intersections,
 		// and sort it by distance.
 		List<Intersection<Shape>> intersections = children.parallelStream()
-				.map(s -> s.getIntersectionsIncludingBehind(transformedRay))
+				.map(s -> s.getIntersections(transformedRay, includeBehindRayOrigin))
 				.flatMap(l -> l.parallelStream())
 				.map(i -> localToWorld(i))
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))

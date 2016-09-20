@@ -72,9 +72,9 @@ public class NormalPerturber extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
 
-		return child.getIntersectionsIncludingBehind(worldToLocal(ray))
+		return child.getIntersections(worldToLocal(ray), includeBehindRayOrigin)
 				.parallelStream()
 				.map(i -> new Intersection<>(i.getPoint(), normalPerturbationFunction.apply(i.getNormal(), i),
 						i.getRay(), i.getIntersected(), i.getDistanceFromRayOrigin(), i.getDiffuseColorScheme(),

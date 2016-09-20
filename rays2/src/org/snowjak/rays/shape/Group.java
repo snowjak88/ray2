@@ -62,13 +62,13 @@ public class Group extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
 
 		Ray transformedRay = worldToLocal(ray);
 
 		List<Intersection<Shape>> results = new LinkedList<>();
 		for (Shape child : children)
-			results.addAll(child.getIntersectionsIncludingBehind(transformedRay));
+			results.addAll(child.getIntersections(transformedRay, includeBehindRayOrigin));
 
 		results = results.stream().map(i -> localToWorld(i)).collect(LinkedList::new, LinkedList::add,
 				LinkedList::addAll);

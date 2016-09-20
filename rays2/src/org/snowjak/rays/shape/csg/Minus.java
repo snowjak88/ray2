@@ -59,7 +59,7 @@ public class Minus extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
 
 		Ray localRay = worldToLocal(ray);
 
@@ -68,7 +68,7 @@ public class Minus extends Shape {
 		// First of all, test if this ray intersects the Minuend.
 		// If it doesn't intersect the Minuend, then there's no point in testing
 		// all our subtrahends as well.
-		List<Intersection<Shape>> childIntersections = minuend.getIntersectionsIncludingBehind(localRay)
+		List<Intersection<Shape>> childIntersections = minuend.getIntersections(localRay, includeBehindRayOrigin)
 				.parallelStream()
 				.collect(Collectors.toCollection(LinkedList::new));
 
@@ -83,7 +83,7 @@ public class Minus extends Shape {
 		// flat-map those lists into a single list of Intersections.
 
 		childIntersections.addAll(subtrahends.parallelStream()
-				.map(s -> s.getIntersectionsIncludingBehind(localRay))
+				.map(s -> s.getIntersections(localRay, includeBehindRayOrigin))
 				.flatMap(li -> li.stream())
 				.collect(Collectors.toCollection(ArrayList::new)));
 

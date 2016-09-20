@@ -6,7 +6,6 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Locatable;
@@ -89,18 +88,12 @@ public abstract class Shape
 	@Override
 	public List<Intersection<Shape>> getIntersections(Ray ray) {
 
-		List<Intersection<Shape>> intersectionsIncludingBehind = getIntersectionsIncludingBehind(ray);
-
-		return intersectionsIncludingBehind.parallelStream().filter(i -> {
-			Vector3D rayToIntersection = i.getPoint().subtract(ray.getOrigin());
-			return (Double.compare(rayToIntersection.getNorm(), World.DOUBLE_ERROR) <= 0
-					|| rayToIntersection.normalize().dotProduct(ray.getVector()) >= 0d);
-		}).collect(Collectors.toCollection(LinkedList::new));
+		return getIntersections(ray, false);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public abstract List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray);
+	public abstract List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin);
 
 	@Override
 	public boolean isInside(Vector3D point) {

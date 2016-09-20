@@ -40,7 +40,7 @@ public class Cylinder extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
 
 		Ray localRay = worldToLocal(ray);
 
@@ -73,6 +73,9 @@ public class Cylinder extends Shape {
 
 		double t1_2d = t_ca - t_hc;
 		double t2_2d = t_ca + t_hc;
+
+		boolean useIntersection1 = (includeBehindRayOrigin || Double.compare(t1_2d, World.DOUBLE_ERROR) >= 0),
+				useIntersection2 = (includeBehindRayOrigin || Double.compare(t2_2d, World.DOUBLE_ERROR) >= 0);
 		//
 		// Now we can determine the intersection-point(s) in 2D space.
 		Vector2D intersectionPoint1_2D = rayOrigin.add(rayVector.scalarMultiply(t1_2d));
@@ -91,7 +94,8 @@ public class Cylinder extends Shape {
 		// Time to see if those intersections are within the bounds of this
 		// cylinder.
 		//
-		if (Double.compare(intersectionPoint1.getY(), -1d) >= 0 && Double.compare(intersectionPoint1.getY(), 1d) <= 0) {
+		if (useIntersection1 && Double.compare(intersectionPoint1.getY(), -1d) >= 0
+				&& Double.compare(intersectionPoint1.getY(), 1d) <= 0) {
 
 			// We need to ensure that the reported surface normal is facing
 			// toward the intersecting ray.
@@ -105,7 +109,8 @@ public class Cylinder extends Shape {
 					getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), getMaterial()));
 		}
 
-		if (Double.compare(intersectionPoint2.getY(), -1d) >= 0 && Double.compare(intersectionPoint2.getY(), 1d) <= 0) {
+		if (useIntersection2 && Double.compare(intersectionPoint2.getY(), -1d) >= 0
+				&& Double.compare(intersectionPoint2.getY(), 1d) <= 0) {
 
 			Vector3D normal = new Vector3D(intersectionPoint2.getX(), 0d, intersectionPoint2.getZ()).normalize();
 			double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
@@ -130,7 +135,7 @@ public class Cylinder extends Shape {
 			// Remember that a circle is x^2 + y^2 = r^2
 			// or, for points inside the circle:
 			// x^2 + y^2 <= r^2
-			results.addAll(minusYCap.getIntersectionsIncludingBehind(localRay)
+			results.addAll(minusYCap.getIntersections(localRay, includeBehindRayOrigin)
 					.parallelStream()
 					.filter(i -> Double.compare(
 							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
@@ -141,7 +146,7 @@ public class Cylinder extends Shape {
 		}
 
 		if (!results.isEmpty()) {
-			results.addAll(plusYCap.getIntersectionsIncludingBehind(localRay)
+			results.addAll(plusYCap.getIntersections(localRay, includeBehindRayOrigin)
 					.parallelStream()
 					.filter(i -> Double.compare(
 							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)

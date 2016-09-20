@@ -53,7 +53,7 @@ public class Plane extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
 
 		Ray transformedRay = worldToLocal(ray);
 
@@ -96,6 +96,9 @@ public class Plane extends Shape {
 			//
 			//
 			double t = -transformedRay.getOrigin().getY() / transformedRay.getVector().getY();
+
+			if (!includeBehindRayOrigin && Double.compare(t, World.DOUBLE_ERROR) <= 0)
+				return Collections.emptyList();
 
 			if (Double.compare(FastMath.abs(t), World.DOUBLE_ERROR) < 0)
 				return Collections.emptyList();

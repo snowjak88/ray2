@@ -40,10 +40,11 @@ public interface Intersectable {
 	 * "behind" the Ray.
 	 * 
 	 * @param ray
+	 * @param includeBehindRayOrigin TODO
 	 * @return the list of {@link Intersection}s made by the given Ray on this
 	 *         object, including those behind the Ray's origin
 	 */
-	public <S extends Intersectable> List<Intersection<S>> getIntersectionsIncludingBehind(Ray ray);
+	public <S extends Intersectable> List<Intersection<S>> getIntersections(Ray ray, boolean includeBehindRayOrigin);
 
 	/**
 	 * Tests to see if the given point (in global coordinates) is contained

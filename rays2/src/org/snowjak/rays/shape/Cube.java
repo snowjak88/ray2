@@ -67,7 +67,7 @@ public class Cube extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersectionsIncludingBehind(Ray ray) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
 
 		Ray transformedRay = worldToLocal(ray);
 
@@ -75,7 +75,7 @@ public class Cube extends Shape {
 			return Collections.emptyList();
 
 		List<Intersection<Shape>> results = planes.parallelStream()
-				.map(p -> p.getIntersectionsIncludingBehind(transformedRay))
+				.map(p -> p.getIntersections(transformedRay, includeBehindRayOrigin))
 				.flatMap(li -> li.parallelStream())
 				.filter(i -> isInsideLocal(i.getPoint()))
 				.map(i -> new Intersection<Shape>(i.getPoint(), i.getNormal(), i.getRay(), this,
