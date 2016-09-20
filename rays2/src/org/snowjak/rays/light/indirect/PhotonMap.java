@@ -1,11 +1,16 @@
 package org.snowjak.rays.light.indirect;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.distribution.EnumeratedDistribution;
@@ -46,8 +51,6 @@ public class PhotonMap {
 
 	private List<Shape> aimShapes = new LinkedList<>();
 
-	private int totalPhotons = 0;
-
 	private boolean currentlyPopulating = false;
 
 	/**
@@ -69,7 +72,6 @@ public class PhotonMap {
 	public void clear() {
 
 		this.photonLocations = new LinkedList<>();
-		this.totalPhotons = 0;
 	}
 
 	/**
@@ -113,31 +115,46 @@ public class PhotonMap {
 	 */
 	public void addForLight(Light light, int photonCount) {
 
-		Instant lastPercentageInstant = Instant.now();
+		BlockingQueue<Pair<Vector3D, RawColor>> buildingList = new LinkedBlockingQueue<>();
+
+		AtomicInteger photonsCompleted = new AtomicInteger(0);
 		boolean lastCurrentlyPopulating = currentlyPopulating;
 		currentlyPopulating = true;
 
+		ScheduledExecutorService photonMapProgressExecutor = Executors.newSingleThreadScheduledExecutor();
+
+		photonMapProgressExecutor.scheduleAtFixedRate(() -> {
+			int percentage = (int) (((double) photonsCompleted.get() / (double) photonCount) * 100d);
+			System.out.println(percentage + "% complete (" + photonsCompleted.get() + " photons ...)");
+
+		}, 1, 3, TimeUnit.SECONDS);
+
 		for (int i = 0; i < photonCount; i++) {
-			Ray photonPath;
-			Optional<LightingResult> photonLightingResult;
-			do {
+
+			World.getSingleton().getWorkerThreadPool().submit(() -> {
+				Ray photonPath;
+				Optional<LightingResult> photonLightingResult;
 				do {
-					photonPath = new Ray(light.getLocation(), getRandomVector(light.getLocation()), 1);
-				} while (!isRayAcceptable(photonPath));
-				photonLightingResult = World.getSingleton().getLightingModel().determineRayColor(photonPath,
-						World.getSingleton().getShapeIntersections(photonPath));
-			} while (!photonLightingResult.isPresent());
+					do {
+						photonPath = new Ray(light.getLocation(), getRandomVector(light.getLocation()), 1);
+					} while (!isRayAcceptable(photonPath));
 
-			followPhoton(light.getDiffuseColor(), photonPath, photonLightingResult.get(), light, photonCount);
-			totalPhotons++;
+					photonLightingResult = World.getSingleton().getLightingModel().determineRayColor(photonPath,
+							World.getSingleton().getShapeIntersections(photonPath));
 
-			if (lastPercentageInstant.plusSeconds(3).isBefore(Instant.now())) {
-				int percentage = (int) (((double) i / (double) photonCount) * 100d);
-				System.out.println(percentage + "% complete (" + i + " photons ...)");
-				lastPercentageInstant = Instant.now();
-			}
+				} while (!photonLightingResult.isPresent());
+
+				followPhoton(buildingList, light.getDiffuseColor(), photonPath, photonLightingResult.get(), light,
+						photonCount);
+				photonsCompleted.incrementAndGet();
+			});
 		}
 
+		while (World.getSingleton().getWorkerThreadPool().getActiveCount() > 0) {
+		}
+		photonMapProgressExecutor.shutdownNow();
+
+		photonLocations.addAll(buildingList);
 		photonLocations.sort((l1, l2) -> Double.compare(l1.getKey().getNorm(), l2.getKey().getNorm()));
 		currentlyPopulating = lastCurrentlyPopulating;
 	}
@@ -150,14 +167,14 @@ public class PhotonMap {
 		return aimShapes.parallelStream().anyMatch(s -> s.getIntersection(photonRay).isPresent());
 	}
 
-	private void followPhoton(RawColor currentPhotonColor, Ray ray, LightingResult photonLightingResult, Light light,
-			int photonCount) {
+	private void followPhoton(BlockingQueue<Pair<Vector3D, RawColor>> buildingList, RawColor currentPhotonColor,
+			Ray ray, LightingResult photonLightingResult, Light light, int photonCount) {
 
-		if (ray.getOrigin().getNorm() > World.WORLD_BOUND)
+		if (ray.getOrigin().getNorm() >= World.WORLD_BOUND)
 			return;
 
 		if (photonLightingResult.getContributingResults().isEmpty()) {
-			photonLocations.add(new Pair<>(photonLightingResult.getPoint(),
+			buildingList.add(new Pair<>(photonLightingResult.getPoint(),
 					currentPhotonColor.multiplyScalar(light.getIntensity(photonLightingResult.getPoint()))));
 			return;
 		}
@@ -173,7 +190,7 @@ public class PhotonMap {
 		RawColor newPhotonColor = currentPhotonColor;
 		newPhotonColor = currentPhotonColor.multiply(photonLightingResult.getTint());
 
-		followPhoton(newPhotonColor, followingPhotonPath, followingResult, light, photonCount);
+		followPhoton(buildingList, newPhotonColor, followingPhotonPath, followingResult, light, photonCount);
 	}
 
 	/**
@@ -279,7 +296,7 @@ public class PhotonMap {
 		return closePhotons.parallelStream()
 				.map(p -> p.getValue().multiplyScalar(1d / (4d * FastMath.PI * distance)))
 				.reduce(new RawColor(), (c1, c2) -> c1.add(c2))
-				.multiplyScalar(1d / (double) totalPhotons);
+				.multiplyScalar(1d / (double) photonLocations.size());
 
 	}
 }
