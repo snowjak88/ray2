@@ -1,5 +1,6 @@
 package org.snowjak.rays.light.indirect;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -112,7 +113,7 @@ public class PhotonMap {
 	 */
 	public void addForLight(Light light, int photonCount) {
 
-		int lastPercentage = 0;
+		Instant lastPercentageInstant = Instant.now();
 		boolean lastCurrentlyPopulating = currentlyPopulating;
 		currentlyPopulating = true;
 
@@ -130,10 +131,10 @@ public class PhotonMap {
 			followPhoton(light.getDiffuseColor(), photonPath, photonLightingResult.get(), light, photonCount);
 			totalPhotons++;
 
-			int percentage = (int) (((double) i / (double) photonCount) * 100d);
-			if (percentage - 5 > lastPercentage) {
-				System.out.println(percentage + "% complete");
-				lastPercentage = percentage;
+			if (lastPercentageInstant.plusSeconds(3).isBefore(Instant.now())) {
+				int percentage = (int) (((double) i / (double) photonCount) * 100d);
+				System.out.println(percentage + "% complete (" + i + " photons ...)");
+				lastPercentageInstant = Instant.now();
 			}
 		}
 
@@ -180,6 +181,9 @@ public class PhotonMap {
 	 *         the unit-sphere
 	 */
 	private Vector3D getRandomVector(Vector3D origin) {
+
+		if (aimShapes.isEmpty())
+			return Vector3D.PLUS_J;
 
 		Vector3D result;
 		do {
