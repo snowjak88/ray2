@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Locatable;
 import org.snowjak.rays.Prototype;
 import org.snowjak.rays.Ray;
@@ -188,9 +189,10 @@ public abstract class Shape
 	public abstract Shape copy();
 
 	/**
-	 * Perform a quick check to see if this (object-local) {@link Ray} will
-	 * intersect a bounding-sphere of a given radius, located at (0,0,0). Can be
-	 * used as a quick-and-dirty Ray-rejection test for more complex Shapes.
+	 * Perform a quick check to see if this (object-local) {@link Ray}
+	 * (interpreted as a line of infinite length) will intersect a
+	 * bounding-sphere of a given radius, located at (0,0,0). Can be used as a
+	 * quick-and-dirty Ray-rejection test for more complex Shapes.
 	 * 
 	 * @param localRay
 	 * @param radius_squared
@@ -227,6 +229,94 @@ public abstract class Shape
 		//
 		// Now -- if d > r, then this ray does *not* intersect this sphere!
 		return Double.compare(d2, radius_squared) <= 0;
+	}
+
+	/**
+	 * Tests if the given {@link Ray} (interpreted as a line of infinite length)
+	 * intersects an Axis-Aligned Bounding Box centered on (0,0,0), and
+	 * possessed of the given side-lengths.
+	 * 
+	 * @param localRay
+	 * @param xLength
+	 * @param yLength
+	 * @param zLength
+	 * @return
+	 */
+	protected boolean isIntersectsWithAABB(Ray localRay, double xLength, double yLength, double zLength) {
+
+		double halfXLength = xLength / 2d, halfYLength = yLength / 2d, halfZLength = zLength / 2d;
+
+		boolean ignoreX = false, ignoreY = false, ignoreZ = false;
+		double px = localRay.getOrigin().getX(), py = localRay.getOrigin().getY(), pz = localRay.getOrigin().getZ();
+		double vx = localRay.getVector().getX(), vy = localRay.getVector().getY(), vz = localRay.getVector().getZ();
+
+		if (Double.compare(vx, 0d) == 0)
+			ignoreX = true;
+		if (Double.compare(vy, 0d) == 0)
+			ignoreY = true;
+		if (Double.compare(vz, 0d) == 0)
+			ignoreZ = true;
+
+		double t_x0 = (ignoreX ? -1 : solveForT(px, vx, -halfXLength)),
+				t_y0 = (ignoreY ? -1 : solveForT(py, vy, -halfYLength)),
+				t_z0 = (ignoreZ ? -1 : solveForT(pz, vz, -halfZLength));
+		double t_x1 = (ignoreX ? Double.MAX_VALUE : solveForT(px, vx, +halfXLength)),
+				t_y1 = (ignoreY ? Double.MAX_VALUE : solveForT(py, vy, +halfYLength)),
+				t_z1 = (ignoreZ ? Double.MAX_VALUE : solveForT(pz, vz, +halfZLength));
+
+		if (t_x0 > t_x1) {
+			double temp = t_x0;
+			t_x0 = t_x1;
+			t_x1 = temp;
+		}
+		if (t_y0 > t_y1) {
+			double temp = t_y0;
+			t_y0 = t_y1;
+			t_y1 = temp;
+		}
+		if (t_z0 > t_z1) {
+			double temp = t_z0;
+			t_z0 = t_z1;
+			t_z1 = temp;
+		}
+
+		double t0 = FastMath.max(FastMath.max(t_x0, t_y0), t_z0);
+		double t1 = FastMath.max(FastMath.max(t_x1, t_y1), t_z1);
+
+		Vector3D intersectionPoint = localRay.getOrigin().add(localRay.getVector().scalarMultiply(t0));
+		if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
+				&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
+				&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.DOUBLE_ERROR) <= 0)
+			return true;
+
+		intersectionPoint = localRay.getOrigin().add(localRay.getVector().scalarMultiply(t1));
+		if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
+				&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
+				&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.DOUBLE_ERROR) <= 0)
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * <p>
+	 * P + Vt = solution
+	 * </p>
+	 * <p>
+	 * therefore:
+	 * </p>
+	 * <p>
+	 * t = (solution - P) / V
+	 * </p>
+	 * 
+	 * @param p
+	 * @param v
+	 * @param sol
+	 * @return
+	 */
+	private double solveForT(double p, double v, double sol) {
+
+		return (sol - p) / v;
 	}
 
 }
