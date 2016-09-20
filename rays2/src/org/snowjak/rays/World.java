@@ -41,7 +41,7 @@ public class World {
 	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
 	 * model, e.g., reflection.
 	 */
-	public static final int DEFAULT_MAX_RAY_RECURSION = 8;
+	public static final int DEFAULT_MAX_RAY_RECURSION = 4;
 
 	private static World INSTANCE = null;
 
