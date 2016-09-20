@@ -231,7 +231,7 @@ public class Renderer implements CanBeShutdown {
 		/**
 		 * @return the selected number of worker-threads to use while rendering
 		 */
-		public int getRenderThreadCount() {
+		public int getWorkerThreadCount() {
 
 			return renderThreadCount;
 		}

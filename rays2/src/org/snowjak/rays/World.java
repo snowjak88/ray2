@@ -2,14 +2,19 @@ package org.snowjak.rays;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.util.FastMath;
+import org.snowjak.rays.Renderer.Settings;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.model.FlatLightingModel;
 import org.snowjak.rays.light.model.LightingModel;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.ui.CanBeShutdown;
 
 /**
  * <p>
@@ -23,7 +28,7 @@ import org.snowjak.rays.shape.Shape;
  * @author snowjak88
  *
  */
-public class World {
+public class World implements CanBeShutdown {
 
 	/**
 	 * Double values smaller than this will be considered to be "close enough"
@@ -55,7 +60,11 @@ public class World {
 
 	private LightingModel lightingModel = new FlatLightingModel();
 
+	private ThreadPoolExecutor workerThreadPool;
+
 	protected World() {
+		this.workerThreadPool = (ThreadPoolExecutor) Executors
+				.newFixedThreadPool(FastMath.max(Settings.getSingleton().getWorkerThreadCount(), 1));
 	}
 
 	/**
@@ -162,6 +171,21 @@ public class World {
 	public void setMaxRayRecursion(int maxRayRecursion) {
 
 		this.maxRayRecursion = maxRayRecursion;
+	}
+
+	/**
+	 * @return the world's pool of available worker-threads
+	 */
+	public ThreadPoolExecutor getWorkerThreadPool() {
+
+		return workerThreadPool;
+	}
+
+	@Override
+	public void shutdown() {
+
+		if (!this.workerThreadPool.shutdownNow().isEmpty())
+			System.out.println("Shutting down worker threads ...");
 	}
 
 }

@@ -1,11 +1,10 @@
 package org.snowjak.rays.ui;
 
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Renderer.Settings;
+import org.snowjak.rays.World;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 
@@ -23,8 +22,6 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 
 	private PixelDrawer child;
 
-	private ExecutorService renderingThreadPool;
-
 	private RenderSplitType splitType;
 
 	/**
@@ -38,8 +35,6 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 	 */
 	public MultithreadedScreenDecorator(PixelDrawer child) {
 		this.child = child;
-		this.renderingThreadPool = Executors
-				.newFixedThreadPool(FastMath.max(Settings.getSingleton().getRenderThreadCount(), 1));
 		this.splitType = Settings.getSingleton().getRenderSplitType();
 	}
 
@@ -49,7 +44,7 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 		switch (splitType) {
 		case COLUMN:
 			for (int column = child.getScreenMinX(); column <= child.getScreenMaxX(); column++)
-				renderingThreadPool.submit(new ColumnRenderTask(camera, column));
+				World.getSingleton().getWorkerThreadPool().submit(new ColumnRenderTask(camera, column));
 			break;
 
 		case REGION:
@@ -61,8 +56,8 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 
 					int extentX = FastMath.min(startX + sizeX, child.getScreenMaxX() - child.getScreenMinX());
 					int extentY = FastMath.min(startY + sizeY, child.getScreenMaxY() - child.getScreenMinY());
-					renderingThreadPool
-							.submit(new RegionRenderTask(camera, startX, startY, extentX - startX, extentY - startY));
+					World.getSingleton().getWorkerThreadPool().submit(
+							new RegionRenderTask(camera, startX, startY, extentX - startX, extentY - startY));
 				}
 		}
 	}
@@ -70,8 +65,6 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 	@Override
 	public void shutdown() {
 
-		if (!this.renderingThreadPool.shutdownNow().isEmpty())
-			System.out.println("Shutting down rendering tasks ...");
 		child.shutdown();
 	}
 
