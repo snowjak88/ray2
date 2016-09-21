@@ -47,7 +47,7 @@ public class PhotonMap {
 
 	private Random rnd = new Random();
 
-	private List<Pair<Vector3D, RawColor>> photonLocations = new LinkedList<>();
+	private List<PhotonMap.Entry> photonLocations = new LinkedList<>();
 
 	private List<Shape> aimShapes = new LinkedList<>();
 
@@ -115,7 +115,7 @@ public class PhotonMap {
 	 */
 	public void addForLight(Light light, int photonCount) {
 
-		BlockingQueue<Pair<Vector3D, RawColor>> buildingList = new LinkedBlockingQueue<>();
+		BlockingQueue<PhotonMap.Entry> buildingList = new LinkedBlockingQueue<>();
 
 		AtomicInteger photonsCompleted = new AtomicInteger(0);
 		boolean lastCurrentlyPopulating = currentlyPopulating;
@@ -155,7 +155,7 @@ public class PhotonMap {
 		photonMapProgressExecutor.shutdownNow();
 
 		photonLocations.addAll(buildingList);
-		photonLocations.sort((l1, l2) -> Double.compare(l1.getKey().getNorm(), l2.getKey().getNorm()));
+		photonLocations.sort((l1, l2) -> Double.compare(l1.getPoint().getNorm(), l2.getPoint().getNorm()));
 		currentlyPopulating = lastCurrentlyPopulating;
 	}
 
@@ -167,15 +167,16 @@ public class PhotonMap {
 		return aimShapes.parallelStream().anyMatch(s -> s.getIntersection(photonRay).isPresent());
 	}
 
-	private void followPhoton(BlockingQueue<Pair<Vector3D, RawColor>> buildingList, RawColor currentPhotonColor,
-			Ray ray, LightingResult photonLightingResult, Light light, int photonCount) {
+	private void followPhoton(BlockingQueue<PhotonMap.Entry> buildingList, RawColor currentPhotonColor, Ray ray,
+			LightingResult photonLightingResult, Light light, int photonCount) {
 
 		if (ray.getOrigin().getNorm() >= World.WORLD_BOUND)
 			return;
 
 		if (photonLightingResult.getContributingResults().isEmpty()) {
-			buildingList.add(new Pair<>(photonLightingResult.getPoint(),
-					currentPhotonColor.multiplyScalar(light.getIntensity(photonLightingResult.getPoint()))));
+			buildingList.add(
+					new Entry(currentPhotonColor.multiplyScalar(light.getIntensity(photonLightingResult.getPoint())),
+							photonLightingResult.getPoint(), photonLightingResult.getEye().getVector()));
 			return;
 		}
 
@@ -216,7 +217,7 @@ public class PhotonMap {
 	/**
 	 * @return the stored list of photons
 	 */
-	public List<Pair<Vector3D, RawColor>> getPhotons() {
+	public List<PhotonMap.Entry> getPhotons() {
 
 		return photonLocations;
 	}
@@ -243,10 +244,10 @@ public class PhotonMap {
 	 * @return a photon-location that is at most {@link World#DOUBLE_ERROR}
 	 *         distant from the given point
 	 */
-	public Optional<Pair<Vector3D, RawColor>> getPhotonCloseToPoint(Vector3D point) {
+	public Optional<PhotonMap.Entry> getPhotonCloseToPoint(Vector3D point) {
 
 		return photonLocations.parallelStream()
-				.filter(l -> Double.compare(l.getKey().distance(point), World.DOUBLE_ERROR) <= 0)
+				.filter(l -> Double.compare(l.getPoint().distance(point), World.DOUBLE_ERROR) <= 0)
 				.findFirst();
 	}
 
@@ -256,10 +257,10 @@ public class PhotonMap {
 	 * @return all photons at are at most {@code distance} away from the given
 	 *         point
 	 */
-	public List<Pair<Vector3D, RawColor>> getPhotonsCloseToPoint(Vector3D point, double distance) {
+	public List<PhotonMap.Entry> getPhotonsCloseToPoint(Vector3D point, double distance) {
 
 		return photonLocations.parallelStream()
-				.filter(l -> Double.compare(l.getKey().distance(point), distance) <= 0)
+				.filter(l -> Double.compare(l.getPoint().distance(point), distance) <= 0)
 				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
@@ -268,11 +269,12 @@ public class PhotonMap {
 	 * point.
 	 * 
 	 * @param point
+	 * @param normal
 	 * @return the calculated total illumination
 	 */
-	public RawColor getIlluminationAtPoint(Vector3D point) {
+	public RawColor getIlluminationAtPoint(Vector3D point, Vector3D normal) {
 
-		return getIlluminationAtPoint(point, World.DOUBLE_ERROR);
+		return getIlluminationAtPoint(point, normal, World.DOUBLE_ERROR);
 	}
 
 	/**
@@ -281,22 +283,78 @@ public class PhotonMap {
 	 * point.
 	 * 
 	 * @param point
+	 * @param normal
 	 * @param distance
 	 * @return the calculated total illumination
 	 */
-	public RawColor getIlluminationAtPoint(Vector3D point, double distance) {
+	public RawColor getIlluminationAtPoint(Vector3D point, Vector3D normal, double distance) {
 
 		if (currentlyPopulating)
 			return new RawColor();
 
-		Collection<Pair<Vector3D, RawColor>> closePhotons = getPhotonsCloseToPoint(point, distance);
+		Collection<PhotonMap.Entry> closePhotons = getPhotonsCloseToPoint(point, distance);
 		if (closePhotons.isEmpty())
 			return new RawColor();
 
 		return closePhotons.parallelStream()
-				.map(p -> p.getValue().multiplyScalar(1d / (4d * FastMath.PI * distance)))
+				.filter(e -> e.getFromDirection().negate().dotProduct(normal) >= 0d)
+				.map(p -> p.getColor().multiplyScalar(1d / (4d * FastMath.PI * distance)))
 				.reduce(new RawColor(), (c1, c2) -> c1.add(c2))
 				.multiplyScalar(1d / (double) photonLocations.size());
+
+	}
+
+	/**
+	 * An entry within a {@link PhotonMap}. Describes the color (i.e.,
+	 * frequency) of the incoming photon, its location within the map, and the
+	 * direction it came from.
+	 * 
+	 * @author snowjak88
+	 *
+	 */
+	public static class Entry {
+
+		private RawColor color;
+
+		private Vector3D point, fromDirection;
+
+		/**
+		 * Construct a new {@link PhotonMap} entry.
+		 * 
+		 * @param color
+		 * @param point
+		 * @param fromDirection
+		 */
+		public Entry(RawColor color, Vector3D point, Vector3D fromDirection) {
+			this.color = color;
+			this.point = point;
+			this.fromDirection = fromDirection;
+		}
+
+		/**
+		 * @return this photon's color (i.e., frequency)
+		 */
+		public RawColor getColor() {
+
+			return color;
+		}
+
+		/**
+		 * @return this photon's location within the {@link PhotonMap}
+		 */
+		public Vector3D getPoint() {
+
+			return point;
+		}
+
+		/**
+		 * @return the direction from which this photon arrived at its ultimate
+		 *         location
+		 */
+		public Vector3D getFromDirection() {
+
+			return fromDirection;
+		}
 
 	}
 }

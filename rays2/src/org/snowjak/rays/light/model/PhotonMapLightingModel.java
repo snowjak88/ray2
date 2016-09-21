@@ -36,7 +36,8 @@ public class PhotonMapLightingModel implements LightingModel {
 		lightingResult.setPoint(intersect.getPoint());
 		lightingResult.setNormal(intersect.getNormal());
 
-		RawColor photonIllumination = PhotonMap.getSingleton().getIlluminationAtPoint(intersect.getPoint(), 1d);
+		RawColor photonIllumination = PhotonMap.getSingleton().getIlluminationAtPoint(intersect.getPoint(),
+				intersect.getNormal(), 1d);
 		RawColor surfaceColor = intersect.getDiffuse(intersect.getPoint());
 		RawColor litColor = surfaceColor.multiply(photonIllumination);
 		lightingResult.setRadiance(litColor);
