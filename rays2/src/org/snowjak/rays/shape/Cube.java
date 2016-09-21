@@ -120,6 +120,8 @@ public class Cube extends Shape {
 					&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
 					&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.DOUBLE_ERROR) <= 0) {
 				Vector3D normal = n0;
+				double normalSign = FastMath.signum(normal.negate().dotProduct(transformedRay.getVector()));
+				normal = normal.scalarMultiply(normalSign);
 				Material leavingMaterial = (useT1) ? Material.AIR : getMaterial(),
 						enteringMaterial = (useT1) ? getMaterial() : Material.AIR;
 				results.add(localToWorld(new Intersection<>(intersectionPoint, normal, transformedRay, this, t0,
@@ -133,6 +135,8 @@ public class Cube extends Shape {
 					&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
 					&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.DOUBLE_ERROR) <= 0) {
 				Vector3D normal = n1;
+				double normalSign = FastMath.signum(normal.negate().dotProduct(transformedRay.getVector()));
+				normal = normal.scalarMultiply(normalSign);
 				results.add(localToWorld(
 						new Intersection<>(intersectionPoint, normal, transformedRay, this, t1, getDiffuseColorScheme(),
 								getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), Material.AIR)));
