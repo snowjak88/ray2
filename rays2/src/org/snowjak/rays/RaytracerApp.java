@@ -2,6 +2,7 @@ package org.snowjak.rays;
 
 import java.util.concurrent.Executors;
 
+import org.snowjak.rays.Renderer.Settings;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.color.SimpleColorScheme;
@@ -45,7 +46,7 @@ public class RaytracerApp extends Application {
 	public void start(Stage primaryStage) throws Exception {
 
 		World world = buildWorld();
-		// Settings.presetDetailed();
+		Settings.presetDetailed();
 		Renderer renderer = new Renderer(new JavaFxPixelDrawer(primaryStage));
 
 		primaryStage.setOnCloseRequest((e) -> {
@@ -56,8 +57,7 @@ public class RaytracerApp extends Application {
 
 		Executors.newSingleThreadExecutor().submit(() -> {
 			System.out.println("Building photon-map ...");
-			PhotonMap.getSingleton().add(3000);
-
+			PhotonMap.getSingleton().add(30000);
 			System.out.println("Rendering ...");
 			renderer.render(world.getCamera());
 		});
@@ -67,49 +67,72 @@ public class RaytracerApp extends Application {
 
 		World world = World.getSingleton();
 
-		Shape sphere = new Sphere();
-		sphere.setMaterial(
-				new Material(Functions.constant(Color.WHITE), Functions.constant(0.8d), Functions.constant(1.8)));
-		sphere.getTransformers().add(new Scale(2d, 2d, 2d));
-		sphere.setDiffuseColorScheme(new SimpleColorScheme(Color.GREEN));
-		sphere.getSpecularColorScheme().setShininess(10d);
-		world.getShapes().add(sphere);
+		Shape sphere1 = new Sphere();
+		sphere1.setMaterial(
+				new Material(Functions.constant(Color.WHITE), Functions.constant(1.0d), Functions.constant(1.3)));
+		sphere1.getTransformers().add(new Scale(1.5, 1.5, 1.5));
+		sphere1.getTransformers().add(new Translation(-2d, 0d, 0d));
+		sphere1.setDiffuseColorScheme(new SimpleColorScheme(Color.WHITE));
+		world.getShapes().add(sphere1);
+
+		Shape sphere2 = new Sphere();
+		sphere2.setMaterial(
+				new Material(Functions.constant(Color.WHITE), Functions.constant(0.0d), Functions.constant(20d)));
+		sphere2.getTransformers().add(new Scale(1.5, 1.5, 1.5));
+		sphere2.getTransformers().add(new Translation(+2d, 0d, 0d));
+		sphere2.setDiffuseColorScheme(new SimpleColorScheme(Color.WHITE));
+		world.getShapes().add(sphere2);
 
 		Shape cube = new Cube();
 		cube.setMaterial(
 				new Material(Functions.constant(Color.WHITE), Functions.constant(0d), Functions.constant(1.1)));
 		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.RED));
-		cube.getTransformers().add(new Scale(2d, 2d, 2d));
-		cube.getTransformers().add(new Translation(-5.5d, 0d, 0d));
+		cube.getTransformers().add(new Scale(1d, 10d, 10d));
+		cube.getTransformers().add(new Translation(-5d, 0d, 0d));
+		world.getShapes().add(cube);
+
+		cube = new Cube();
+		cube.setMaterial(
+				new Material(Functions.constant(Color.WHITE), Functions.constant(0d), Functions.constant(1.1)));
+		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
+		cube.getTransformers().add(new Scale(1d, 10d, 10d));
+		cube.getTransformers().add(new Translation(5d, 0d, 0d));
+		world.getShapes().add(cube);
+
+		cube = new Cube();
+		cube.setMaterial(
+				new Material(Functions.constant(Color.WHITE), Functions.constant(1d), Functions.constant(1.1)));
+		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.WHITE));
+		cube.getTransformers().add(new Scale(20d, 20d, 1d));
+		cube.getTransformers().add(new Translation(0d, 0d, 5d));
 		world.getShapes().add(cube);
 
 		Plane plane = new Plane();
 		Material beneathPlaneMaterial = new Material(Functions.constant(Color.WHITE), Functions.constant(0d),
-				Functions.constant(1.3d));
+				Functions.constant(1d));
 		plane.setMinusMaterial(beneathPlaneMaterial);
-		plane.setDiffuseColorScheme(new SimpleColorScheme(Color.LIGHTGRAY));
-		plane.getTransformers().add(new Translation(0d, -2.01d, 0d));
+		plane.setDiffuseColorScheme(new SimpleColorScheme(Color.WHITE));
+		plane.getTransformers().add(new Translation(0d, -2d, 0d));
 		world.getShapes().add(plane);
 
 		Light light = new PointLight(new RawColor(Color.WHITE).multiplyScalar(0.05), new RawColor(Color.WHITE),
-				new RawColor(Color.WHITE), 40d);
-		light.getTransformers().add(new Translation(8, 3, -1));
+				new RawColor(Color.WHITE), 60d);
+		light.getTransformers().add(new Translation(0, 6, 0));
 		world.getLights().add(light);
 
 		Camera camera = new Camera(4.0, 60.0);
-		camera.getTransformers().add(new Translation(0d, 1d, -10d));
+		camera.getTransformers().add(new Translation(0d, 0.25d, -5d));
 		camera.getTransformers().add(new Rotation(-5d, 0d, 0d));
-		camera.getTransformers().add(new Rotation(0d, 15d, 0d));
 		world.setCamera(camera);
 
 		world.setLightingModel(new EnvironmentMapDecoratingLightingModel(
 				new SphericalEnvironmentMap(new Image("resources/images/spherical-map-field2.jpg")),
 				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
 						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel(),
-						new PhotonMapLightingModel(), new MonteCarloDiffuseIlluminationLightingModel(16)))));
+						new PhotonMapLightingModel(64), new MonteCarloDiffuseIlluminationLightingModel(64)))));
 
-		PhotonMap.getSingleton().getAimShapes().add(sphere);
-		PhotonMap.getSingleton().getAimShapes().add(cube);
+		PhotonMap.getSingleton().getAimShapes().add(sphere1);
+		PhotonMap.getSingleton().getAimShapes().add(sphere2);
 
 		return world;
 	}

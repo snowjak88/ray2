@@ -20,6 +20,26 @@ import org.snowjak.rays.shape.Shape;
  */
 public class PhotonMapLightingModel implements LightingModel {
 
+	private int sampleSize;
+
+	/**
+	 * Construct a new {@link PhotonMapLightingModel} using the default number
+	 * of photons to sample (i.e., 8 photons per point).
+	 */
+	public PhotonMapLightingModel() {
+		this(8);
+	}
+
+	/**
+	 * Construct a new {@link PhotonMapLightingModel} using the specified number
+	 * of photons to sample.
+	 * 
+	 * @param sampleSize
+	 */
+	public PhotonMapLightingModel(int sampleSize) {
+		this.sampleSize = sampleSize;
+	}
+
 	@Override
 	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
 
@@ -37,7 +57,7 @@ public class PhotonMapLightingModel implements LightingModel {
 		lightingResult.setNormal(intersect.getNormal());
 
 		RawColor photonIllumination = PhotonMap.getSingleton().getIlluminationAtPoint(intersect.getPoint(),
-				intersect.getNormal(), 1d);
+				intersect.getNormal(), sampleSize);
 		RawColor surfaceColor = intersect.getDiffuse(intersect.getPoint());
 		RawColor litColor = surfaceColor.multiply(photonIllumination);
 		lightingResult.setRadiance(litColor);
