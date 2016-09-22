@@ -96,7 +96,7 @@ public class FresnelLightingModel implements LightingModel {
 		double surfaceTransparency = intersect.getEnteringMaterial().getSurfaceTransparency(intersect.getPoint());
 		RawColor reflectedTint = new RawColor(Color.WHITE), refractedTint = new RawColor(Color.WHITE);
 
-		if (reflectance > 0d) {
+		if (reflectance > World.DOUBLE_ERROR) {
 			Optional<Intersection<Shape>> reflectedIntersection = World.getSingleton()
 					.getClosestShapeIntersection(fresnel.getReflectedRay());
 			reflectedResult = World.getSingleton()
@@ -111,7 +111,7 @@ public class FresnelLightingModel implements LightingModel {
 			finalResult.getContributingResults().add(new Pair<>(reflectedResult, reflectance));
 
 		}
-		if (transmittance > 0d) {
+		if (transmittance > World.DOUBLE_ERROR) {
 			//
 			// Get the color of the refracted ray.
 			Optional<Intersection<Shape>> refractedIntersection = World.getSingleton()
