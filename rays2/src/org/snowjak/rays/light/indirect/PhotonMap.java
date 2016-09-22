@@ -22,9 +22,12 @@ import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
+import org.snowjak.rays.function.Functions;
+import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.indirect.PhotonMap.Kd3dTree.Dimension;
-import org.snowjak.rays.light.model.LightingModel.LightingResult;
+import org.snowjak.rays.light.model.FresnelLightingModel;
+import org.snowjak.rays.light.model.FresnelLightingModel.FresnelResult;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -142,19 +145,15 @@ public class PhotonMap {
 
 			World.getSingleton().getWorkerThreadPool().submit(() -> {
 				Ray photonPath;
-				Optional<LightingResult> photonLightingResult;
+
 				do {
-					do {
-						photonPath = new Ray(light.getLocation(), getRandomVector(light.getLocation()), 1);
-					} while (!isRayAcceptable(photonPath));
+					photonPath = new Ray(light.getLocation(), getRandomVector(light.getLocation()), 1);
+				} while (!isRayAcceptable(photonPath));
 
-					photonLightingResult = World.getSingleton().getLightingModel().determineRayColor(photonPath,
-							World.getSingleton().getClosestShapeIntersection(photonPath));
-
-				} while (!photonLightingResult.isPresent());
-
-				followPhoton(buildingList, light.getDiffuseColor().multiplyScalar(1d / (double) photonCount),
-						photonPath, photonLightingResult.get(), light, photonCount);
+				followPhoton(buildingList,
+						light.getDiffuseColor().multiplyScalar(
+								1d / (double) photonCount),
+						photonPath, World.getSingleton().getClosestShapeIntersection(photonPath), light, photonCount);
 				photonsCompleted.incrementAndGet();
 			});
 		}
@@ -177,30 +176,60 @@ public class PhotonMap {
 	}
 
 	private void followPhoton(BlockingQueue<PhotonMap.Entry> buildingList, RawColor currentPhotonColor, Ray ray,
-			LightingResult photonLightingResult, Light light, int photonCount) {
+			Optional<Intersection<Shape>> photonIntersection, Light light, int photonCount) {
 
 		if (ray.getOrigin().getNorm() >= World.WORLD_BOUND)
 			return;
 
-		if (photonLightingResult.getContributingResults().isEmpty()) {
-			buildingList.add(
-					new Entry(currentPhotonColor.multiplyScalar(light.getIntensity(photonLightingResult.getPoint())),
-							photonLightingResult.getPoint(), photonLightingResult.getEye().getVector()));
+		if (ray.getRecursiveLevel() >= World.getSingleton().getMaxRayRecursion())
 			return;
+
+		if (!photonIntersection.isPresent())
+			return;
+
+		FresnelResult photonInteraction = FresnelLightingModel.calculateFresnelResult(photonIntersection.get());
+		double surfaceTransparency = photonIntersection.get()
+				.getEnteringMaterial()
+				.getSurfaceTransparency(photonIntersection.get().getPoint());
+
+		double reflectChance = photonInteraction.getReflectance();
+		double transmitChance = photonInteraction.getTransmittance() * surfaceTransparency;
+		double absorbChance = 1d - (reflectChance + transmitChance);
+
+		List<Pair<PhotonBranch, Double>> photonBranchPossibilities = Arrays.asList(
+				new Pair<>(PhotonBranch.ABSORB, absorbChance), new Pair<>(PhotonBranch.REFLECT, reflectChance),
+				new Pair<>(PhotonBranch.TRANSMIT, transmitChance));
+
+		EnumeratedDistribution<PhotonBranch> photonBranchDistribution = new EnumeratedDistribution<>(
+				photonBranchPossibilities);
+		PhotonBranch chosenBranch = photonBranchDistribution.sample();
+
+		buildingList.add(new Entry(currentPhotonColor, photonIntersection.get().getPoint(), ray.getVector().negate()));
+
+		Ray newRay = null;
+		switch (chosenBranch) {
+		case ABSORB:
+			return;
+
+		case REFLECT:
+			newRay = photonInteraction.getReflectedRay();
+			break;
+
+		case TRANSMIT:
+			newRay = photonInteraction.getRefractedRay();
 		}
+		newRay = new Ray(newRay.getOrigin(), newRay.getVector(), newRay.getRecursiveLevel() + 1);
 
-		List<Pair<LightingResult, Double>> contributingResults = new LinkedList<>();
-		contributingResults.addAll(photonLightingResult.getContributingResults());
-		EnumeratedDistribution<LightingResult> resultDistribution = new EnumeratedDistribution<>(contributingResults);
+		RawColor newPhotonColor = Functions.lerp(
+				currentPhotonColor.multiply(photonIntersection.get().getDiffuse(photonIntersection.get().getPoint())),
+				currentPhotonColor, surfaceTransparency);
 
-		LightingResult followingResult = resultDistribution.sample();
-		Ray followingEye = followingResult.getEye();
-		Ray followingPhotonPath = new Ray(followingEye.getOrigin(), followingEye.getVector());
+		followPhoton(buildingList, newPhotonColor, newRay, World.getSingleton().getClosestShapeIntersection(newRay),
+				light, photonCount);
+	}
 
-		RawColor newPhotonColor = currentPhotonColor;
-		newPhotonColor = currentPhotonColor.multiply(photonLightingResult.getTint());
-
-		followPhoton(buildingList, newPhotonColor, followingPhotonPath, followingResult, light, photonCount);
+	private enum PhotonBranch {
+		ABSORB, REFLECT, TRANSMIT;
 	}
 
 	/**
@@ -305,20 +334,17 @@ public class PhotonMap {
 		if (closePhotons.isEmpty())
 			return new RawColor();
 
-		double furthestDistance = closePhotons.stream()
-				.map(e -> e.getPoint().distance(point))
+		double furthestDistanceSq = closePhotons.stream()
+				.map(e -> e.getPoint().distanceSq(point))
 				.max(Double::compare)
 				.get();
 
-		final Function<Double, Double> gaussianFilter = (d) -> 0.918
-				* (1d - (1d - FastMath.exp(-1.953 * FastMath.pow(d, 2d) / (2d * FastMath.pow(furthestDistance, 2d))))
-						/ (1d - FastMath.exp(-1.953)));
+		final Function<Double, Double> gaussianFilter = (d2) -> 0.918
+				* (1d - (1d - FastMath.exp(-1.953 * d2 / (2d * furthestDistanceSq))) / (1d - FastMath.exp(-1.953)));
 
 		return closePhotons.parallelStream()
-				.filter(e -> e.getFromDirection().negate().dotProduct(normal) >= 0d)
-				.map(e -> e.getColor()
-						.multiplyScalar(1d / (FastMath.PI * FastMath.pow(furthestDistance, 2d)))
-						.multiplyScalar(gaussianFilter.apply(e.getPoint().distance(point))))
+				.map(e -> e.getColor().multiplyScalar(1d / (FastMath.PI * furthestDistanceSq)).multiplyScalar(
+						gaussianFilter.apply(e.getPoint().distanceSq(point))))
 				.reduce(new RawColor(), (c1, c2) -> c1.add(c2));
 
 	}
