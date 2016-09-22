@@ -2,7 +2,6 @@ package org.snowjak.rays.light.model;
 
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -41,15 +40,12 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		if (intersections.isEmpty())
+		if (!intersection.isPresent())
 			return Optional.empty();
 
-		return Optional.of(lightIntersection(intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
-				.findFirst()
-				.get()));
+		return Optional.of(lightIntersection(intersection.get()));
 	}
 
 	private LightingResult lightIntersection(Intersection<Shape> intersection) {
@@ -64,13 +60,15 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 			Ray toLightRay = new Ray(point, light.getLocation().subtract(point));
 
 			boolean isOccludingIntersections = false;
-			if (doLightOccluding)
-				isOccludingIntersections = World.getSingleton()
-						.getShapeIntersections(toLightRay)
-						.parallelStream()
-						.filter(i -> Double.compare(i.getDistanceFromRayOrigin(),
-								light.getLocation().distance(point)) < 0)
-						.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0);
+			if (doLightOccluding) {
+				Optional<Intersection<Shape>> occludingIntersection = World.getSingleton()
+						.getClosestShapeIntersection(toLightRay);
+
+				isOccludingIntersections = (occludingIntersection.isPresent()
+						&& Double.compare(occludingIntersection.get().getDistanceFromRayOrigin(),
+								light.getLocation().distance(point)) < 0);
+			}
+
 			if (isOccludingIntersections)
 				continue;
 

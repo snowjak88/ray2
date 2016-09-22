@@ -1,6 +1,5 @@
 package org.snowjak.rays.light.model;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -35,34 +34,33 @@ public class ReflectionsDecoratingLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		if (intersections.isEmpty())
+		if (!intersection.isPresent())
 			return Optional.empty();
 		//
 		//
-		Optional<LightingResult> decoratedResult = child.determineRayColor(ray, intersections);
+		Optional<LightingResult> decoratedResult = child.determineRayColor(ray, intersection);
 		//
 		//
 		if (!decoratedResult.isPresent())
 			return Optional.empty();
 		//
 		//
-		double reflectivity = intersections.get(0).getDiffuseColorScheme()
-				.getReflectivity(intersections.get(0).getPoint());
+		double reflectivity = intersection.get().getDiffuseColorScheme().getReflectivity(intersection.get().getPoint());
 		if (Double.compare(reflectivity, 0d) <= 0)
 			return decoratedResult;
 		//
 		//
 		LightingResult finalResult = new LightingResult();
-		finalResult.setPoint(intersections.get(0).getPoint());
-		finalResult.setNormal(intersections.get(0).getNormal());
-		finalResult.setEye(intersections.get(0).getRay());
+		finalResult.setPoint(intersection.get().getPoint());
+		finalResult.setNormal(intersection.get().getNormal());
+		finalResult.setEye(intersection.get().getRay());
 
 		finalResult.getContributingResults().add(new Pair<>(decoratedResult.get(), 1d - reflectivity));
 		finalResult.setRadiance(decoratedResult.get().getRadiance().multiplyScalar(1d - reflectivity));
 
-		Optional<LightingResult> reflectedResult = getReflectiveShapeDiffuseColor(intersections.get(0));
+		Optional<LightingResult> reflectedResult = getReflectiveShapeDiffuseColor(intersection.get());
 		if (reflectedResult.isPresent()) {
 			finalResult.getContributingResults().add(new Pair<>(reflectedResult.get(), reflectivity));
 			finalResult.setRadiance(
@@ -89,8 +87,9 @@ public class ReflectionsDecoratingLightingModel implements LightingModel {
 				.normalize();
 
 		Ray reflectedRay = new Ray(intersectPoint, reflectedEyeVector, originalRay.getRecursiveLevel() + 1);
-		List<Intersection<Shape>> intersections = World.getSingleton().getShapeIntersections(reflectedRay);
-		return World.getSingleton().getLightingModel().determineRayColor(reflectedRay, intersections);
+		Optional<Intersection<Shape>> reflectedIntersection = World.getSingleton()
+				.getClosestShapeIntersection(reflectedRay);
+		return World.getSingleton().getLightingModel().determineRayColor(reflectedRay, reflectedIntersection);
 
 	}
 

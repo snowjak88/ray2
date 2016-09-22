@@ -1,6 +1,5 @@
 package org.snowjak.rays.light.model;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -44,15 +43,15 @@ public class MonteCarloDiffuseIlluminationLightingModel implements LightingModel
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		if (intersections.isEmpty())
+		if (!intersection.isPresent())
 			return Optional.empty();
 
 		if (ray.getRecursiveLevel() >= World.getSingleton().getMaxRayRecursion())
 			return Optional.empty();
 
-		Intersection<Shape> intersect = intersections.get(0);
+		Intersection<Shape> intersect = intersection.get();
 		RawColor totalDiffuseLight = new RawColor();
 
 		for (int i = 0; i < samplesPerPoint; i++) {
@@ -60,10 +59,11 @@ public class MonteCarloDiffuseIlluminationLightingModel implements LightingModel
 			Vector3D samplingDirection = getVectorInHemisphere(intersect.getNormal());
 			Ray samplingRay = new Ray(intersect.getPoint(), samplingDirection, ray.getRecursiveLevel() + 1);
 
-			List<Intersection<Shape>> sampledIntersections = World.getSingleton().getShapeIntersections(samplingRay);
+			Optional<Intersection<Shape>> sampledIntersection = World.getSingleton()
+					.getClosestShapeIntersection(samplingRay);
 			Optional<LightingResult> sampledLight = World.getSingleton()
 					.getLightingModel()
-					.determineRayColor(samplingRay, sampledIntersections);
+					.determineRayColor(samplingRay, sampledIntersection);
 			RawColor sampledColor = sampledLight.orElse(new LightingResult()).getRadiance();
 			totalDiffuseLight = totalDiffuseLight
 					.add(sampledColor.multiplyScalar(samplingDirection.dotProduct(intersect.getNormal())));

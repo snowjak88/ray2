@@ -21,9 +21,9 @@ import org.snowjak.rays.shape.Shape;
 public class PhongSpecularLightingModel implements LightingModel {
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		if (intersections.isEmpty())
+		if (!intersection.isPresent())
 			return Optional.empty();
 
 		//
@@ -32,12 +32,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 		// distance.
 		// And we only care about the first (closest) intersection that isn't
 		// too close.
-		Optional<Intersection<Shape>> firstIntersect = intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
-				.findFirst();
-		if (!firstIntersect.isPresent())
-			return Optional.empty();
-		Intersection<Shape> intersect = firstIntersect.get();
+		Intersection<Shape> intersect = intersection.get();
 		//
 		// What are the configured colors for this shape?
 		RawColor intersectSpecularColor = intersect.getSpecular(intersect.getPoint());

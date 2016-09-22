@@ -4,7 +4,6 @@ import static org.apache.commons.math3.util.FastMath.cos;
 import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -55,18 +54,18 @@ public class FresnelLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		if (intersections.isEmpty())
+		if (!intersection.isPresent())
 			return Optional.empty();
 
 		if (ray.getRecursiveLevel() > World.getSingleton().getMaxRayRecursion())
-			return surfaceLightingModel.determineRayColor(ray, intersections);
+			return surfaceLightingModel.determineRayColor(ray, intersection);
 
 		//
 		//
 		//
-		Intersection<Shape> intersect = intersections.get(0);
+		Intersection<Shape> intersect = intersection.get();
 		FresnelResult fresnel = calculateFresnelResult(intersect);
 		double reflectance = fresnel.getReflectance();
 		double transmittance = fresnel.getTransmittance();
@@ -86,7 +85,7 @@ public class FresnelLightingModel implements LightingModel {
 		surfaceResult.setEye(ray);
 		surfaceResult.setPoint(intersect.getPoint());
 		surfaceResult.setNormal(intersect.getNormal());
-		surfaceResult = surfaceLightingModel.determineRayColor(ray, intersections).orElse(surfaceResult);
+		surfaceResult = surfaceLightingModel.determineRayColor(ray, intersection).orElse(surfaceResult);
 		RawColor surfaceColor = surfaceResult.getRadiance();
 
 		//
@@ -98,11 +97,11 @@ public class FresnelLightingModel implements LightingModel {
 		RawColor reflectedTint = new RawColor(Color.WHITE), refractedTint = new RawColor(Color.WHITE);
 
 		if (reflectance > 0d) {
-			List<Intersection<Shape>> reflectedIntersections = World.getSingleton()
-					.getShapeIntersections(fresnel.getReflectedRay());
+			Optional<Intersection<Shape>> reflectedIntersection = World.getSingleton()
+					.getClosestShapeIntersection(fresnel.getReflectedRay());
 			reflectedResult = World.getSingleton()
 					.getLightingModel()
-					.determineRayColor(fresnel.getReflectedRay(), reflectedIntersections)
+					.determineRayColor(fresnel.getReflectedRay(), reflectedIntersection)
 					.orElse(new LightingResult());
 			reflectedColor = reflectedResult.getRadiance();
 
@@ -115,11 +114,11 @@ public class FresnelLightingModel implements LightingModel {
 		if (transmittance > 0d) {
 			//
 			// Get the color of the refracted ray.
-			List<Intersection<Shape>> refractedIntersections = World.getSingleton()
-					.getShapeIntersections(fresnel.getRefractedRay());
+			Optional<Intersection<Shape>> refractedIntersection = World.getSingleton()
+					.getClosestShapeIntersection(fresnel.getRefractedRay());
 			refractedResult = World.getSingleton()
 					.getLightingModel()
-					.determineRayColor(fresnel.getRefractedRay(), refractedIntersections)
+					.determineRayColor(fresnel.getRefractedRay(), refractedIntersection)
 					.orElse(new LightingResult());
 			refractedColor = refractedResult.getRadiance();
 
@@ -157,7 +156,7 @@ public class FresnelLightingModel implements LightingModel {
 	 * @return a {@link FresnelResult} describing the resulting reflection &
 	 *         refraction
 	 */
-	public FresnelResult calculateFresnelResult(Intersection<Shape> intersection) {
+	public static FresnelResult calculateFresnelResult(Intersection<Shape> intersection) {
 
 		Ray ray = intersection.getRay();
 		Vector3D point = intersection.getPoint();
@@ -247,12 +246,12 @@ public class FresnelLightingModel implements LightingModel {
 		}
 	}
 
-	private Vector3D getNormalPart(Vector3D v, Vector3D normal) {
+	private static Vector3D getNormalPart(Vector3D v, Vector3D normal) {
 
 		return normal.scalarMultiply(normal.dotProduct(v));
 	}
 
-	private Vector3D getTangentPart(Vector3D v, Vector3D normal) {
+	private static Vector3D getTangentPart(Vector3D v, Vector3D normal) {
 
 		return v.subtract(getNormalPart(v, normal));
 	}

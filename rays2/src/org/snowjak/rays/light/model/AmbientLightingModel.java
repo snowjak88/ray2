@@ -1,6 +1,5 @@
 package org.snowjak.rays.light.model;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -24,15 +23,12 @@ import org.snowjak.rays.shape.Shape;
 public class AmbientLightingModel implements LightingModel {
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		if (intersections.isEmpty())
+		if (!intersection.isPresent())
 			return Optional.empty();
 
-		return Optional.of(lightIntersection(intersections.stream()
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
-				.findFirst()
-				.get()));
+		return Optional.of(lightIntersection(intersection.get()));
 	}
 
 	private LightingResult lightIntersection(Intersection<Shape> intersection) {

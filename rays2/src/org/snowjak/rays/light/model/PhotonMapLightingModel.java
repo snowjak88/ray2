@@ -1,6 +1,5 @@
 package org.snowjak.rays.light.model;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.snowjak.rays.Ray;
@@ -41,15 +40,15 @@ public class PhotonMapLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		if (intersections.isEmpty())
+		if (!intersection.isPresent())
 			return Optional.empty();
 
 		if (!PhotonMap.getSingleton().isPhotonMapPopulated())
 			return Optional.empty();
 
-		Intersection<Shape> intersect = intersections.get(0);
+		Intersection<Shape> intersect = intersection.get();
 
 		LightingResult lightingResult = new LightingResult();
 		lightingResult.setEye(ray);

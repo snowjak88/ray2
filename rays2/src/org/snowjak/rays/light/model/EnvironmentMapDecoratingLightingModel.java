@@ -1,6 +1,5 @@
 package org.snowjak.rays.light.model;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -39,9 +38,9 @@ public class EnvironmentMapDecoratingLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		Optional<LightingResult> decoratedColor = decoratedLightingModel.determineRayColor(ray, intersections);
+		Optional<LightingResult> decoratedColor = decoratedLightingModel.determineRayColor(ray, intersection);
 
 		if (decoratedColor.isPresent())
 			return decoratedColor;

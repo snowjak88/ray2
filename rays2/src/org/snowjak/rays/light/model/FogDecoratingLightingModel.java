@@ -1,6 +1,5 @@
 package org.snowjak.rays.light.model;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.util.FastMath;
@@ -57,9 +56,9 @@ public class FogDecoratingLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		Optional<LightingResult> decoratedLightingResult = decoratedModel.determineRayColor(ray, intersections);
+		Optional<LightingResult> decoratedLightingResult = decoratedModel.determineRayColor(ray, intersection);
 
 		RawColor unfoggedColor;
 		if (decoratedLightingResult.isPresent()) {
@@ -68,10 +67,10 @@ public class FogDecoratingLightingModel implements LightingModel {
 			unfoggedColor = new RawColor();
 
 		double colorDistance = 0d;
-		if (intersections.isEmpty())
+		if (!intersection.isPresent())
 			colorDistance = World.WORLD_BOUND;
 		else
-			colorDistance = intersections.get(0).getDistanceFromRayOrigin();
+			colorDistance = intersection.get().getDistanceFromRayOrigin();
 
 		double fogStrength = FastMath.pow(0.5, (colorDistance / halfFogDistance));
 		RawColor foggedColor = unfoggedColor.multiplyScalar(fogStrength).add(fogColor.multiplyScalar(1d - fogStrength));

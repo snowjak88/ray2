@@ -5,7 +5,6 @@ import static org.apache.commons.math3.util.FastMath.toRadians;
 
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -69,9 +68,9 @@ public class Camera implements Transformable {
 		Vector3D direction = location.subtract(getEyeLocation()).normalize();
 
 		Ray ray = localToWorld(new Ray(location, direction));
-		List<Intersection<Shape>> intersections = World.getSingleton().getShapeIntersections(ray);
+		Optional<Intersection<Shape>> intersection = World.getSingleton().getClosestShapeIntersection(ray);
 
-		return World.getSingleton().getLightingModel().determineRayColor(ray, intersections);
+		return World.getSingleton().getLightingModel().determineRayColor(ray, intersection);
 
 	}
 

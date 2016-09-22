@@ -2,7 +2,6 @@ package org.snowjak.rays.light.model;
 
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -31,10 +30,10 @@ public interface LightingModel {
 	 * {@link Intersection}s produced by it.
 	 * 
 	 * @param ray
-	 * @param intersections
+	 * @param intersection
 	 * @return the resulting Color, if any
 	 */
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections);
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection);
 
 	/**
 	 * Describes the outcome of executing this LightingModel.

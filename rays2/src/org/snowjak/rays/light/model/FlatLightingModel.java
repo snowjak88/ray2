@@ -1,6 +1,5 @@
 package org.snowjak.rays.light.model;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.snowjak.rays.Ray;
@@ -18,12 +17,12 @@ import org.snowjak.rays.shape.Shape;
 public class FlatLightingModel implements LightingModel {
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, List<Intersection<Shape>> intersections) {
+	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		if (intersections.isEmpty())
+		if (!intersection.isPresent())
 			return Optional.empty();
 
-		Intersection<Shape> intersect = intersections.get(0);
+		Intersection<Shape> intersect = intersection.get();
 
 		LightingResult result = new LightingResult();
 		result.setEye(ray);
