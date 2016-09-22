@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
@@ -59,7 +60,8 @@ public class Intersect extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin,
+			boolean onlyIncludeClosest) {
 
 		//
 		//
@@ -178,22 +180,29 @@ public class Intersect extends Shape {
 		//
 		// Finally, we need to convert each result Intersection so that
 		// the reported intersected-Shape is this Union, not the child Shape.
-		return results.stream().sequential().peek(i -> {
-			//
-			// Has this Intersect been given its own definitive ColorSchemes,
-			// which will override those of its children?
-			ColorScheme diffuse = (this.getDiffuseColorScheme() != null) ? this.getDiffuseColorScheme()
-					: i.getDiffuseColorScheme();
-			ColorScheme specular = (this.getSpecularColorScheme() != null) ? this.getSpecularColorScheme()
-					: i.getSpecularColorScheme();
-			ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
-					: i.getEmissiveColorScheme();
+		return results.stream()
+				.sequential()
+				.limit(onlyIncludeClosest ? 1 : results.size())
+				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.DOUBLE_ERROR) >= 0)
+				.peek(i -> {
+					//
+					// Has this Intersect been given its own definitive
+					// ColorSchemes,
+					// which will override those of its children?
+					ColorScheme diffuse = (this.getDiffuseColorScheme() != null) ? this.getDiffuseColorScheme()
+							: i.getDiffuseColorScheme();
+					ColorScheme specular = (this.getSpecularColorScheme() != null) ? this.getSpecularColorScheme()
+							: i.getSpecularColorScheme();
+					ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
+							: i.getEmissiveColorScheme();
 
-			i.setIntersected(this);
-			i.setDiffuseColorScheme(diffuse);
-			i.setSpecularColorScheme(specular);
-			i.setEmissiveColorScheme(emissive);
-		}).map(i -> localToWorld(i)).collect(Collectors.toCollection(LinkedList::new));
+					i.setIntersected(this);
+					i.setDiffuseColorScheme(diffuse);
+					i.setSpecularColorScheme(specular);
+					i.setEmissiveColorScheme(emissive);
+				})
+				.map(i -> localToWorld(i))
+				.collect(Collectors.toCollection(LinkedList::new));
 
 	}
 

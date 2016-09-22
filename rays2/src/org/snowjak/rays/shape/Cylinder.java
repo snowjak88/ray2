@@ -40,7 +40,8 @@ public class Cylinder extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin,
+			boolean onlyIncludeClosest) {
 
 		Ray localRay = worldToLocal(ray);
 
@@ -94,7 +95,8 @@ public class Cylinder extends Shape {
 		// Time to see if those intersections are within the bounds of this
 		// cylinder.
 		//
-		if (useIntersection1 && Double.compare(intersectionPoint1.getY(), -1d) >= 0
+		if (useIntersection1 && Double.compare(FastMath.abs(t1), World.DOUBLE_ERROR) >= 0
+				&& Double.compare(intersectionPoint1.getY(), -1d) >= 0
 				&& Double.compare(intersectionPoint1.getY(), 1d) <= 0) {
 
 			// We need to ensure that the reported surface normal is facing
@@ -109,16 +111,18 @@ public class Cylinder extends Shape {
 					getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), getMaterial()));
 		}
 
-		if (useIntersection2 && Double.compare(intersectionPoint2.getY(), -1d) >= 0
-				&& Double.compare(intersectionPoint2.getY(), 1d) <= 0) {
+		if (!(onlyIncludeClosest && results.size() > 0))
+			if (useIntersection2 && Double.compare(FastMath.abs(t2), World.DOUBLE_ERROR) >= 0
+					&& Double.compare(intersectionPoint2.getY(), -1d) >= 0
+					&& Double.compare(intersectionPoint2.getY(), 1d) <= 0) {
 
-			Vector3D normal = new Vector3D(intersectionPoint2.getX(), 0d, intersectionPoint2.getZ()).normalize();
-			double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
-			normal = normal.scalarMultiply(Double.compare(normalSign, 0d) != 0 ? normalSign : 1d);
+				Vector3D normal = new Vector3D(intersectionPoint2.getX(), 0d, intersectionPoint2.getZ()).normalize();
+				double normalSign = FastMath.signum(localRay.getVector().negate().dotProduct(normal));
+				normal = normal.scalarMultiply(Double.compare(normalSign, 0d) != 0 ? normalSign : 1d);
 
-			results.add(new Intersection<Shape>(intersectionPoint2, normal, localRay, this, getDiffuseColorScheme(),
-					getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), getMaterial()));
-		}
+				results.add(new Intersection<Shape>(intersectionPoint2, normal, localRay, this, getDiffuseColorScheme(),
+						getSpecularColorScheme(), getEmissiveColorScheme(), getMaterial(), getMaterial()));
+			}
 
 		//
 		//
@@ -135,7 +139,7 @@ public class Cylinder extends Shape {
 			// Remember that a circle is x^2 + y^2 = r^2
 			// or, for points inside the circle:
 			// x^2 + y^2 <= r^2
-			results.addAll(minusYCap.getIntersections(localRay, includeBehindRayOrigin)
+			results.addAll(minusYCap.getIntersections(localRay, includeBehindRayOrigin, onlyIncludeClosest)
 					.parallelStream()
 					.filter(i -> Double.compare(
 							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
@@ -151,7 +155,7 @@ public class Cylinder extends Shape {
 		}
 
 		if (!results.isEmpty()) {
-			results.addAll(plusYCap.getIntersections(localRay, includeBehindRayOrigin)
+			results.addAll(plusYCap.getIntersections(localRay, includeBehindRayOrigin, onlyIncludeClosest)
 					.parallelStream()
 					.filter(i -> Double.compare(
 							FastMath.pow(i.getPoint().getX(), 2d) + FastMath.pow(i.getPoint().getZ(), 2d), 1d) <= 0)
@@ -168,6 +172,7 @@ public class Cylinder extends Shape {
 
 		return results.parallelStream()
 				.map(i -> localToWorld(i))
+				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.DOUBLE_ERROR) >= 0)
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.peek(i -> {
 					if (Double.compare(
@@ -191,6 +196,7 @@ public class Cylinder extends Shape {
 						i.setEnteringMaterial(Material.AIR);
 					}
 				})
+				.limit(onlyIncludeClosest ? 1 : 2)
 				.collect(Collectors.toCollection(LinkedList::new));
 	}
 

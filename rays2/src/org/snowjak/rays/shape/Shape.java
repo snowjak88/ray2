@@ -80,21 +80,27 @@ public abstract class Shape
 	@Override
 	public Optional<Intersection<Shape>> getIntersection(Ray ray) {
 
-		return getIntersections(ray).stream()
-				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.findFirst();
+		return getIntersections(ray, false, true).stream().findFirst();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Intersection<Shape>> getIntersections(Ray ray) {
 
-		return getIntersections(ray, false);
+		return getIntersections(ray, false, false);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public abstract List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin);
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
+
+		return getIntersections(ray, includeBehindRayOrigin, false);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public abstract List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin,
+			boolean onlyReturnClosest);
 
 	@Override
 	public boolean isInside(Vector3D point) {

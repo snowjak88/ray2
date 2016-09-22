@@ -31,7 +31,8 @@ public class Sphere extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin,
+			boolean onlyIncludeClosest) {
 
 		Ray transformedRay = worldToLocal(ray);
 		//
@@ -97,9 +98,9 @@ public class Sphere extends Shape {
 		boolean isIntersectionDistance1Smaller = Double.compare(intersectionDistance1, intersectionDistance2) < 0;
 
 		boolean useIntersection1 = (includeBehindRayOrigin
-				|| Double.compare(intersectionDistance1, World.DOUBLE_ERROR) >= 0),
-				useIntersection2 = (includeBehindRayOrigin
-						|| Double.compare(intersectionDistance2, World.DOUBLE_ERROR) >= 0);
+				|| Double.compare(intersectionDistance1, World.DOUBLE_ERROR) >= 0);
+		boolean useIntersection2 = (includeBehindRayOrigin
+				|| Double.compare(intersectionDistance2, World.DOUBLE_ERROR) >= 0);
 
 		List<Intersection<Shape>> results = new LinkedList<>();
 
@@ -123,25 +124,26 @@ public class Sphere extends Shape {
 					entering)));
 		}
 
-		if (useIntersection2 && Double.compare(FastMath.abs(intersectionDistance2), World.DOUBLE_ERROR) >= 0) {
-			Vector3D intersectPointOnSphere2 = transformedRay.getVector()
-					.scalarMultiply(intersectionDistance2)
-					.add(transformedRay.getOrigin());
+		if (!(onlyIncludeClosest && results.size() > 0))
+			if (useIntersection2 && Double.compare(FastMath.abs(intersectionDistance2), World.DOUBLE_ERROR) >= 0) {
+				Vector3D intersectPointOnSphere2 = transformedRay.getVector()
+						.scalarMultiply(intersectionDistance2)
+						.add(transformedRay.getOrigin());
 
-			Vector3D normal2 = intersectPointOnSphere2.normalize();
-			double normalSign = FastMath.signum(transformedRay.getVector().negate().dotProduct(normal2));
-			normal2 = normal2.scalarMultiply(normalSign).normalize();
+				Vector3D normal2 = intersectPointOnSphere2.normalize();
+				double normalSign = FastMath.signum(transformedRay.getVector().negate().dotProduct(normal2));
+				normal2 = normal2.scalarMultiply(normalSign).normalize();
 
-			Material leaving = Material.AIR, entering = Material.AIR;
-			if (isIntersectionDistance1Smaller)
-				leaving = getMaterial();
-			else
-				entering = getMaterial();
+				Material leaving = Material.AIR, entering = Material.AIR;
+				if (isIntersectionDistance1Smaller)
+					leaving = getMaterial();
+				else
+					entering = getMaterial();
 
-			results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this,
-					this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(), leaving,
-					entering)));
-		}
+				results.add(localToWorld(new Intersection<Shape>(intersectPointOnSphere2, normal2, transformedRay, this,
+						this.getDiffuseColorScheme(), this.getSpecularColorScheme(), this.getEmissiveColorScheme(),
+						leaving, entering)));
+			}
 
 		return results;
 	}

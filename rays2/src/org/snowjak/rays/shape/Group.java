@@ -9,8 +9,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
 
 /**
@@ -62,16 +64,24 @@ public class Group extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin,
+			boolean onlyIncludeClosest) {
 
 		Ray transformedRay = worldToLocal(ray);
 
 		List<Intersection<Shape>> results = new LinkedList<>();
 		for (Shape child : children)
-			results.addAll(child.getIntersections(transformedRay, includeBehindRayOrigin));
+			results.addAll(child.getIntersections(transformedRay, includeBehindRayOrigin, onlyIncludeClosest));
 
 		results = results.stream().map(i -> localToWorld(i)).collect(LinkedList::new, LinkedList::add,
 				LinkedList::addAll);
+
+		if (onlyIncludeClosest)
+			results = results.stream()
+					.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.DOUBLE_ERROR) >= 0)
+					.sorted((s1, s2) -> Double.compare(s1.getDistanceFromRayOrigin(), s2.getDistanceFromRayOrigin()))
+					.limit(1)
+					.collect(Collectors.toCollection(LinkedList::new));
 
 		return results;
 	}

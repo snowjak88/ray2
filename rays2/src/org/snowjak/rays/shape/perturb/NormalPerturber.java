@@ -6,7 +6,9 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.material.Material;
@@ -72,10 +74,14 @@ public class NormalPerturber extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin,
+			boolean onlyIncludeClosest) {
 
-		return child.getIntersections(worldToLocal(ray), includeBehindRayOrigin)
-				.parallelStream()
+		List<Intersection<Shape>> childResults = child.getIntersections(worldToLocal(ray), includeBehindRayOrigin,
+				onlyIncludeClosest);
+		return childResults.parallelStream()
+				.limit(onlyIncludeClosest ? 1 : childResults.size())
+				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.DOUBLE_ERROR) >= 0)
 				.peek(i -> i.setNormal(normalPerturbationFunction.apply(i.getNormal(), i)))
 				.map(i -> localToWorld(i))
 				.collect(Collectors.toCollection(LinkedList::new));

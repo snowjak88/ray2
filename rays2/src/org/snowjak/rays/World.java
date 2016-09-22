@@ -2,6 +2,7 @@ package org.snowjak.rays;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
@@ -77,6 +78,25 @@ public class World implements CanBeShutdown {
 			INSTANCE = new World();
 
 		return INSTANCE;
+	}
+
+	/**
+	 * Check every single {@link Shape} in this world and return the closest
+	 * resulting {@link Intersection} the given {@link Ray} produces.
+	 * 
+	 * @param ray
+	 *            the ray to use, expressed in global coordinates
+	 * @return the closest Intersection the given Ray produces, according to the
+	 *         distance from the Ray's origin
+	 */
+	public Optional<Intersection<Shape>> getClosestShapeIntersection(Ray ray) {
+
+		return getShapes().parallelStream()
+				.map(s -> s.getIntersection(ray))
+				.filter(oi -> oi.isPresent())
+				.map(o -> o.get())
+				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
+				.findFirst();
 	}
 
 	/**

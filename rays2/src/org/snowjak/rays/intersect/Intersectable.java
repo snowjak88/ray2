@@ -40,11 +40,32 @@ public interface Intersectable {
 	 * "behind" the Ray.
 	 * 
 	 * @param ray
-	 * @param includeBehindRayOrigin TODO
+	 * @param includeBehindRayOrigin
+	 *            TODO
 	 * @return the list of {@link Intersection}s made by the given Ray on this
 	 *         object, including those behind the Ray's origin
 	 */
 	public <S extends Intersectable> List<Intersection<S>> getIntersections(Ray ray, boolean includeBehindRayOrigin);
+
+	/**
+	 * Determine where the given {@link Ray} (expressed in global coordinates)
+	 * would intersect this object. Includes flags allowing you to control
+	 * execution:
+	 * <ul>
+	 * <li>{@code includeBehindRayOrigin}: include intersections "behind" the
+	 * ray origin in the result-list</li>
+	 * <li>{@code onlyReturnClosest}: include only the closest intersection (or
+	 * two intersections, if {@code includeBehindRayOrigin} is {@code true}</li>
+	 * </ul>
+	 * 
+	 * @param ray
+	 * @param includeBehindRayOrigin
+	 * @param onlyReturnClosest
+	 * @return the list of {@link Intersection}s made by the given Ray on this
+	 *         object, including those behind the Ray's origin
+	 */
+	public <S extends Intersectable> List<Intersection<S>> getIntersections(Ray ray, boolean includeBehindRayOrigin,
+			boolean onlyReturnClosest);
 
 	/**
 	 * Tests to see if the given point (in global coordinates) is contained

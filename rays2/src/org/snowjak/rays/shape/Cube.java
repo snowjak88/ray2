@@ -31,7 +31,8 @@ public class Cube extends Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin) {
+	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin,
+			boolean onlyIncludeClosest) {
 
 		Ray transformedRay = worldToLocal(ray);
 
@@ -114,7 +115,7 @@ public class Cube extends Shape {
 				useT1 = includeBehindRayOrigin || Double.compare(t1, World.DOUBLE_ERROR) >= 0;
 
 		List<Intersection<Shape>> results = new LinkedList<>();
-		if (useT0) {
+		if (useT0 && Double.compare(t0, World.DOUBLE_ERROR) >= 0) {
 			Vector3D intersectionPoint = transformedRay.getOrigin().add(transformedRay.getVector().scalarMultiply(t0));
 			if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
 					&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
@@ -129,7 +130,7 @@ public class Cube extends Shape {
 						enteringMaterial)));
 			}
 		}
-		if (useT1) {
+		if (useT1 && Double.compare(t1, World.DOUBLE_ERROR) >= 0 && !(onlyIncludeClosest && results.size() > 0)) {
 			Vector3D intersectionPoint = transformedRay.getOrigin().add(transformedRay.getVector().scalarMultiply(t1));
 			if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
 					&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
