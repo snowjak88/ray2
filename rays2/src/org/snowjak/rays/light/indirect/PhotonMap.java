@@ -149,7 +149,7 @@ public class PhotonMap {
 					} while (!isRayAcceptable(photonPath));
 
 					photonLightingResult = World.getSingleton().getLightingModel().determineRayColor(photonPath,
-							World.getSingleton().getShapeIntersections(photonPath));
+							World.getSingleton().getClosestShapeIntersection(photonPath));
 
 				} while (!photonLightingResult.isPresent());
 
