@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.util.Pair;
+
 /**
  * An Antialiaser is an algorithm for performing super-sampling antialiasing.
  * <p>
@@ -32,9 +34,15 @@ import java.util.stream.Collectors;
  * </p>
  * 
  * @author snowjak88
+ * @param <P>
+ *            the sample-point type
+ * @param <S>
+ *            the sample type
+ * @param <R>
+ *            the result type
  *
  */
-public class SuperSamplingAntialiaser {
+public class SuperSamplingAntialiaser<P, S, R> {
 
 	/**
 	 * Execute this {@link SuperSamplingAntialiaser} for the given central
@@ -53,13 +61,13 @@ public class SuperSamplingAntialiaser {
 	 * @param sampleAggregator
 	 * @return the antialiased result
 	 */
-	public static <P, S, R> R execute(P centralSamplePoint, SamplePointSelector<P> sampleSelector,
-			Sampler<P, S> sampler, SampleAggregator<P, S, R> sampleAggregator) {
+	public R execute(P centralSamplePoint, SamplePointSelector<P> sampleSelector, Sampler<P, S> sampler,
+			SampleAggregator<P, S, R> sampleAggregator) {
 
 		Collection<P> samplePoints = sampleSelector.selectAround(centralSamplePoint);
-		Collection<S> samples = samplePoints.parallelStream()
-				.map(p -> sampler.sample(p))
+		Collection<Pair<P, S>> samples = samplePoints.parallelStream()
+				.map(p -> new Pair<>(p, sampler.sample(p)))
 				.collect(Collectors.toCollection(LinkedList::new));
-		return sampleAggregator.aggregate(samplePoints, samples);
+		return sampleAggregator.aggregate(samples);
 	}
 }

@@ -1,7 +1,6 @@
 package org.snowjak.rays.ui;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Optional;
 
@@ -9,6 +8,7 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Renderer.Settings;
 import org.snowjak.rays.antialias.SuperSamplingAntialiaser;
 import org.snowjak.rays.camera.Camera;
@@ -45,6 +45,8 @@ public class AntialiasingScreenDecorator implements PixelDrawer {
 
 	private double filterSpan;
 
+	private SuperSamplingAntialiaser<Vector3D, Optional<RawColor>, Optional<RawColor>> antialiaser;
+
 	/**
 	 * Create a new AntialiasingScreenDecorator on top of an existing
 	 * {@link PixelDrawer} instance.
@@ -61,13 +63,13 @@ public class AntialiasingScreenDecorator implements PixelDrawer {
 			this.coordinateDelta = filterSpan / ((double) (aaSetting.sampleCount / 2));
 
 		this.distribution = new NormalDistribution(0d, 0.5);
+		this.antialiaser = new SuperSamplingAntialiaser<>();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Optional<RawColor> getRayColor(int screenX, int screenY, Camera camera) {
 
-		return (Optional<RawColor>) SuperSamplingAntialiaser.execute(new Vector3D(screenX, screenY, 0d), (v) -> {
+		return antialiaser.execute(new Vector3D(screenX, screenY, 0d), (v) -> {
 			Collection<Vector3D> results = new LinkedList<>();
 			if (aaSetting == AA.OFF)
 				results.add(new Vector3D(getCameraX(v.getX(), camera), getCameraY(v.getY(), camera), 0d));
@@ -81,17 +83,15 @@ public class AntialiasingScreenDecorator implements PixelDrawer {
 		}, (v) -> {
 			return (Optional<RawColor>) camera.shootRay(v.getX(), v.getY()).map(lr -> lr.getRadiance());
 
-		}, (lv, lrc) -> {
+		}, (lp) -> {
 			if (aaSetting == AA.OFF)
-				return lrc.stream().findFirst().map(orc -> orc.get()).orElse(new RawColor());
+				return lp.stream().findFirst().map(p -> p.getValue()).orElse(Optional.empty());
 
 			double totalScale = 0d;
 			RawColor totalColor = new RawColor();
-			Iterator<Vector3D> samplePointIterator = lv.iterator();
-			Iterator<Optional<RawColor>> sampleIterator = lrc.iterator();
-			while (samplePointIterator.hasNext() && sampleIterator.hasNext()) {
-				Vector3D samplePoint = samplePointIterator.next();
-				Optional<RawColor> sample = sampleIterator.next();
+			for (Pair<Vector3D, Optional<RawColor>> pair : lp) {
+				Vector3D samplePoint = pair.getKey();
+				Optional<RawColor> sample = pair.getValue();
 				double scale = distribution.density(
 						FastMath.sqrt(FastMath.pow(samplePoint.getX(), 2d) + FastMath.pow(samplePoint.getY(), 2d)));
 				totalScale += scale;
