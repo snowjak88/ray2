@@ -1,11 +1,16 @@
 package org.snowjak.rays.ui;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Optional;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Renderer.Settings;
+import org.snowjak.rays.antialias.SuperSamplingAntialiaser;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 
@@ -58,30 +63,43 @@ public class AntialiasingScreenDecorator implements PixelDrawer {
 		this.distribution = new NormalDistribution(0d, 0.5);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Optional<RawColor> getRayColor(int screenX, int screenY, Camera camera) {
 
-		if (aaSetting == AA.OFF)
-			return child.getRayColor(screenX, screenY, camera);
+		return (Optional<RawColor>) SuperSamplingAntialiaser.execute(new Vector3D(screenX, screenY, 0d), (v) -> {
+			Collection<Vector3D> results = new LinkedList<>();
+			if (aaSetting == AA.OFF)
+				results.add(new Vector3D(getCameraX(v.getX(), camera), getCameraY(v.getY(), camera), 0d));
+			else
+				for (double dx = -(filterSpan / 2d); dx <= (filterSpan / 2d); dx += coordinateDelta)
+					for (double dy = -(filterSpan / 2d); dy <= (filterSpan / 2d); dy += coordinateDelta)
+						results.add(
+								new Vector3D(getCameraX(screenX + dx, camera), getCameraY(screenY + dy, camera), 0d));
+			return results;
 
-		RawColor totalColor = new RawColor();
-		double totalScale = 0d;
+		}, (v) -> {
+			return (Optional<RawColor>) camera.shootRay(v.getX(), v.getY()).map(lr -> lr.getRadiance());
 
-		for (double dx = -(filterSpan / 2d); dx <= (filterSpan / 2d); dx += coordinateDelta) {
-			for (double dy = -(filterSpan / 2d); dy <= (filterSpan / 2d); dy += coordinateDelta) {
+		}, (lv, lrc) -> {
+			if (aaSetting == AA.OFF)
+				return lrc.stream().findFirst().map(orc -> orc.get()).orElse(new RawColor());
 
-				double x = getCameraX(screenX + dx, camera), y = getCameraY(screenY + dy, camera);
-				double scale = distribution.density(FastMath.sqrt(FastMath.pow(dx, 2d) + FastMath.pow(dy, 2d)));
-
+			double totalScale = 0d;
+			RawColor totalColor = new RawColor();
+			Iterator<Vector3D> samplePointIterator = lv.iterator();
+			Iterator<Optional<RawColor>> sampleIterator = lrc.iterator();
+			while (samplePointIterator.hasNext() && sampleIterator.hasNext()) {
+				Vector3D samplePoint = samplePointIterator.next();
+				Optional<RawColor> sample = sampleIterator.next();
+				double scale = distribution.density(
+						FastMath.sqrt(FastMath.pow(samplePoint.getX(), 2d) + FastMath.pow(samplePoint.getY(), 2d)));
 				totalScale += scale;
-				Optional<RawColor> color = camera.shootRay(x, y).map(lr -> lr.getRadiance());
-				if (color.isPresent())
-					totalColor = totalColor.add(color.get().multiplyScalar(scale));
+				if (sample.isPresent())
+					totalColor = totalColor.add(sample.get().multiplyScalar(scale));
 			}
-		}
-
-		totalColor = totalColor.multiplyScalar(1d / totalScale);
-		return Optional.of(totalColor);
+			return Optional.of(totalColor.multiplyScalar(1d / totalScale));
+		});
 	}
 
 	@Override

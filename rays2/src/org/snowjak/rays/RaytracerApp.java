@@ -2,6 +2,7 @@ package org.snowjak.rays;
 
 import java.util.concurrent.Executors;
 
+import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Renderer.Settings;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
@@ -15,7 +16,6 @@ import org.snowjak.rays.light.model.AmbientLightingModel;
 import org.snowjak.rays.light.model.EnvironmentMapDecoratingLightingModel;
 import org.snowjak.rays.light.model.FresnelLightingModel;
 import org.snowjak.rays.light.model.LambertianDiffuseLightingModel;
-import org.snowjak.rays.light.model.MonteCarloDiffuseIlluminationLightingModel;
 import org.snowjak.rays.light.model.PhongSpecularLightingModel;
 import org.snowjak.rays.light.model.PhotonMapLightingModel;
 import org.snowjak.rays.light.model.SphericalEnvironmentMap;
@@ -24,9 +24,9 @@ import org.snowjak.rays.shape.Cube;
 import org.snowjak.rays.shape.Plane;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.shape.Sphere;
-import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
+import org.snowjak.rays.ui.AntialiasingScreenDecorator.AA;
 import org.snowjak.rays.ui.impl.JavaFxPixelDrawer;
 
 import javafx.application.Application;
@@ -46,7 +46,9 @@ public class RaytracerApp extends Application {
 	public void start(Stage primaryStage) throws Exception {
 
 		World world = buildWorld();
-		Settings.presetDetailed();
+		// Settings.presetDetailed();
+		Settings.getSingleton().setAntialiasing(AA.x16);
+		World.getSingleton().setMaxRayRecursion(8);
 		Renderer renderer = new Renderer(new JavaFxPixelDrawer(primaryStage));
 
 		primaryStage.setOnCloseRequest((e) -> {
@@ -56,8 +58,6 @@ public class RaytracerApp extends Application {
 		});
 
 		Executors.newSingleThreadExecutor().submit(() -> {
-			System.out.println("Building photon-map ...");
-			PhotonMap.getSingleton().add(30000);
 			System.out.println("Rendering ...");
 			renderer.render(world.getCamera());
 		});
@@ -84,28 +84,32 @@ public class RaytracerApp extends Application {
 		world.getShapes().add(sphere2);
 
 		Shape cube = new Cube();
-		cube.setMaterial(
-				new Material(Functions.constant(Color.WHITE), Functions.constant(0d), Functions.constant(1.1)));
+		cube.setMaterial(new Material(Functions.constant(Color.WHITE), Functions.constant(0d), Functions.constant(1d)));
 		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.RED));
 		cube.getTransformers().add(new Scale(1d, 10d, 10d));
-		cube.getTransformers().add(new Translation(-5d, 0d, 0d));
+		cube.getTransformers().add(new Translation(-8d, 0d, 0d));
 		world.getShapes().add(cube);
 
 		cube = new Cube();
-		cube.setMaterial(
-				new Material(Functions.constant(Color.WHITE), Functions.constant(0d), Functions.constant(1.1)));
+		cube.setMaterial(new Material(Functions.constant(Color.WHITE), Functions.constant(0d), Functions.constant(1d)));
 		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.BLUE));
 		cube.getTransformers().add(new Scale(1d, 10d, 10d));
-		cube.getTransformers().add(new Translation(5d, 0d, 0d));
+		cube.getTransformers().add(new Translation(8d, 0d, 0d));
 		world.getShapes().add(cube);
 
 		cube = new Cube();
-		cube.setMaterial(
-				new Material(Functions.constant(Color.WHITE), Functions.constant(1d), Functions.constant(1.1)));
+		cube.setMaterial(new Material(Functions.constant(Color.WHITE), Functions.constant(0d), Functions.constant(1d)));
 		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.WHITE));
 		cube.getTransformers().add(new Scale(20d, 20d, 1d));
-		cube.getTransformers().add(new Translation(0d, 0d, 5d));
-		world.getShapes().add(cube);
+		cube.getTransformers().add(new Translation(0d, 0d, 8d));
+//		world.getShapes().add(cube);
+
+		cube = new Cube();
+		cube.setMaterial(new Material(Functions.constant(Color.WHITE), Functions.constant(0d), Functions.constant(1d)));
+		cube.setDiffuseColorScheme(new SimpleColorScheme(Color.WHITE));
+		cube.getTransformers().add(new Scale(20d, 1d, 20d));
+		cube.getTransformers().add(new Translation(0d, 7.1d, 0d));
+//		world.getShapes().add(cube);
 
 		Plane plane = new Plane();
 		Material beneathPlaneMaterial = new Material(Functions.constant(Color.WHITE), Functions.constant(0d),
@@ -113,7 +117,7 @@ public class RaytracerApp extends Application {
 		plane.setMinusMaterial(beneathPlaneMaterial);
 		plane.setDiffuseColorScheme(new SimpleColorScheme(Color.WHITE));
 		plane.getTransformers().add(new Translation(0d, -2d, 0d));
-		world.getShapes().add(plane);
+//		world.getShapes().add(plane);
 
 		Light light = new PointLight(new RawColor(Color.WHITE).multiplyScalar(0.05), new RawColor(Color.WHITE),
 				new RawColor(Color.WHITE), 60d);
@@ -121,15 +125,13 @@ public class RaytracerApp extends Application {
 		world.getLights().add(light);
 
 		Camera camera = new Camera(4.0, 60.0);
-		camera.getTransformers().add(new Translation(0d, 0.25d, -5d));
-		camera.getTransformers().add(new Rotation(-5d, 0d, 0d));
+		camera.getTransformers().add(new Translation(0d, 2d, -10d));
 		world.setCamera(camera);
 
 		world.setLightingModel(new EnvironmentMapDecoratingLightingModel(
 				new SphericalEnvironmentMap(new Image("resources/images/spherical-map-field2.jpg")),
 				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
-						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel(),
-						new PhotonMapLightingModel(64), new MonteCarloDiffuseIlluminationLightingModel(64)))));
+						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel()))));
 
 		PhotonMap.getSingleton().getAimShapes().add(sphere1);
 		PhotonMap.getSingleton().getAimShapes().add(sphere2);
