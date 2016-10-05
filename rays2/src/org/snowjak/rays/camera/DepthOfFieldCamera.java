@@ -5,8 +5,8 @@ import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Random;
 
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
@@ -26,9 +26,13 @@ import org.snowjak.rays.shape.Shape;
  */
 public class DepthOfFieldCamera extends Camera {
 
-	private double eyeRadius;
+	private double focalLength;
+
+	private double eyeDistance;
 
 	private int sampleCount;
+
+	private double lensRadius;
 
 	private RealDistribution sampleWeighting;
 
@@ -37,56 +41,60 @@ public class DepthOfFieldCamera extends Camera {
 	private SuperSamplingAntialiaser<Vector3D, Optional<LightingResult>, Optional<LightingResult>> antialiaser = new SuperSamplingAntialiaser<>();
 
 	/**
-	 * Construct a new {@link DepthOfFieldCamera}, focusing upon objects
-	 * {@code focusDistance} away, and using {@code sampleCount}
-	 * randomly-selected samples.
-	 * <p>
-	 * The naive {@link Camera} models a pin-hole lens: each {@link Ray} is shot
-	 * from the single eye-location, through a particular point on the Camera's
-	 * focal-plane, and tested for intersections.
-	 * </p>
-	 * <p>
-	 * This DepthOfFieldCamera models an eye with a certain size. The diameter
-	 * of the eye-disk is calculated to be
-	 * 
-	 * <pre>
-	 *   focal-distance + focal-length
-	 * ---------------------------------
-	 *           focal-distance
-	 * </pre>
-	 * 
-	 * This camera then randomly selects {@code sampleCount} points from within
-	 * that disk, samples them from the world, and antialiases the resulting
-	 * {@link RawColor}s together.
-	 * </p>
+	 * Construct a new {@link DepthOfFieldCamera}, using a default lens-diameter
+	 * equal to 1/10th of the camera's frame-width and selecting
+	 * {@code sampleCount} samples from across the lens.
 	 * 
 	 * @param cameraFrameWidth
 	 * @param fieldOfView
-	 * @param focusDistance
+	 * @param focalLength
 	 * @param sampleCount
 	 */
-	public DepthOfFieldCamera(double cameraFrameWidth, double fieldOfView, double focusDistance, int sampleCount) {
+	public DepthOfFieldCamera(double cameraFrameWidth, double fieldOfView, double focalLength, int sampleCount) {
+		this(cameraFrameWidth, fieldOfView, focalLength, sampleCount, (1d / 10d) * cameraFrameWidth);
+	}
+
+	/**
+	 * Construct a new {@link DepthOfFieldCamera}, using a lens of the given
+	 * diameter and taking {@code sampleCount} randomly-selected samples across
+	 * the lens.
+	 * 
+	 * @param cameraFrameWidth
+	 * @param fieldOfView
+	 * @param focalLength
+	 * @param sampleCount
+	 * @param lensDiameter
+	 */
+	public DepthOfFieldCamera(double cameraFrameWidth, double fieldOfView, double focalLength, int sampleCount,
+			double lensDiameter) {
 		super(cameraFrameWidth, fieldOfView);
 
 		this.sampleCount = sampleCount;
-		double focalLength = getEyeLocation().distance(Vector3D.ZERO);
-//		this.eyeRadius = ((focusDistance + focalLength) / focusDistance) / 2d;
-		this.eyeRadius = ((focalLength) / focusDistance) / 2d;
+		this.eyeDistance = getEyeLocation().distance(Vector3D.ZERO);
+		this.focalLength = focalLength;
+		this.lensRadius = lensDiameter / 2d;
 
-		this.sampleWeighting = new NormalDistribution(0d, eyeRadius / 2d);
+		this.sampleWeighting = new UniformRealDistribution(0d, lensDiameter);
 	}
 
 	@Override
 	public Optional<LightingResult> shootRay(double cameraX, double cameraY) {
 
-		return antialiaser.execute(getEyeLocation(), (v) -> {
+		Vector3D eyeLocation = getEyeLocation();
+		Vector3D caxelLocation = new Vector3D(cameraX, cameraY, 0d);
+		Vector3D caxelDirection = caxelLocation.subtract(eyeLocation).normalize();
+		double caxelDistance = caxelLocation.distance(eyeLocation);
+		Vector3D focalPoint = eyeLocation
+				.add(caxelDirection.scalarMultiply((caxelDistance / eyeDistance) * (eyeDistance + focalLength)));
+
+		return antialiaser.execute(new Vector3D(cameraX, cameraY, 0d), (v) -> {
 			Collection<Vector3D> results = new LinkedList<>();
 
 			results.add(v);
 
 			for (int i = 0; i < sampleCount - 1; i++) {
 				double theta = rnd.nextDouble() * 2d * FastMath.PI;
-				double r = rnd.nextDouble() * eyeRadius;
+				double r = rnd.nextDouble() * lensRadius;
 				results.add(
 						new Vector3D(v.getX() + FastMath.cos(theta) * r, v.getY() + FastMath.sin(theta) * r, v.getZ()));
 			}
@@ -94,8 +102,8 @@ public class DepthOfFieldCamera extends Camera {
 			return results;
 
 		}, (v) -> {
-			Vector3D caxelLocation = new Vector3D(cameraX, cameraY, 0d);
-			Ray ray = localToWorld(new Ray(caxelLocation, caxelLocation.subtract(v)));
+
+			Ray ray = localToWorld(new Ray(v, focalPoint.subtract(v)));
 			Optional<Intersection<Shape>> intersection = World.getSingleton().getClosestShapeIntersection(ray);
 
 			return World.getSingleton().getLightingModel().determineRayColor(ray, intersection);
@@ -103,7 +111,7 @@ public class DepthOfFieldCamera extends Camera {
 		}, (lp) -> {
 
 			Pair<Double, RawColor> resultPair = lp.parallelStream()
-					.map(p -> new Pair<>(p.getKey().distance(getEyeLocation()),
+					.map(p -> new Pair<>(p.getKey().distance(caxelLocation),
 							p.getValue().map(lr -> lr.getRadiance()).orElse(new RawColor())))
 					.map(p -> new Pair<>(sampleWeighting.density(p.getKey()), p.getValue()))
 					.map(p -> new Pair<>(p.getKey(), p.getValue().multiplyScalar(p.getKey())))

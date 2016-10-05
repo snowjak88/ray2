@@ -23,7 +23,6 @@ import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.shape.Sphere;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
-import org.snowjak.rays.ui.AntialiasingScreenDecorator.AA;
 import org.snowjak.rays.ui.impl.JavaFxPixelDrawer;
 
 import javafx.application.Application;
@@ -100,7 +99,7 @@ public class RaytracerApp extends Application {
 		light.getTransformers().add(new Translation(0, 6, 0));
 		world.getLights().add(light);
 
-		Camera camera = new DepthOfFieldCamera(4.0, 60.0, 10d, 8);
+		Camera camera = new DepthOfFieldCamera(4.0, 60.0, 10d, 16, 0.5);
 		camera.getTransformers().add(new Translation(0d, 2d, -10d));
 		world.setCamera(camera);
 
