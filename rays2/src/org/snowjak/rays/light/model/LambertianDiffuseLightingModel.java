@@ -89,14 +89,6 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 				Collection<Vector3D> samples = new LinkedList<>();
 				samples.add(v);
 
-				// v represents the original light location.
-				// If the center of the light is visible to us, we can skip
-				// generating all the extra sample points. this will save time
-				// in most cases (i.e., where the point in question is squarely
-				// in view of the light).
-				if (isPointVisibleFromPoint(point, v))
-					return samples;
-
 				for (int i = 0; i < rayCount; i++) {
 					double theta = rnd.nextDouble() * FastMath.PI;
 					double phi = 2d * rnd.nextDouble() * FastMath.PI;
