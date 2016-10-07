@@ -1,5 +1,7 @@
 package org.snowjak.rays.light;
 
+import java.util.Optional;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
@@ -51,7 +53,7 @@ public final class DirectionalLight extends Light {
 	public DirectionalLight(Vector3D direction, RawColor ambientColor, RawColor diffuseColor, RawColor specularColor,
 			double intensity) {
 		super(ambientColor, diffuseColor, specularColor, Light.DEFAULT_EXPOSURE_FUNCTION(),
-				Functions.constant(intensity), (l, v) -> 1d);
+				Functions.constant(intensity), (l, v) -> 1d, Optional.empty());
 		this.direction = direction.normalize();
 	}
 

@@ -30,4 +30,22 @@ public class PointLight extends Light {
 		super(ambientIntensity, diffuseIntensity, specularIntensity, intensity);
 	}
 
+	/**
+	 * <p>
+	 * PointLight represents light that comes from a particular, nearby location
+	 * in space.
+	 * </p>
+	 * See {@link Light#Light(RawColor, RawColor, RawColor, double)}
+	 * 
+	 * @param ambientIntensity
+	 * @param diffuseIntensity
+	 * @param specularIntensity
+	 * @param intensity
+	 * @param radius
+	 */
+	public PointLight(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity,
+			double intensity, double radius) {
+		super(ambientIntensity, diffuseIntensity, specularIntensity, intensity, radius);
+	}
+
 }

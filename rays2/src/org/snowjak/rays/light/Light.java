@@ -2,6 +2,7 @@ package org.snowjak.rays.light;
 
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -63,6 +64,8 @@ public class Light implements Transformable, Locatable {
 
 	private BiFunction<Light, Vector3D, Double> falloffFunction;
 
+	private Optional<Double> radius;
+
 	/**
 	 * Create a new Light with the given lighting intensity, and the normal
 	 * exposure-function.
@@ -84,7 +87,32 @@ public class Light implements Transformable, Locatable {
 	 */
 	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor, double intensity) {
 		this(ambientColor, diffuseColor, specularColor, DEFAULT_EXPOSURE_FUNCTION(), Functions.constant(intensity),
-				DEFAULT_FALLOFF_FUNCTION());
+				DEFAULT_FALLOFF_FUNCTION(), Optional.empty());
+	}
+
+	/**
+	 * Create a new Light with the given lighting intensity, the normal
+	 * exposure-function, and the given radius.
+	 * <p>
+	 * Each intensity-function is of the form:
+	 * 
+	 * <pre>
+	 * intensity = f(ray)
+	 * </pre>
+	 * 
+	 * where {@code ray} = the incoming ray in <em>light-local</em> terms.
+	 * </p>
+	 * 
+	 * @param ambientColor
+	 * @param diffuseColor
+	 * @param specularColor
+	 * @param intensity
+	 * @param radius
+	 */
+	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor, double intensity,
+			double radius) {
+		this(ambientColor, diffuseColor, specularColor, DEFAULT_EXPOSURE_FUNCTION(), Functions.constant(intensity),
+				DEFAULT_FALLOFF_FUNCTION(), Optional.of(radius));
 	}
 
 	/**
@@ -108,7 +136,7 @@ public class Light implements Transformable, Locatable {
 	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor,
 			Function<Vector3D, Double> intensityFunction) {
 		this(ambientColor, diffuseColor, specularColor, DEFAULT_EXPOSURE_FUNCTION(), intensityFunction,
-				DEFAULT_FALLOFF_FUNCTION());
+				DEFAULT_FALLOFF_FUNCTION(), Optional.empty());
 	}
 
 	/**
@@ -125,12 +153,33 @@ public class Light implements Transformable, Locatable {
 	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor,
 			BiFunction<Light, Intersection<Shape>, Double> exposureFunction,
 			Function<Vector3D, Double> intensityFunction, BiFunction<Light, Vector3D, Double> falloffFunction) {
+		this(ambientColor, diffuseColor, specularColor, exposureFunction, intensityFunction, falloffFunction,
+				Optional.empty());
+	}
+
+	/**
+	 * Create a new Light with the given lighting intensity-function, a custom
+	 * exposure function, and the given radius.
+	 * 
+	 * @param ambientColor
+	 * @param diffuseColor
+	 * @param specularColor
+	 * @param exposureFunction
+	 * @param intensityFunction
+	 * @param falloffFunction
+	 * @param radius
+	 */
+	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor,
+			BiFunction<Light, Intersection<Shape>, Double> exposureFunction,
+			Function<Vector3D, Double> intensityFunction, BiFunction<Light, Vector3D, Double> falloffFunction,
+			Optional<Double> radius) {
 		this.ambientColor = ambientColor;
 		this.diffuseColor = diffuseColor;
 		this.specularColor = specularColor;
 		this.exposureFunction = exposureFunction;
 		this.intensityFunction = intensityFunction;
 		this.falloffFunction = falloffFunction;
+		this.radius = radius;
 	}
 
 	/**
@@ -218,6 +267,14 @@ public class Light implements Transformable, Locatable {
 	public double getFalloff(Vector3D point) {
 
 		return falloffFunction.apply(this, point);
+	}
+
+	/**
+	 * @return this light's radius (if it has one)
+	 */
+	public Optional<Double> getRadius() {
+
+		return radius;
 	}
 
 	@Override
