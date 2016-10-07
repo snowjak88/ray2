@@ -179,7 +179,7 @@ public class Light implements Transformable, Locatable {
 		this.exposureFunction = exposureFunction;
 		this.intensityFunction = intensityFunction;
 		this.falloffFunction = falloffFunction;
-		this.radius = radius;
+		this.radius = (Double.compare(radius.orElse(0d), 0d) == 0 ? Optional.empty() : radius);
 	}
 
 	/**
