@@ -4,7 +4,6 @@ import java.util.concurrent.Executors;
 
 import org.snowjak.rays.Renderer.Settings;
 import org.snowjak.rays.camera.Camera;
-import org.snowjak.rays.camera.DepthOfFieldCamera;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.color.SimpleColorScheme;
 import org.snowjak.rays.function.Functions;
@@ -94,19 +93,24 @@ public class RaytracerApp extends Application {
 		plane.getTransformers().add(new Translation(0d, -2d, 0d));
 		world.getShapes().add(plane);
 
-		Light light = new PointLight(new RawColor(Color.WHITE).multiplyScalar(0.05), new RawColor(Color.WHITE),
-				new RawColor(Color.WHITE), 60d);
-		light.getTransformers().add(new Translation(0, 6, 0));
+		Light light = new PointLight(new RawColor(Color.WHITE).multiplyScalar(0.01), new RawColor(Color.WHITE),
+				new RawColor(Color.WHITE), 75d, 2d);
+		light.getTransformers().add(new Translation(-9, 3, +9));
 		world.getLights().add(light);
 
-		Camera camera = new DepthOfFieldCamera(4.0, 60.0, 10d, 16, 0.5);
+		light = new PointLight(new RawColor(Color.WHITE).multiplyScalar(0.01), new RawColor(Color.WHITE),
+				new RawColor(Color.WHITE), 75d, 2d);
+		light.getTransformers().add(new Translation(+9, 3, +9));
+		world.getLights().add(light);
+
+		Camera camera = new Camera(4.0, 60.0);
 		camera.getTransformers().add(new Translation(0d, 2d, -10d));
 		world.setCamera(camera);
 
 		world.setLightingModel(new EnvironmentMapDecoratingLightingModel(
 				new SphericalEnvironmentMap(new Image("resources/images/spherical-map-field2.jpg")),
 				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
-						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel()))));
+						new LambertianDiffuseLightingModel(16), new PhongSpecularLightingModel()))));
 
 		return world;
 	}
