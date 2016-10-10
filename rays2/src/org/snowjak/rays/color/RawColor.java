@@ -137,4 +137,15 @@ public class RawColor {
 		return blue;
 	}
 
+	/**
+	 * Calculate "perceived luminance" -- at least according to one
+	 * approximation.
+	 * 
+	 * @return ( 2*red + 3*green + 1*blue) / 6
+	 */
+	public double getPerceivedLuminance() {
+
+		return (2d * red + 3d * green + 1d * blue) / 6d;
+	}
+
 }
