@@ -151,8 +151,8 @@ public class PhotonMap {
 				} while (!isRayAcceptable(photonPath));
 
 				followPhoton(buildingList,
-						light.getDiffuseColor().multiplyScalar(
-								1d / (double) photonCount),
+						light.getDiffuseColor().multiplyScalar(1d / (double) photonCount).multiplyScalar(
+								light.getIntensity(light.getLocation())),
 						photonPath, World.getSingleton().getClosestShapeIntersection(photonPath), light, photonCount);
 				photonsCompleted.incrementAndGet();
 			});
@@ -347,6 +347,43 @@ public class PhotonMap {
 						gaussianFilter.apply(e.getPoint().distanceSq(point))))
 				.reduce(new RawColor(), (c1, c2) -> c1.add(c2));
 
+	}
+
+	/**
+	 * Calculate the total illumination afforded by the photon map to the given
+	 * point. This method will effectively call
+	 * {@link #getIlluminationAtPoint(Vector3D, Vector3D, int)} with
+	 * progressively-higher sample-sizes until each successive jump in
+	 * illumination is smaller than {@code desiredError}.
+	 * 
+	 * @param point
+	 * @param normal
+	 * @param desiredError
+	 * @return the calculated total illumination
+	 */
+	public RawColor getIlluminationAtPoint(Vector3D point, Vector3D normal, double desiredError) {
+
+		desiredError = FastMath.abs(desiredError);
+
+		if (currentlyPopulating)
+			return new RawColor();
+
+		int sampleSize = 1;
+		RawColor currentIllumination = new RawColor();
+		double currentLuminance = Double.MAX_VALUE, previousLuminance;
+
+		do {
+
+			previousLuminance = currentLuminance;
+
+			currentIllumination = getIlluminationAtPoint(point, normal, sampleSize);
+			currentLuminance = currentIllumination.getPerceivedLuminance();
+			sampleSize*=2;
+
+		} while (sampleSize < photonMap.getSize()
+				&& Double.compare(FastMath.abs(currentLuminance - previousLuminance), desiredError) > 0);
+
+		return currentIllumination;
 	}
 
 	/**
