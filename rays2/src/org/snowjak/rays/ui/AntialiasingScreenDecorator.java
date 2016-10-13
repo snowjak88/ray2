@@ -1,5 +1,6 @@
 package org.snowjak.rays.ui;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Optional;
@@ -35,15 +36,9 @@ import org.snowjak.rays.color.RawColor;
  */
 public class AntialiasingScreenDecorator implements PixelDrawer {
 
-	private AA aaSetting;
-
 	private RealDistribution distribution;
 
 	private PixelDrawer child;
-
-	private double coordinateDelta;
-
-	private double filterSpan;
 
 	private SuperSamplingAntialiaser<Vector3D, Optional<RawColor>, Optional<RawColor>> antialiaser;
 
@@ -57,17 +52,20 @@ public class AntialiasingScreenDecorator implements PixelDrawer {
 	public AntialiasingScreenDecorator(PixelDrawer decoratedScreen) {
 
 		this.child = decoratedScreen;
-		this.filterSpan = 1;
-		this.aaSetting = RaytracerContext.getSingleton().getCurrentRenderer().getSettings().getAntialiasing();
-		if (aaSetting != AA.OFF)
-			this.coordinateDelta = filterSpan / ((double) (aaSetting.sampleCount / 2));
-
 		this.distribution = new NormalDistribution(0d, 0.5);
 		this.antialiaser = new SuperSamplingAntialiaser<>();
 	}
 
 	@Override
 	public Optional<RawColor> getRayColor(int screenX, int screenY, Camera camera) {
+
+		final AA aaSetting = RaytracerContext.getSingleton().getSettings().getAntialiasing();
+		final double filterSpan = 1;
+		final double coordinateDelta;
+		if (aaSetting != AA.OFF)
+			coordinateDelta = filterSpan / ((double) (aaSetting.sampleCount / 2));
+		else
+			coordinateDelta = 0d;
 
 		return antialiaser.execute(new Vector3D(screenX, screenY, 0d), (v) -> {
 			Collection<Vector3D> results = new LinkedList<>();
@@ -155,6 +153,33 @@ public class AntialiasingScreenDecorator implements PixelDrawer {
 
 		AA(int sampleCount) {
 			this.sampleCount = sampleCount;
+		}
+
+		/**
+		 * Convert the given {@link AA} value to its String equivalent.
+		 * 
+		 * @param value
+		 * @return the String equivalent of the given AA value
+		 */
+		public static String toString(AA value) {
+
+			return value.toString();
+		}
+
+		/**
+		 * Convert the given String to its equivalent {@link AA} value, or
+		 * {@link AA#OFF} if no such value can be found.
+		 * <p>
+		 * A String is equivalent to an AA value if {@link AA#toString()}
+		 * {@code equalsIgnoreCase(value)}
+		 * </p>
+		 * 
+		 * @param value
+		 * @return
+		 */
+		public static AA fromString(String value) {
+
+			return Arrays.stream(values()).filter(aa -> aa.toString().equalsIgnoreCase(value)).findAny().orElse(AA.OFF);
 		}
 
 	}

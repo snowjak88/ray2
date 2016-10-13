@@ -18,6 +18,8 @@ public class RaytracerContext implements CanBeShutdown {
 
 	private Renderer currentRenderer = new Renderer();
 
+	private Settings settings = Settings.presetFast();
+
 	private World currentWorld = null;
 
 	private int workerThreadCount = FastMath.max(Runtime.getRuntime().availableProcessors() - 1, 1);
@@ -90,6 +92,26 @@ public class RaytracerContext implements CanBeShutdown {
 	public void setWorkerThreadCount(int workerThreadCount) {
 
 		this.workerThreadCount = workerThreadCount;
+	}
+
+	/**
+	 * Set the {@link Settings} instance to be associated with this
+	 * {@link RaytracerContext}.
+	 * 
+	 * @param settings
+	 */
+	public void setSettings(Settings settings) {
+
+		this.settings = settings;
+	}
+
+	/**
+	 * @return the {@link Settings} instance associated with this
+	 *         {@link RaytracerContext}
+	 */
+	public Settings getSettings() {
+
+		return settings;
 	}
 
 	/**

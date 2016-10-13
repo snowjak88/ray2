@@ -1,5 +1,6 @@
 package org.snowjak.rays.ui;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import org.apache.commons.math3.util.FastMath;
@@ -21,8 +22,6 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 
 	private PixelDrawer child;
 
-	private RenderSplitType splitType;
-
 	/**
 	 * Create a new {@link MultithreadedScreenDecorator} using the specified
 	 * number of rendering threads and splitting the render-job using the
@@ -34,11 +33,12 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 	 */
 	public MultithreadedScreenDecorator(PixelDrawer child) {
 		this.child = child;
-		this.splitType = RaytracerContext.getSingleton().getCurrentRenderer().getSettings().getRenderSplitType();
 	}
 
 	@Override
 	public void draw(Camera camera) {
+
+		RenderSplitType splitType = RaytracerContext.getSingleton().getSettings().getRenderSplitType();
 
 		switch (splitType) {
 		case COLUMN:
@@ -160,6 +160,38 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 		 * Render the entire screen column by column.
 		 */
 		COLUMN;
+
+		/**
+		 * Convert the given {@link RenderSplitType} value to its String
+		 * equivalent.
+		 * 
+		 * @param value
+		 * @return the String equivalent of the given RenderSplitType value
+		 */
+		public static String toString(RenderSplitType value) {
+
+			return value.toString();
+		}
+
+		/**
+		 * Convert the given String to its equivalent {@link RenderSplitType}
+		 * value, or {@link RenderSplitType#REGION} if no such value can be
+		 * found.
+		 * <p>
+		 * A String is equivalent to a RenderSplitType value if
+		 * {@link RenderSplitType#toString()} {@code equalsIgnoreCase(value)}
+		 * </p>
+		 * 
+		 * @param value
+		 * @return the RenderSplitType equivalent of the given String value
+		 */
+		public static RenderSplitType fromString(String value) {
+
+			return Arrays.stream(values())
+					.filter(rst -> rst.toString().equalsIgnoreCase(value))
+					.findAny()
+					.orElse(RenderSplitType.REGION);
+		}
 	}
 
 }

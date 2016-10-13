@@ -48,10 +48,7 @@ public class MonteCarloDiffuseIlluminationLightingModel implements LightingModel
 		if (!intersection.isPresent())
 			return Optional.empty();
 
-		if (ray.getRecursiveLevel() >= RaytracerContext.getSingleton()
-				.getCurrentRenderer()
-				.getSettings()
-				.getMaxRayRecursion())
+		if (ray.getRecursiveLevel() >= RaytracerContext.getSingleton().getSettings().getMaxRayRecursion())
 			return Optional.empty();
 
 		Intersection<Shape> intersect = intersection.get();

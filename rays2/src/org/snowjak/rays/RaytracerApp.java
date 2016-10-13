@@ -1,7 +1,24 @@
 package org.snowjak.rays;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.color.SimpleColorScheme;
@@ -24,6 +41,7 @@ import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.impl.JavaFxPixelDrawer;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -31,8 +49,11 @@ import javafx.stage.Stage;
 @SuppressWarnings("javadoc")
 public class RaytracerApp extends Application {
 
+	private static String[] args;
+
 	public static void main(String[] args) {
 
+		RaytracerApp.args = args;
 		RaytracerApp.launch(args);
 	}
 
@@ -40,8 +61,69 @@ public class RaytracerApp extends Application {
 	public void start(Stage primaryStage) throws Exception {
 
 		World world = buildWorld();
-		Renderer renderer = new Renderer(new JavaFxPixelDrawer(primaryStage), Settings.presetDetailed());
+		Settings settings = Settings.presetFast();
 
+		CommandLine cmd = new DefaultParser().parse(getCommandLineOptions(), args);
+
+		if (cmd.hasOption('d')) {
+			File settingsFile = new File("settings.properties");
+			Properties settingsProperties = settings.saveToProperties();
+			DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd @ HH:mm:ss");
+
+			try {
+				Writer writer = new BufferedWriter(new FileWriter(settingsFile));
+				settingsProperties.store(writer, "Default render settings - " + fmt.format(new Date()));
+				writer.close();
+			} catch (IOException e) {
+				System.err.println("Cannot save default-settings file: '" + e.getMessage() + "'. Please try again.");
+			}
+
+			Platform.exit();
+			return;
+		}
+		if (cmd.hasOption('s')) {
+			File settingsFile = new File(cmd.getOptionValue('s'));
+			if (!settingsFile.exists()) {
+				System.err.println("Cannot find settings file '" + settingsFile.getPath() + "'. Please try again.");
+				Platform.exit();
+				return;
+			}
+			if (!settingsFile.isFile()) {
+				System.err.println("Settings file-name '" + settingsFile.getPath()
+						+ "' does not map to a file. Please try again.");
+				Platform.exit();
+				return;
+			}
+			if (!settingsFile.canRead()) {
+				System.err.println("Settings file '" + settingsFile.getPath()
+						+ "' is unreadable. Please check file permissions and try again.");
+				Platform.exit();
+				return;
+			}
+
+			Properties settingsProperties = new Properties();
+			try {
+				Reader reader = new BufferedReader(new FileReader(settingsFile));
+				settingsProperties.load(reader);
+				reader.close();
+			} catch (IOException e) {
+				System.err.println("Could not read settings file '" + settingsFile.getPath() + "': '" + e.getMessage()
+						+ "'. Please try again.");
+				Platform.exit();
+				return;
+			}
+			settings = Settings.fromProperties(settingsProperties, settings);
+
+		}
+		if (cmd.hasOption('h')) {
+			new HelpFormatter().printHelp("java -jar rays2.jar", getCommandLineOptions(), true);
+			Platform.exit();
+			return;
+		}
+
+		Renderer renderer = new Renderer(new JavaFxPixelDrawer(primaryStage, settings));
+
+		RaytracerContext.getSingleton().setSettings(settings);
 		RaytracerContext.getSingleton().setCurrentRenderer(renderer);
 		RaytracerContext.getSingleton().setCurrentWorld(world);
 
@@ -55,6 +137,25 @@ public class RaytracerApp extends Application {
 			System.out.println("Rendering ...");
 			RaytracerContext.getSingleton().getCurrentRenderer().render(world.getCamera());
 		});
+	}
+
+	private Options getCommandLineOptions() {
+
+		Options options = new Options();
+
+		options.addOption(Option.builder("s")
+				.longOpt("settings")
+				.hasArg()
+				.argName("file")
+				.desc("render settings file name")
+				.build());
+		options.addOption(Option.builder("d")
+				.longOpt("create-default-settings")
+				.desc("create a default settings file as './settings.properties'")
+				.build());
+		options.addOption(Option.builder("h").longOpt("help").desc("show this help message").build());
+
+		return options;
 	}
 
 	private World buildWorld() {

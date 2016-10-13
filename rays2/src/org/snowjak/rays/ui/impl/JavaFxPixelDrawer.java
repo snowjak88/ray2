@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.Settings;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.ui.BasicScreen;
@@ -52,15 +51,13 @@ public class JavaFxPixelDrawer extends BasicScreen implements PixelDrawer {
 	 * Create a new JavaFxScreen contained within the provided {@link Stage}.
 	 * 
 	 * @param screenStage
+	 * @param settings
 	 * 
 	 * @param image
 	 */
-	public JavaFxPixelDrawer(Stage screenStage) {
+	public JavaFxPixelDrawer(Stage screenStage, Settings settings) {
 
-		super(RaytracerContext.getSingleton().getCurrentRenderer().getSettings().getImageWidth() - 1,
-				RaytracerContext.getSingleton().getCurrentRenderer().getSettings().getImageHeight() - 1);
-
-		Settings settings = RaytracerContext.getSingleton().getCurrentRenderer().getSettings();
+		super(settings.getImageWidth() - 1, settings.getImageHeight() - 1);
 
 		WritableImage image = new WritableImage(settings.getImageWidth(), settings.getImageHeight());
 		ImageView imageView = new ImageView(image);
