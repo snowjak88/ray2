@@ -17,6 +17,7 @@ import org.snowjak.rays.shape.Shape;
  * @author snowjak88
  *
  */
+@Deprecated
 public class MonteCarloDiffuseIlluminationLightingModel implements LightingModel {
 
 	private Random rnd = new Random();

@@ -17,6 +17,7 @@ import org.snowjak.rays.shape.Shape;
  * @author snowjak88
  *
  */
+@Deprecated
 public class PhotonMapLightingModel implements LightingModel {
 
 	private int sampleSize;

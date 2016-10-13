@@ -45,6 +45,7 @@ import org.snowjak.rays.shape.Shape;
  * @author snowjak88
  *
  */
+@Deprecated
 public class PhotonMap {
 
 	private static PhotonMap INSTANCE = null;

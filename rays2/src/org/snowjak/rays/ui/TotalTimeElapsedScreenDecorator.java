@@ -13,12 +13,13 @@ import javafx.application.Platform;
 import javafx.stage.Stage;
 
 /**
- * Decorator for an existing ScreenDrawer implementation, that sets and
- * updates the render-window title with the total time-elapsed over the render.
+ * Decorator for an existing ScreenDrawer implementation, that sets and updates
+ * the render-window title with the total time-elapsed over the render.
  * 
  * @author snowjak88
  *
  */
+@Deprecated
 public class TotalTimeElapsedScreenDecorator implements ScreenDrawer {
 
 	private ScreenDrawer child;
