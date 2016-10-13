@@ -8,6 +8,7 @@ import java.util.Random;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.World;
 import org.snowjak.rays.antialias.SuperSamplingAntialiaser;
 import org.snowjak.rays.color.RawColor;
@@ -78,7 +79,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 		RawColor totalLightAtPoint = new RawColor();
 
 		Collection<Light> visibleLights = new LinkedList<>();
-		for (Light light : World.getSingleton().getLights()) {
+		for (Light light : RaytracerContext.getSingleton().getCurrentWorld().getLights()) {
 
 			// If this light has a radius, then we're doing soft shadows and
 			// therefore shooting many shadow-rays.
@@ -138,7 +139,8 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 
 	private boolean isPointVisibleFromPoint(Vector3D observingPoint, Vector3D observedPoint) {
 
-		Optional<Intersection<Shape>> occludingIntersection = World.getSingleton()
+		Optional<Intersection<Shape>> occludingIntersection = RaytracerContext.getSingleton()
+				.getCurrentWorld()
 				.getClosestShapeIntersection(new Ray(observingPoint, observedPoint.subtract(observingPoint)));
 
 		if (doLightOccluding) {

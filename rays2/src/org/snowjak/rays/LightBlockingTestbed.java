@@ -17,7 +17,7 @@ public class LightBlockingTestbed {
 
 	public static void main(String[] args) {
 
-		World world = World.getSingleton();
+		World world = new World();
 
 		Sphere sphere1 = new Sphere();
 		Cube cube1 = new Cube();

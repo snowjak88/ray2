@@ -48,8 +48,6 @@ public class World implements CanBeShutdown {
 	 */
 	public static final int DEFAULT_MAX_RAY_RECURSION = 4;
 
-	private static World INSTANCE = null;
-
 	private int maxRayRecursion = DEFAULT_MAX_RAY_RECURSION;
 
 	private Camera camera = null;
@@ -62,21 +60,13 @@ public class World implements CanBeShutdown {
 
 	private ThreadPoolExecutor workerThreadPool;
 
-	protected World() {
+	/**
+	 * Create a new {@link World} instance. The {@link RendererSettings} are
+	 * examined to get the number of worker-threads to use.
+	 */
+	public World() {
 		this.workerThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(FastMath
 				.max(RaytracerContext.getSingleton().getCurrentRenderer().getSettings().getWorkerThreadCount(), 1));
-	}
-
-	/**
-	 * @return the World instance. Instantiates it, too, if it doesnt' exist at
-	 *         time of calling
-	 */
-	public static World getSingleton() {
-
-		if (INSTANCE == null)
-			INSTANCE = new World();
-
-		return INSTANCE;
 	}
 
 	/**
@@ -110,7 +100,7 @@ public class World implements CanBeShutdown {
 	public List<Intersection<Shape>> getShapeIntersections(Ray ray) {
 
 		List<Intersection<Shape>> intersections = new LinkedList<>();
-		for (Shape shape : World.getSingleton().getShapes())
+		for (Shape shape : getShapes())
 			intersections.addAll(shape.getIntersections(ray));
 
 		return intersections.stream()

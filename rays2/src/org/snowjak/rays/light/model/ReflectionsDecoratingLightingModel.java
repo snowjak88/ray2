@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
@@ -77,7 +77,7 @@ public class ReflectionsDecoratingLightingModel implements LightingModel {
 
 		Ray originalRay = intersection.getRay();
 
-		if (originalRay.getRecursiveLevel() >= World.getSingleton().getMaxRayRecursion()
+		if (originalRay.getRecursiveLevel() >= RaytracerContext.getSingleton().getCurrentWorld().getMaxRayRecursion()
 				|| Double.compare(shapeReflectivity, 0d) <= 0)
 			return Optional.empty();
 
@@ -87,9 +87,11 @@ public class ReflectionsDecoratingLightingModel implements LightingModel {
 				.normalize();
 
 		Ray reflectedRay = new Ray(intersectPoint, reflectedEyeVector, originalRay.getRecursiveLevel() + 1);
-		Optional<Intersection<Shape>> reflectedIntersection = World.getSingleton()
+		Optional<Intersection<Shape>> reflectedIntersection = RaytracerContext.getSingleton()
+				.getCurrentWorld()
 				.getClosestShapeIntersection(reflectedRay);
-		return World.getSingleton().getLightingModel().determineRayColor(reflectedRay, reflectedIntersection);
+		return RaytracerContext.getSingleton().getCurrentWorld().getLightingModel().determineRayColor(reflectedRay,
+				reflectedIntersection);
 
 	}
 

@@ -60,7 +60,7 @@ public class RaytracerApp extends Application {
 
 	private World buildWorld() {
 
-		World world = World.getSingleton();
+		World world = new World();
 
 		Sphere sphere1 = new Sphere();
 		sphere1.setMaterial(

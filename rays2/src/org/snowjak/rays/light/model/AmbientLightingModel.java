@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
@@ -36,7 +36,7 @@ public class AmbientLightingModel implements LightingModel {
 		Vector3D point = intersection.getPoint();
 		RawColor totalLightAtPoint = new RawColor();
 
-		for (Light light : World.getSingleton().getLights())
+		for (Light light : RaytracerContext.getSingleton().getCurrentWorld().getLights())
 			totalLightAtPoint = totalLightAtPoint.add(light.getAmbientColor());
 
 		RawColor pointColor = intersection.getEnteringMaterial().getColor(point);
@@ -46,7 +46,7 @@ public class AmbientLightingModel implements LightingModel {
 		result.setNormal(intersection.getNormal());
 		result.setPoint(point);
 		result.setRadiance(totalLightAtPoint.multiply(pointColor));
-		result.getVisibleLights().addAll(World.getSingleton().getLights());
+		result.getVisibleLights().addAll(RaytracerContext.getSingleton().getCurrentWorld().getLights());
 
 		return result;
 	}

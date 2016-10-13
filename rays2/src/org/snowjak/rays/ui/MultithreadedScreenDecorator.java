@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.RaytracerContext;
-import org.snowjak.rays.World;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 
@@ -44,7 +43,10 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 		switch (splitType) {
 		case COLUMN:
 			for (int column = child.getScreenMinX(); column <= child.getScreenMaxX(); column++)
-				World.getSingleton().getWorkerThreadPool().submit(new ColumnRenderTask(camera, column));
+				RaytracerContext.getSingleton()
+						.getCurrentWorld()
+						.getWorkerThreadPool()
+						.submit(new ColumnRenderTask(camera, column));
 			break;
 
 		case REGION:
@@ -56,7 +58,7 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 
 					int extentX = FastMath.min(startX + sizeX, child.getScreenMaxX() - child.getScreenMinX());
 					int extentY = FastMath.min(startY + sizeY, child.getScreenMaxY() - child.getScreenMinY());
-					World.getSingleton().getWorkerThreadPool().submit(
+					RaytracerContext.getSingleton().getCurrentWorld().getWorkerThreadPool().submit(
 							new RegionRenderTask(camera, startX, startY, extentX - startX, extentY - startY));
 				}
 		}

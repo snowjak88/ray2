@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.model.LightingModel.LightingResult;
@@ -68,9 +69,12 @@ public class Camera implements Transformable {
 		Vector3D direction = location.subtract(getEyeLocation()).normalize();
 
 		Ray ray = localToWorld(new Ray(location, direction));
-		Optional<Intersection<Shape>> intersection = World.getSingleton().getClosestShapeIntersection(ray);
+		Optional<Intersection<Shape>> intersection = RaytracerContext.getSingleton()
+				.getCurrentWorld()
+				.getClosestShapeIntersection(ray);
 
-		return World.getSingleton().getLightingModel().determineRayColor(ray, intersection);
+		return RaytracerContext.getSingleton().getCurrentWorld().getLightingModel().determineRayColor(ray,
+				intersection);
 
 	}
 

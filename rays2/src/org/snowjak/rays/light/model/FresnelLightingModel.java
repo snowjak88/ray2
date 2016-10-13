@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.function.Functions;
@@ -59,7 +60,9 @@ public class FresnelLightingModel implements LightingModel {
 		if (!intersection.isPresent())
 			return Optional.empty();
 
-		if (ray.getRecursiveLevel() > World.getSingleton().getMaxRayRecursion())
+		World world = RaytracerContext.getSingleton().getCurrentWorld();
+
+		if (ray.getRecursiveLevel() > world.getMaxRayRecursion())
 			return surfaceLightingModel.determineRayColor(ray, intersection);
 
 		//
@@ -97,10 +100,9 @@ public class FresnelLightingModel implements LightingModel {
 		RawColor reflectedTint = new RawColor(Color.WHITE), refractedTint = new RawColor(Color.WHITE);
 
 		if (reflectance > 0d) {
-			Optional<Intersection<Shape>> reflectedIntersection = World.getSingleton()
+			Optional<Intersection<Shape>> reflectedIntersection = world
 					.getClosestShapeIntersection(fresnel.getReflectedRay());
-			reflectedResult = World.getSingleton()
-					.getLightingModel()
+			reflectedResult = world.getLightingModel()
 					.determineRayColor(fresnel.getReflectedRay(), reflectedIntersection)
 					.orElse(new LightingResult());
 			reflectedColor = reflectedResult.getRadiance();
@@ -114,10 +116,9 @@ public class FresnelLightingModel implements LightingModel {
 		if (transmittance > 0d) {
 			//
 			// Get the color of the refracted ray.
-			Optional<Intersection<Shape>> refractedIntersection = World.getSingleton()
+			Optional<Intersection<Shape>> refractedIntersection = world
 					.getClosestShapeIntersection(fresnel.getRefractedRay());
-			refractedResult = World.getSingleton()
-					.getLightingModel()
+			refractedResult = world.getLightingModel()
 					.determineRayColor(fresnel.getRefractedRay(), refractedIntersection)
 					.orElse(new LightingResult());
 			refractedColor = refractedResult.getRadiance();

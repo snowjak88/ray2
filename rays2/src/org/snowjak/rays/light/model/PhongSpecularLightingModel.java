@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
@@ -46,7 +47,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 		//
 		// The total light received by this ray is partially a function of all
 		// the lights in the world ...
-		for (Light light : World.getSingleton().getLights()) {
+		for (Light light : RaytracerContext.getSingleton().getCurrentWorld().getLights()) {
 
 			//
 			// Where does this light lie in relation to the intersection?
@@ -71,7 +72,9 @@ public class PhongSpecularLightingModel implements LightingModel {
 			// intersection-point.
 			//
 			boolean lightIsVisible = true;
-			List<Intersection<Shape>> toLightIntersections = World.getSingleton().getShapeIntersections(toLightRay);
+			List<Intersection<Shape>> toLightIntersections = RaytracerContext.getSingleton()
+					.getCurrentWorld()
+					.getShapeIntersections(toLightRay);
 			//
 			// Notice that we deliberately exclude any intersections that are
 			// "too close".

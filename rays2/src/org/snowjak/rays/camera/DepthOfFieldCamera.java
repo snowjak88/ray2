@@ -11,7 +11,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.antialias.SuperSamplingAntialiaser;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
@@ -104,9 +104,12 @@ public class DepthOfFieldCamera extends Camera {
 		}, (v) -> {
 
 			Ray ray = localToWorld(new Ray(v, focalPoint.subtract(v)));
-			Optional<Intersection<Shape>> intersection = World.getSingleton().getClosestShapeIntersection(ray);
+			Optional<Intersection<Shape>> intersection = RaytracerContext.getSingleton()
+					.getCurrentWorld()
+					.getClosestShapeIntersection(ray);
 
-			return World.getSingleton().getLightingModel().determineRayColor(ray, intersection);
+			return RaytracerContext.getSingleton().getCurrentWorld().getLightingModel().determineRayColor(ray,
+					intersection);
 
 		}, (lp) -> {
 

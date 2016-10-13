@@ -20,6 +20,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.light.Light;
@@ -95,10 +96,10 @@ public class PhotonMap {
 		currentlyPopulating = true;
 
 		int lightCount = 1;
-		for (Light light : World.getSingleton().getLights()) {
+		for (Light light : RaytracerContext.getSingleton().getCurrentWorld().getLights()) {
 
 			System.out.println("Building Photon-Map: shooting " + photonCount + " photons for light #" + lightCount
-					+ "/" + World.getSingleton().getLights().size());
+					+ "/" + RaytracerContext.getSingleton().getCurrentWorld().getLights().size());
 			addForLight(light, photonCount);
 		}
 
@@ -140,7 +141,7 @@ public class PhotonMap {
 
 		for (int i = 0; i < photonCount; i++) {
 
-			World.getSingleton().getWorkerThreadPool().submit(() -> {
+			RaytracerContext.getSingleton().getCurrentWorld().getWorkerThreadPool().submit(() -> {
 				Ray photonPath;
 				Optional<LightingResult> photonLightingResult;
 				do {
@@ -148,8 +149,12 @@ public class PhotonMap {
 						photonPath = new Ray(light.getLocation(), getRandomVector(light.getLocation()), 1);
 					} while (!isRayAcceptable(photonPath));
 
-					photonLightingResult = World.getSingleton().getLightingModel().determineRayColor(photonPath,
-							World.getSingleton().getClosestShapeIntersection(photonPath));
+					photonLightingResult = RaytracerContext.getSingleton()
+							.getCurrentWorld()
+							.getLightingModel()
+							.determineRayColor(photonPath, RaytracerContext.getSingleton()
+									.getCurrentWorld()
+									.getClosestShapeIntersection(photonPath));
 
 				} while (!photonLightingResult.isPresent());
 
@@ -159,7 +164,7 @@ public class PhotonMap {
 			});
 		}
 
-		while (World.getSingleton().getWorkerThreadPool().getActiveCount() > 0) {
+		while (RaytracerContext.getSingleton().getCurrentWorld().getWorkerThreadPool().getActiveCount() > 0) {
 		}
 		photonMapProgressExecutor.shutdownNow();
 
@@ -171,7 +176,7 @@ public class PhotonMap {
 	private boolean isRayAcceptable(Ray photonRay) {
 
 		if (aimShapes.isEmpty())
-			aimShapes.addAll(World.getSingleton().getShapes());
+			aimShapes.addAll(RaytracerContext.getSingleton().getCurrentWorld().getShapes());
 
 		return aimShapes.parallelStream().anyMatch(s -> s.getIntersection(photonRay).isPresent());
 	}
