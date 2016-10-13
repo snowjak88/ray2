@@ -1,5 +1,6 @@
 package org.snowjak.rays;
 
+import java.util.Optional;
 import java.util.Properties;
 
 import org.snowjak.rays.ui.AntialiasingScreenDecorator;
@@ -21,6 +22,14 @@ import org.snowjak.rays.ui.MultithreadedScreenDecorator.RenderSplitType;
  *
  */
 public class Settings {
+
+	/**
+	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
+	 * model, e.g., reflection.
+	 */
+	public static final int DEFAULT_MAX_RAY_RECURSION = 4;
+
+	private int maxRayRecursion = DEFAULT_MAX_RAY_RECURSION;
 
 	private int imageWidth, imageHeight;
 
@@ -50,12 +59,9 @@ public class Settings {
 	public static final String PROPERTY_RENDER_SPLIT_TYPE = "rays2.render.renderSplitType";
 
 	/**
-	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
-	 * model, e.g., reflection.
+	 * Defines the property name to associate with {@link #getMaxRayRecursion()}
 	 */
-	public static final int DEFAULT_MAX_RAY_RECURSION = 4;
-
-	private int maxRayRecursion = DEFAULT_MAX_RAY_RECURSION;
+	public static final String PROPERTY_MAX_RAY_RECURSION = "rays2.render.maxRayRecursion";
 
 	/**
 	 * Create a new {@link Settings} instance.
@@ -64,13 +70,15 @@ public class Settings {
 	 * @param imageHeight
 	 * @param antialiasing
 	 * @param renderSplitType
+	 * @param maxRayRecursion
 	 */
 	public Settings(int imageWidth, int imageHeight, AntialiasingScreenDecorator.AA antialiasing,
-			RenderSplitType renderSplitType) {
+			RenderSplitType renderSplitType, int maxRayRecursion) {
 		this.imageWidth = imageWidth;
 		this.imageHeight = imageHeight;
 		this.antialiasing = antialiasing;
 		this.renderSplitType = renderSplitType;
+		this.maxRayRecursion = maxRayRecursion;
 	}
 
 	/**
@@ -83,6 +91,7 @@ public class Settings {
 		this.imageHeight = toCopy.imageHeight;
 		this.antialiasing = toCopy.antialiasing;
 		this.renderSplitType = toCopy.renderSplitType;
+		this.maxRayRecursion = toCopy.maxRayRecursion;
 	}
 
 	/**
@@ -97,7 +106,7 @@ public class Settings {
 	 */
 	public static Settings presetFast() {
 
-		return new Settings(400, 250, AA.OFF, RenderSplitType.REGION);
+		return new Settings(400, 250, AA.OFF, RenderSplitType.REGION, Settings.DEFAULT_MAX_RAY_RECURSION);
 	}
 
 	/**
@@ -112,7 +121,7 @@ public class Settings {
 	 */
 	public static Settings presetDetailed() {
 
-		return new Settings(800, 500, AA.x8, RenderSplitType.REGION);
+		return new Settings(800, 500, AA.x8, RenderSplitType.REGION, Settings.DEFAULT_MAX_RAY_RECURSION);
 	}
 
 	/**
@@ -221,6 +230,7 @@ public class Settings {
 		prop.setProperty(PROPERTY_IMAGE_HEIGHT, Integer.toString(getImageHeight()));
 		prop.setProperty(PROPERTY_ANTIALIASING, AA.toString(getAntialiasing()));
 		prop.setProperty(PROPERTY_RENDER_SPLIT_TYPE, RenderSplitType.toString(getRenderSplitType()));
+		prop.setProperty(PROPERTY_MAX_RAY_RECURSION, Integer.toString(getMaxRayRecursion()));
 
 		return prop;
 	}
@@ -235,34 +245,38 @@ public class Settings {
 	 */
 	public static Settings fromProperties(Properties properties, Settings defaults) {
 
-		String imageWidth = properties.getProperty(PROPERTY_IMAGE_WIDTH);
-		String imageHeight = properties.getProperty(PROPERTY_IMAGE_HEIGHT);
-		String antialias = properties.getProperty(PROPERTY_ANTIALIASING);
-		String renderSplitType = properties.getProperty(PROPERTY_RENDER_SPLIT_TYPE);
-
 		Settings newSettings = new Settings(defaults);
 
-		try {
-			if (imageWidth != null)
-				newSettings.setImageWidth(Integer.parseInt(imageWidth));
-		} catch (NumberFormatException e) {
-			System.err.println("Could not parse " + PROPERTY_IMAGE_WIDTH + ": " + e.getMessage());
-		}
+		newSettings.setImageWidth(
+				parsePropertyAsInt(properties, PROPERTY_IMAGE_WIDTH).orElse(newSettings.getImageWidth()));
 
-		try {
-			if (imageHeight != null)
-				newSettings.setImageHeight(Integer.parseInt(imageHeight));
-		} catch (NumberFormatException e) {
-			System.err.println("Could not parse " + PROPERTY_IMAGE_HEIGHT + ": " + e.getMessage());
-		}
+		newSettings.setImageHeight(
+				parsePropertyAsInt(properties, PROPERTY_IMAGE_HEIGHT).orElse(newSettings.getImageHeight()));
 
+		newSettings.setMaxRayRecursion(
+				parsePropertyAsInt(properties, PROPERTY_MAX_RAY_RECURSION).orElse(newSettings.getMaxRayRecursion()));
+
+		String antialias = properties.getProperty(PROPERTY_ANTIALIASING);
 		if (antialias != null)
 			newSettings.setAntialiasing(AA.fromString(antialias));
 
+		String renderSplitType = properties.getProperty(PROPERTY_RENDER_SPLIT_TYPE);
 		if (renderSplitType != null)
 			newSettings.setRenderSplitType(RenderSplitType.fromString(renderSplitType));
 
 		return newSettings;
+	}
+
+	private static Optional<Integer> parsePropertyAsInt(Properties properties, String propertyName) {
+
+		try {
+			if (properties.getProperty(propertyName) != null)
+				return Optional.of(Integer.parseInt(properties.getProperty(propertyName)));
+		} catch (NumberFormatException e) {
+			System.err.println("Could not parse " + propertyName + ": " + e.getMessage());
+		}
+
+		return Optional.empty();
 	}
 
 }
