@@ -141,7 +141,7 @@ public class PhotonMap {
 
 		for (int i = 0; i < photonCount; i++) {
 
-			RaytracerContext.getSingleton().getCurrentWorld().getWorkerThreadPool().submit(() -> {
+			RaytracerContext.getSingleton().getWorkerThreadPool().submit(() -> {
 				Ray photonPath;
 				Optional<LightingResult> photonLightingResult;
 				do {
@@ -164,7 +164,7 @@ public class PhotonMap {
 			});
 		}
 
-		while (RaytracerContext.getSingleton().getCurrentWorld().getWorkerThreadPool().getActiveCount() > 0) {
+		while (RaytracerContext.getSingleton().getWorkerThreadPool().getActiveCount() > 0) {
 		}
 		photonMapProgressExecutor.shutdownNow();
 

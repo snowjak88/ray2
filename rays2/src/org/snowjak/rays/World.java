@@ -3,18 +3,14 @@ package org.snowjak.rays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
-import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.model.FlatLightingModel;
 import org.snowjak.rays.light.model.LightingModel;
 import org.snowjak.rays.shape.Shape;
-import org.snowjak.rays.ui.CanBeShutdown;
 
 /**
  * <p>
@@ -28,7 +24,7 @@ import org.snowjak.rays.ui.CanBeShutdown;
  * @author snowjak88
  *
  */
-public class World implements CanBeShutdown {
+public class World {
 
 	/**
 	 * Double values smaller than this will be considered to be "close enough"
@@ -42,14 +38,6 @@ public class World implements CanBeShutdown {
 	 */
 	public static final double WORLD_BOUND = 1e10;
 
-	/**
-	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
-	 * model, e.g., reflection.
-	 */
-	public static final int DEFAULT_MAX_RAY_RECURSION = 4;
-
-	private int maxRayRecursion = DEFAULT_MAX_RAY_RECURSION;
-
 	private Camera camera = null;
 
 	private List<Shape> shapes = new LinkedList<>();
@@ -58,15 +46,11 @@ public class World implements CanBeShutdown {
 
 	private LightingModel lightingModel = new FlatLightingModel();
 
-	private ThreadPoolExecutor workerThreadPool;
-
 	/**
-	 * Create a new {@link World} instance. The {@link RendererSettings} are
-	 * examined to get the number of worker-threads to use.
+	 * Create a new (empty) {@link World} instance.
 	 */
 	public World() {
-		this.workerThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(FastMath
-				.max(RaytracerContext.getSingleton().getCurrentRenderer().getSettings().getWorkerThreadCount(), 1));
+
 	}
 
 	/**
@@ -158,43 +142,6 @@ public class World implements CanBeShutdown {
 	public void setLightingModel(LightingModel lightingModel) {
 
 		this.lightingModel = lightingModel;
-	}
-
-	/**
-	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
-	 * model, e.g., reflection.
-	 * 
-	 * @return allowed depth of ray recursion
-	 */
-	public int getMaxRayRecursion() {
-
-		return maxRayRecursion;
-	}
-
-	/**
-	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
-	 * model, e.g., reflection.
-	 * 
-	 * @param maxRayRecursion
-	 */
-	public void setMaxRayRecursion(int maxRayRecursion) {
-
-		this.maxRayRecursion = maxRayRecursion;
-	}
-
-	/**
-	 * @return the world's pool of available worker-threads
-	 */
-	public ThreadPoolExecutor getWorkerThreadPool() {
-
-		return workerThreadPool;
-	}
-
-	@Override
-	public void shutdown() {
-
-		if (!this.workerThreadPool.shutdownNow().isEmpty())
-			System.out.println("Shutting down worker threads ...");
 	}
 
 }

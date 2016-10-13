@@ -17,7 +17,7 @@ public class Renderer implements CanBeShutdown {
 
 	private ScreenDrawer rootScreenDrawer = null;
 
-	private RendererSettings settings = null;
+	private Settings settings = null;
 
 	/**
 	 * Create a new Renderer that does <strong>nothing</strong> -- a "data
@@ -38,7 +38,7 @@ public class Renderer implements CanBeShutdown {
 	 * @param pixelDrawerImpl
 	 */
 	public Renderer(PixelDrawer pixelDrawerImpl) {
-		this(pixelDrawerImpl, RendererSettings.presetFast());
+		this(pixelDrawerImpl, Settings.presetFast());
 	}
 
 	/**
@@ -53,7 +53,7 @@ public class Renderer implements CanBeShutdown {
 	 * @param pixelDrawerImpl
 	 * @param settings
 	 */
-	public Renderer(PixelDrawer pixelDrawerImpl, RendererSettings settings) {
+	public Renderer(PixelDrawer pixelDrawerImpl, Settings settings) {
 		this.rootScreenDrawer = getDefaultScreenDrawer(pixelDrawerImpl);
 		this.settings = settings;
 	}
@@ -61,7 +61,7 @@ public class Renderer implements CanBeShutdown {
 	/**
 	 * Create a new Renderer using only the specified screen-drawing toolchain.
 	 * <p>
-	 * Unlike {@link #Renderer(PixelDrawer, RendererSettings)}, this constructor
+	 * Unlike {@link #Renderer(PixelDrawer, Settings)}, this constructor
 	 * will add none of the default drawing toolchain to your supplied
 	 * drawing-instance. Use this constructor if you need to specify an
 	 * non-default drawing toolchain.
@@ -70,13 +70,13 @@ public class Renderer implements CanBeShutdown {
 	 * @param drawToolchain
 	 */
 	public Renderer(ScreenDrawer drawToolchain) {
-		this(drawToolchain, RendererSettings.presetFast());
+		this(drawToolchain, Settings.presetFast());
 	}
 
 	/**
 	 * Create a new Renderer using only the specified screen-drawing toolchain.
 	 * <p>
-	 * Unlike {@link #Renderer(PixelDrawer, RendererSettings)}, this constructor
+	 * Unlike {@link #Renderer(PixelDrawer, Settings)}, this constructor
 	 * will add none of the default drawing toolchain to your supplied
 	 * drawing-instance. Use this constructor if you need to specify an
 	 * non-default drawing toolchain.
@@ -85,7 +85,7 @@ public class Renderer implements CanBeShutdown {
 	 * @param drawToolchain
 	 * @param settings
 	 */
-	public Renderer(ScreenDrawer drawToolchain, RendererSettings settings) {
+	public Renderer(ScreenDrawer drawToolchain, Settings settings) {
 		this.rootScreenDrawer = drawToolchain;
 		this.settings = settings;
 	}
@@ -126,10 +126,10 @@ public class Renderer implements CanBeShutdown {
 	}
 
 	/**
-	 * @return the {@link RendererSettings} instance associated with this
+	 * @return the {@link Settings} instance associated with this
 	 *         Renderer
 	 */
-	public RendererSettings getSettings() {
+	public Settings getSettings() {
 
 		return settings;
 	}

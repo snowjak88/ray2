@@ -43,10 +43,7 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 		switch (splitType) {
 		case COLUMN:
 			for (int column = child.getScreenMinX(); column <= child.getScreenMaxX(); column++)
-				RaytracerContext.getSingleton()
-						.getCurrentWorld()
-						.getWorkerThreadPool()
-						.submit(new ColumnRenderTask(camera, column));
+				RaytracerContext.getSingleton().getWorkerThreadPool().submit(new ColumnRenderTask(camera, column));
 			break;
 
 		case REGION:
@@ -58,7 +55,7 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 
 					int extentX = FastMath.min(startX + sizeX, child.getScreenMaxX() - child.getScreenMinX());
 					int extentY = FastMath.min(startY + sizeY, child.getScreenMaxY() - child.getScreenMinY());
-					RaytracerContext.getSingleton().getCurrentWorld().getWorkerThreadPool().submit(
+					RaytracerContext.getSingleton().getWorkerThreadPool().submit(
 							new RegionRenderTask(camera, startX, startY, extentX - startX, extentY - startY));
 				}
 		}

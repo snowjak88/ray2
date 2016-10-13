@@ -5,8 +5,7 @@ import org.snowjak.rays.ui.AntialiasingScreenDecorator.AA;
 import org.snowjak.rays.ui.MultithreadedScreenDecorator.RenderSplitType;
 
 /**
- * A central repository for settings associated with all {@link Renderer}
- * instances.
+ * A central repository for raytracer settings
  * <p>
  * There are several "preset" methods available to quickly configure the
  * Settings to alternative configurations. See {@link #presetFast()},
@@ -19,22 +18,27 @@ import org.snowjak.rays.ui.MultithreadedScreenDecorator.RenderSplitType;
  * @author snowjak88
  *
  */
-public class RendererSettings {
+public class Settings {
 
 	private int imageWidth, imageHeight;
 
 	private AntialiasingScreenDecorator.AA antialiasing;
 
-	private int renderThreadCount;
-
 	private RenderSplitType renderSplitType;
 
-	protected RendererSettings(int imageWidth, int imageHeight, AntialiasingScreenDecorator.AA antialiasing,
-			int renderThreadCount, RenderSplitType renderSplitType) {
+	/**
+	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
+	 * model, e.g., reflection.
+	 */
+	public static final int DEFAULT_MAX_RAY_RECURSION = 4;
+
+	private int maxRayRecursion = DEFAULT_MAX_RAY_RECURSION;
+
+	protected Settings(int imageWidth, int imageHeight, AntialiasingScreenDecorator.AA antialiasing,
+			RenderSplitType renderSplitType) {
 		this.imageWidth = imageWidth;
 		this.imageHeight = imageHeight;
 		this.antialiasing = antialiasing;
-		this.renderThreadCount = renderThreadCount;
 		this.renderSplitType = renderSplitType;
 	}
 
@@ -48,9 +52,9 @@ public class RendererSettings {
 	 * 
 	 * @return the reconfigured Settings instance
 	 */
-	public static RendererSettings presetFast() {
+	public static Settings presetFast() {
 
-		return new RendererSettings(400, 250, AA.OFF, getDefaultRenderThreadCount(), RenderSplitType.REGION);
+		return new Settings(400, 250, AA.OFF, RenderSplitType.REGION);
 	}
 
 	/**
@@ -63,18 +67,9 @@ public class RendererSettings {
 	 * 
 	 * @return the reconfigured Settings instance
 	 */
-	public static RendererSettings presetDetailed() {
+	public static Settings presetDetailed() {
 
-		return new RendererSettings(800, 500, AA.x8, getDefaultRenderThreadCount(), RenderSplitType.REGION);
-	}
-
-	/**
-	 * @return the default number of render-threads to use. Equal to
-	 *         {@code Runtime#availableProcessors() - 1}
-	 */
-	public static int getDefaultRenderThreadCount() {
-
-		return Runtime.getRuntime().availableProcessors() - 1;
+		return new Settings(800, 500, AA.x8, RenderSplitType.REGION);
 	}
 
 	/**
@@ -132,24 +127,6 @@ public class RendererSettings {
 	}
 
 	/**
-	 * @return the selected number of worker-threads to use while rendering
-	 */
-	public int getWorkerThreadCount() {
-
-		return renderThreadCount;
-	}
-
-	/**
-	 * Set the desired number of worker-threads to use while rendering
-	 * 
-	 * @param renderThreadCount
-	 */
-	public void setRenderThreadCount(int renderThreadCount) {
-
-		this.renderThreadCount = renderThreadCount;
-	}
-
-	/**
 	 * @return the selected {@link RenderSplitType} to be used when rendering
 	 */
 	public RenderSplitType getRenderSplitType() {
@@ -165,6 +142,28 @@ public class RendererSettings {
 	public void setRenderSplitType(RenderSplitType renderSplitType) {
 
 		this.renderSplitType = renderSplitType;
+	}
+
+	/**
+	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
+	 * model, e.g., reflection.
+	 * 
+	 * @return allowed depth of ray recursion
+	 */
+	public int getMaxRayRecursion() {
+
+		return maxRayRecursion;
+	}
+
+	/**
+	 * Specifies the allowed depth of ray recursion. Ray recursion is used to
+	 * model, e.g., reflection.
+	 * 
+	 * @param maxRayRecursion
+	 */
+	public void setMaxRayRecursion(int maxRayRecursion) {
+
+		this.maxRayRecursion = maxRayRecursion;
 	}
 
 }

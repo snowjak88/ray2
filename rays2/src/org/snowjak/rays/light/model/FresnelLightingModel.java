@@ -62,7 +62,10 @@ public class FresnelLightingModel implements LightingModel {
 
 		World world = RaytracerContext.getSingleton().getCurrentWorld();
 
-		if (ray.getRecursiveLevel() > world.getMaxRayRecursion())
+		if (ray.getRecursiveLevel() > RaytracerContext.getSingleton()
+				.getCurrentRenderer()
+				.getSettings()
+				.getMaxRayRecursion())
 			return surfaceLightingModel.determineRayColor(ray, intersection);
 
 		//

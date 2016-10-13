@@ -40,14 +40,13 @@ public class RaytracerApp extends Application {
 	public void start(Stage primaryStage) throws Exception {
 
 		World world = buildWorld();
-		Renderer renderer = new Renderer(new JavaFxPixelDrawer(primaryStage), RendererSettings.presetDetailed());
+		Renderer renderer = new Renderer(new JavaFxPixelDrawer(primaryStage), Settings.presetDetailed());
 
 		RaytracerContext.getSingleton().setCurrentRenderer(renderer);
 		RaytracerContext.getSingleton().setCurrentWorld(world);
 
 		primaryStage.setOnCloseRequest((e) -> {
-			RaytracerContext.getSingleton().getCurrentRenderer().shutdown();
-			RaytracerContext.getSingleton().getCurrentWorld().shutdown();
+			RaytracerContext.getSingleton().shutdown();
 
 			primaryStage.close();
 		});

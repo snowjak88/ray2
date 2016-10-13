@@ -77,8 +77,10 @@ public class ReflectionsDecoratingLightingModel implements LightingModel {
 
 		Ray originalRay = intersection.getRay();
 
-		if (originalRay.getRecursiveLevel() >= RaytracerContext.getSingleton().getCurrentWorld().getMaxRayRecursion()
-				|| Double.compare(shapeReflectivity, 0d) <= 0)
+		if (originalRay.getRecursiveLevel() >= RaytracerContext.getSingleton()
+				.getCurrentRenderer()
+				.getSettings()
+				.getMaxRayRecursion() || Double.compare(shapeReflectivity, 0d) <= 0)
 			return Optional.empty();
 
 		Vector3D intersectPoint = intersection.getPoint();
