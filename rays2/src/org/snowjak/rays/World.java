@@ -8,7 +8,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.FastMath;
-import org.snowjak.rays.Renderer.Settings;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
@@ -64,8 +63,8 @@ public class World implements CanBeShutdown {
 	private ThreadPoolExecutor workerThreadPool;
 
 	protected World() {
-		this.workerThreadPool = (ThreadPoolExecutor) Executors
-				.newFixedThreadPool(FastMath.max(Settings.getSingleton().getWorkerThreadCount(), 1));
+		this.workerThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(FastMath
+				.max(RaytracerContext.getSingleton().getCurrentRenderer().getSettings().getWorkerThreadCount(), 1));
 	}
 
 	/**

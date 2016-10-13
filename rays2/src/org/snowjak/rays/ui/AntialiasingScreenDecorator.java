@@ -9,7 +9,7 @@ import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
-import org.snowjak.rays.Renderer.Settings;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.antialias.SuperSamplingAntialiaser;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
@@ -58,7 +58,7 @@ public class AntialiasingScreenDecorator implements PixelDrawer {
 
 		this.child = decoratedScreen;
 		this.filterSpan = 1;
-		this.aaSetting = Settings.getSingleton().getAntialiasing();
+		this.aaSetting = RaytracerContext.getSingleton().getCurrentRenderer().getSettings().getAntialiasing();
 		if (aaSetting != AA.OFF)
 			this.coordinateDelta = filterSpan / ((double) (aaSetting.sampleCount / 2));
 

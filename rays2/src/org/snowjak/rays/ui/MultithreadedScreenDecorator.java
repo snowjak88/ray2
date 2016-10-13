@@ -3,7 +3,7 @@ package org.snowjak.rays.ui;
 import java.util.Optional;
 
 import org.apache.commons.math3.util.FastMath;
-import org.snowjak.rays.Renderer.Settings;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.World;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
@@ -35,7 +35,7 @@ public class MultithreadedScreenDecorator implements ScreenDrawer {
 	 */
 	public MultithreadedScreenDecorator(PixelDrawer child) {
 		this.child = child;
-		this.splitType = Settings.getSingleton().getRenderSplitType();
+		this.splitType = RaytracerContext.getSingleton().getCurrentRenderer().getSettings().getRenderSplitType();
 	}
 
 	@Override
