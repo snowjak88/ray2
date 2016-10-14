@@ -1,13 +1,11 @@
-package org.snowjak.rays.builder;
+package org.snowjak.rays.color;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.snowjak.rays.color.ColorScheme;
-import org.snowjak.rays.color.FunctionalColorScheme;
-import org.snowjak.rays.color.RawColor;
+import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.transform.Transformer;
 
