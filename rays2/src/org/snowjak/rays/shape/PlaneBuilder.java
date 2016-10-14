@@ -10,7 +10,7 @@ import org.snowjak.rays.material.Material;
  */
 public class PlaneBuilder extends ShapeBuilder<Plane> {
 
-	private Material minusMaterial = Material.AIR, plusMaterial = Material.AIR;
+	private Material minusMaterial = Shape.DEFAULT_MATERIAL, plusMaterial = Shape.DEFAULT_MATERIAL;
 
 	/**
 	 * @return a new PlaneBuilder instance

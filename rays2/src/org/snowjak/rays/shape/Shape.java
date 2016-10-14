@@ -16,6 +16,7 @@ import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.HasColorScheme;
 import org.snowjak.rays.color.SimpleColorScheme;
+import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.intersect.Intersectable;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.material.HasMaterial;
@@ -50,12 +51,17 @@ public abstract class Shape
 	 */
 	public static final ColorScheme DEFAULT_EMISSIVE_COLOR_SCHEME = new SimpleColorScheme(Color.BLACK);
 
-	private Deque<Transformer> transformers = new LinkedList<>();
+	/**
+	 * By default, this Shape will use this Material.
+	 */
+	public static final Material DEFAULT_MATERIAL = new Material(Functions.constant(0d), Functions.constant(1d));
+
+	private final Deque<Transformer> transformers = new LinkedList<>();
 
 	private ColorScheme diffuseColorScheme = DEFAULT_COLOR_SCHEME, specularColorScheme = DEFAULT_SPECULAR_COLOR_SCHEME,
 			emissiveColorScheme = DEFAULT_EMISSIVE_COLOR_SCHEME;
 
-	private Material material = new Material();
+	private Material material = DEFAULT_MATERIAL;
 
 	/**
 	 * Default, no-action constructor.

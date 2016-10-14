@@ -58,6 +58,14 @@ public class Intersect extends Shape {
 		this.setMaterial(null);
 	}
 
+	/**
+	 * @return the list of child Shapes which are included in this Intersect
+	 */
+	public Collection<Shape> getChildren() {
+
+		return children;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin,

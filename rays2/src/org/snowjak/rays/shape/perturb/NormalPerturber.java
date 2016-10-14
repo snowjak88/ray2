@@ -66,6 +66,43 @@ public class NormalPerturber extends Shape {
 		this.child = child;
 	}
 
+	/**
+	 * @return the current normal-perturbation {@link BiFunction}
+	 */
+	public BiFunction<Vector3D, Intersection<Shape>, Vector3D> getNormalPerturbationFunction() {
+
+		return normalPerturbationFunction;
+	}
+
+	/**
+	 * Set the normal-perturbation {@link BiFunction} to use
+	 * 
+	 * @param normalPerturbationFunction
+	 */
+	public void setNormalPerturbationFunction(
+			BiFunction<Vector3D, Intersection<Shape>, Vector3D> normalPerturbationFunction) {
+
+		this.normalPerturbationFunction = normalPerturbationFunction;
+	}
+
+	/**
+	 * @return the {@link Shape} whose normals should be perturbed
+	 */
+	public Shape getChild() {
+
+		return child;
+	}
+
+	/**
+	 * Set the {@link Shape} whose normals should be perturbed
+	 * 
+	 * @param child
+	 */
+	public void setChild(Shape child) {
+
+		this.child = child;
+	}
+
 	@Override
 	public Vector3D getNormalRelativeTo(Vector3D localPoint) {
 

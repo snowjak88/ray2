@@ -26,7 +26,7 @@ public abstract class ShapeBuilder<T extends Shape>
 			specularColorScheme = Shape.DEFAULT_SPECULAR_COLOR_SCHEME,
 			emissiveColorScheme = Shape.DEFAULT_EMISSIVE_COLOR_SCHEME;
 
-	private Material material = Material.AIR;
+	private Material material = Shape.DEFAULT_MATERIAL;
 
 	private List<Transformer> transformers = new LinkedList<>();
 
