@@ -7,6 +7,7 @@ import java.util.function.Function;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.function.Functions;
+import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
 
 import javafx.scene.paint.Color;
@@ -17,7 +18,7 @@ import javafx.scene.paint.Color;
  * @author snowjak88
  *
  */
-public class ColorSchemeBuilder implements Builder<ColorScheme> {
+public class ColorSchemeBuilder implements Builder<ColorScheme>, TransformableBuilder<ColorScheme> {
 
 	private Function<Vector3D, RawColor> colorFunction = Functions.constant(Color.HOTPINK);
 

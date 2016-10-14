@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.color.ColorScheme;
+import org.snowjak.rays.color.HasColorSchemeBuilder;
 import org.snowjak.rays.material.Material;
+import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
 
 /**
@@ -16,9 +18,11 @@ import org.snowjak.rays.transform.Transformer;
  * @param <T>
  *            the Shape subtype to build
  */
-public abstract class ShapeBuilder<T extends Shape> implements Builder<Shape> {
+public abstract class ShapeBuilder<T extends Shape>
+		implements Builder<T>, HasColorSchemeBuilder<T>, TransformableBuilder<T> {
 
 	private ColorScheme diffuseColorScheme = Shape.DEFAULT_COLOR_SCHEME,
+			specularColorScheme = Shape.DEFAULT_SPECULAR_COLOR_SCHEME,
 			emissiveColorScheme = Shape.DEFAULT_EMISSIVE_COLOR_SCHEME;
 
 	private Material material = Material.AIR;
@@ -41,24 +45,21 @@ public abstract class ShapeBuilder<T extends Shape> implements Builder<Shape> {
 	 */
 	protected abstract T createNewShapeInstance();
 
-	/**
-	 * Add a diffuse {@link ColorScheme} to this in-progress Shape
-	 * 
-	 * @param diffuseColor
-	 * @return this ShapeBuilder, for method chaining
-	 */
+	@Override
 	public ShapeBuilder<T> diffuse(ColorScheme diffuseColor) {
 
 		this.diffuseColorScheme = diffuseColor;
 		return this;
 	}
 
-	/**
-	 * Add an emissive {@link ColorScheme} to this in-progress Shape
-	 * 
-	 * @param emissiveColor
-	 * @return this ShapeBuilder, for method chaining
-	 */
+	@Override
+	public ShapeBuilder<T> specular(ColorScheme specularColor) {
+
+		this.specularColorScheme = specularColor;
+		return this;
+	}
+
+	@Override
 	public ShapeBuilder<T> emissive(ColorScheme emissiveColor) {
 
 		this.emissiveColorScheme = emissiveColor;
@@ -77,6 +78,13 @@ public abstract class ShapeBuilder<T extends Shape> implements Builder<Shape> {
 		return this;
 	}
 
+	@Override
+	public ShapeBuilder<T> transform(Transformer transform) {
+
+		transformers.add(transform);
+		return this;
+	}
+
 	/**
 	 * Finalize this in-progress Shape and return it.
 	 */
@@ -86,6 +94,7 @@ public abstract class ShapeBuilder<T extends Shape> implements Builder<Shape> {
 		T newShape = createNewShapeInstance();
 
 		newShape.setDiffuseColorScheme(diffuseColorScheme);
+		newShape.setSpecularColorScheme(specularColorScheme);
 		newShape.setEmissiveColorScheme(emissiveColorScheme);
 		newShape.setMaterial(material);
 		newShape.getTransformers().addAll(transformers);
