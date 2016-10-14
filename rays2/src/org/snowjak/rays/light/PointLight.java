@@ -1,7 +1,5 @@
 package org.snowjak.rays.light;
 
-import org.snowjak.rays.color.RawColor;
-
 /**
  * <p>
  * PointLight represents light that comes from a particular, nearby location in
@@ -14,38 +12,11 @@ import org.snowjak.rays.color.RawColor;
 public class PointLight extends Light {
 
 	/**
-	 * <p>
-	 * PointLight represents light that comes from a particular, nearby location
-	 * in space.
-	 * </p>
-	 * See {@link Light#Light(RawColor, RawColor, RawColor)}
-	 * 
-	 * @param ambientIntensity
-	 * @param diffuseIntensity
-	 * @param specularIntensity
-	 * @param intensity
+	 * Create a new {@link PointLight} using all defaults (see
+	 * {@link Light#Light()}).
 	 */
-	public PointLight(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity,
-			double intensity) {
-		super(ambientIntensity, diffuseIntensity, specularIntensity, intensity);
-	}
+	public PointLight() {
 
-	/**
-	 * <p>
-	 * PointLight represents light that comes from a particular, nearby location
-	 * in space.
-	 * </p>
-	 * See {@link Light#Light(RawColor, RawColor, RawColor, double)}
-	 * 
-	 * @param ambientIntensity
-	 * @param diffuseIntensity
-	 * @param specularIntensity
-	 * @param intensity
-	 * @param radius
-	 */
-	public PointLight(RawColor ambientIntensity, RawColor diffuseIntensity, RawColor specularIntensity,
-			double intensity, double radius) {
-		super(ambientIntensity, diffuseIntensity, specularIntensity, intensity, radius);
 	}
 
 }

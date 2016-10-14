@@ -17,6 +17,8 @@ import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
 
+import javafx.scene.paint.Color;
+
 /**
  * Represents a light of some kind.
  * 
@@ -33,154 +35,65 @@ import org.snowjak.rays.transform.Transformer;
  * </dl>
  * </p>
  * <p>
- * <strong>"Exposure"</strong> refers to the amount of light actually reflected
- * off of a surface. Ordinarily, this is calculated by the following:
- * 
- * <pre>
- * exposure = cos(theta)
- * or
- * exposure = N . L   [i.e., dot-product]
- * </pre>
- * 
- * where {@code theta} is the angle between two vectors:
- * <ol>
- * <li>N := surface normal at a particular point</li>
- * <li>L := direction from that point to this light</li>
- * </ol>
+ * <strong>Default values</strong> are as follows:
+ * <ul>
+ * <li>Ambient radiance: 0</li>
+ * <li>Diffuse radiance: 1 (i.e., white)</li>
+ * <li>Specular radiance: 1 (i.e., white)</li>
+ * <li>Intensity: 1 (constant)</li>
+ * <li>Falloff: {@link #DEFAULT_FALLOFF_FUNCTION()}</li>
+ * <li>Radius: none (i.e., this is a point light-source)</li>
+ * </ul>
  * </p>
  * 
  * @author snowjak88
  *
  */
-public class Light implements Transformable, Locatable {
+public abstract class Light implements Transformable, Locatable {
+
+	/**
+	 * Defines Light's default ambient radiance (R/G/B = 0/0/0)
+	 */
+	public static final RawColor DEFAULT_AMBIENT = new RawColor(Color.BLACK);
+
+	/**
+	 * Defines Light's default diffuse radiance (R/G/B = 1/1/1)
+	 */
+	public static final RawColor DEFAULT_DIFFUSE = new RawColor(Color.WHITE);
+
+	/**
+	 * Defines Light's default specular radiance (R/G/B = 1/1/1)
+	 */
+	public static final RawColor DEFAULT_SPECULAR = new RawColor(Color.WHITE);
+
+	/**
+	 * Defines Light's default intensity-function (constant 1.0)
+	 */
+	public static final Function<Vector3D, Double> DEFAULT_INTENSITY = Functions.constant(1d);
+
+	/**
+	 * Define's Light's default falloff function.
+	 * 
+	 * @see #DEFAULT_FALLOFF_FUNCTION()
+	 */
+	public static final BiFunction<Light, Vector3D, Double> DEFAULT_FALLOFF = DEFAULT_FALLOFF_FUNCTION();
+
+	/**
+	 * Define's Light's default radius (i.e., none)
+	 */
+	public static final Optional<Double> DEFAULT_RADIUS = Optional.empty();
 
 	private Deque<Transformer> transformers = new LinkedList<>();
 
-	private RawColor ambientColor, diffuseColor, specularColor;
+	private RawColor ambientColor = DEFAULT_AMBIENT, diffuseColor = DEFAULT_DIFFUSE, specularColor = DEFAULT_SPECULAR;
 
-	private Function<Vector3D, Double> intensityFunction;
+	private Function<Vector3D, Double> intensityFunction = DEFAULT_INTENSITY;
 
-	private BiFunction<Light, Intersection<Shape>, Double> exposureFunction;
+	private final BiFunction<Light, Intersection<Shape>, Double> exposureFunction = DEFAULT_EXPOSURE_FUNCTION();
 
-	private BiFunction<Light, Vector3D, Double> falloffFunction;
+	private BiFunction<Light, Vector3D, Double> falloffFunction = DEFAULT_FALLOFF;
 
-	private Optional<Double> radius;
-
-	/**
-	 * Create a new Light with the given lighting intensity, and the normal
-	 * exposure-function.
-	 * <p>
-	 * Each intensity-function is of the form:
-	 * 
-	 * <pre>
-	 * intensity = f(ray)
-	 * </pre>
-	 * 
-	 * where {@code ray} = the incoming ray in <em>light-local</em> terms.
-	 * </p>
-	 * 
-	 * @param ambientColor
-	 * @param diffuseColor
-	 * @param specularColor
-	 * @param intensity
-	 * @param intensityFunction
-	 */
-	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor, double intensity) {
-		this(ambientColor, diffuseColor, specularColor, DEFAULT_EXPOSURE_FUNCTION(), Functions.constant(intensity),
-				DEFAULT_FALLOFF_FUNCTION(), Optional.empty());
-	}
-
-	/**
-	 * Create a new Light with the given lighting intensity, the normal
-	 * exposure-function, and the given radius.
-	 * <p>
-	 * Each intensity-function is of the form:
-	 * 
-	 * <pre>
-	 * intensity = f(ray)
-	 * </pre>
-	 * 
-	 * where {@code ray} = the incoming ray in <em>light-local</em> terms.
-	 * </p>
-	 * 
-	 * @param ambientColor
-	 * @param diffuseColor
-	 * @param specularColor
-	 * @param intensity
-	 * @param radius
-	 */
-	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor, double intensity,
-			double radius) {
-		this(ambientColor, diffuseColor, specularColor, DEFAULT_EXPOSURE_FUNCTION(), Functions.constant(intensity),
-				DEFAULT_FALLOFF_FUNCTION(), Optional.of(radius));
-	}
-
-	/**
-	 * Create a new Light with the given lighting-intensity function, and the
-	 * normal exposure-function.
-	 * <p>
-	 * Each intensity-function is of the form:
-	 * 
-	 * <pre>
-	 * intensity = f(ray)
-	 * </pre>
-	 * 
-	 * where {@code ray} = the incoming ray in <em>light-local</em> terms.
-	 * </p>
-	 * 
-	 * @param ambientColor
-	 * @param diffuseColor
-	 * @param specularColor
-	 * @param intensityFunction
-	 */
-	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor,
-			Function<Vector3D, Double> intensityFunction) {
-		this(ambientColor, diffuseColor, specularColor, DEFAULT_EXPOSURE_FUNCTION(), intensityFunction,
-				DEFAULT_FALLOFF_FUNCTION(), Optional.empty());
-	}
-
-	/**
-	 * Create a new Light with the given lighting intensity-function, and a
-	 * custom exposure function.
-	 * 
-	 * @param ambientColor
-	 * @param diffuseColor
-	 * @param specularColor
-	 * @param exposureFunction
-	 * @param intensityFunction
-	 * @param falloffFunction
-	 */
-	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor,
-			BiFunction<Light, Intersection<Shape>, Double> exposureFunction,
-			Function<Vector3D, Double> intensityFunction, BiFunction<Light, Vector3D, Double> falloffFunction) {
-		this(ambientColor, diffuseColor, specularColor, exposureFunction, intensityFunction, falloffFunction,
-				Optional.empty());
-	}
-
-	/**
-	 * Create a new Light with the given lighting intensity-function, a custom
-	 * exposure function, and the given radius.
-	 * 
-	 * @param ambientColor
-	 * @param diffuseColor
-	 * @param specularColor
-	 * @param exposureFunction
-	 * @param intensityFunction
-	 * @param falloffFunction
-	 * @param radius
-	 */
-	public Light(RawColor ambientColor, RawColor diffuseColor, RawColor specularColor,
-			BiFunction<Light, Intersection<Shape>, Double> exposureFunction,
-			Function<Vector3D, Double> intensityFunction, BiFunction<Light, Vector3D, Double> falloffFunction,
-			Optional<Double> radius) {
-		this.ambientColor = ambientColor;
-		this.diffuseColor = diffuseColor;
-		this.specularColor = specularColor;
-		this.exposureFunction = exposureFunction;
-		this.intensityFunction = intensityFunction;
-		this.falloffFunction = falloffFunction;
-		this.radius = (Double.compare(radius.orElse(0d), 0d) == 0 ? Optional.empty() : radius);
-	}
+	private Optional<Double> radius = DEFAULT_RADIUS;
 
 	/**
 	 * Determine the intensity of ambient lighting provided by this Light to the
@@ -330,17 +243,6 @@ public class Light implements Transformable, Locatable {
 	}
 
 	/**
-	 * Set this light's exposure function. See
-	 * {@link #DEFAULT_EXPOSURE_FUNCTION()}
-	 * 
-	 * @param exposureFunction
-	 */
-	public void setExposureFunction(BiFunction<Light, Intersection<Shape>, Double> exposureFunction) {
-
-		this.exposureFunction = exposureFunction;
-	}
-
-	/**
 	 * Set this light's falloff function. See
 	 * {@link #DEFAULT_FALLOFF_FUNCTION()}
 	 * 
@@ -349,6 +251,16 @@ public class Light implements Transformable, Locatable {
 	public void setFalloffFunction(BiFunction<Light, Vector3D, Double> falloffFunction) {
 
 		this.falloffFunction = falloffFunction;
+	}
+
+	/**
+	 * Set this light's radius.
+	 * 
+	 * @param radius
+	 */
+	public void setRadius(Optional<Double> radius) {
+
+		this.radius = (Double.compare(radius.orElse(0d), 0d) <= 0) ? Optional.empty() : radius;
 	}
 
 	/**
@@ -368,7 +280,7 @@ public class Light implements Transformable, Locatable {
 	 * <p>
 	 * 
 	 * <pre>
-	 * (l, i) -> (vector of l -> i.point) . i.normal * intensity * falloff
+	 * (l, i) -> (vector of l -> i.point) . i.normal
 	 * </pre>
 	 * </p>
 	 * 

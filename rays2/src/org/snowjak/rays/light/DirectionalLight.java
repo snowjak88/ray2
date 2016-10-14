@@ -1,11 +1,7 @@
 package org.snowjak.rays.light;
 
-import java.util.Optional;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.World;
-import org.snowjak.rays.color.RawColor;
-import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.transform.Transformer;
 
 /**
@@ -24,36 +20,41 @@ import org.snowjak.rays.transform.Transformer;
  */
 public final class DirectionalLight extends Light {
 
-	private Vector3D direction;
+	/**
+	 * The direction which this DirectionalLight will point at by default.
+	 */
+	public static final Vector3D DEFAULT_DIRECTION = Vector3D.MINUS_J;
+
+	private Vector3D direction = DEFAULT_DIRECTION;
 
 	/**
-	 * Create a new {@link DirectionalLight}, with its light-rays pointing in
-	 * the given direction (expressed as a vector in global coordinates).
+	 * Create a new DirectionalLight with the default pointing-to direction
+	 * (i.e., {@link #DEFAULT_DIRECTION}).
 	 * 
 	 * @param direction
-	 * @param ambientColor
-	 * @param diffuseColor
-	 * @param specularColor
-	 * @param intensityFunction
 	 */
-	public DirectionalLight(Vector3D direction, RawColor ambientColor, RawColor diffuseColor, RawColor specularColor) {
-		this(direction, ambientColor, diffuseColor, specularColor, 1d);
+	public DirectionalLight() {
+		super();
+		this.setFalloffFunction((l, v) -> 1d);
 	}
 
 	/**
-	 * Create a new {@link DirectionalLight}, with its light-rays pointing in
-	 * the given direction (expressed as a vector in global coordinates).
+	 * @return the direction that this {@link DirectionalLight} is pointing
+	 *         <em>to</em>.
+	 */
+	public Vector3D getDirection() {
+
+		return direction;
+	}
+
+	/**
+	 * Set the direction that this {@link DirectionalLight} should point
+	 * <em>to</em>
 	 * 
 	 * @param direction
-	 * @param ambientColor
-	 * @param diffuseColor
-	 * @param specularColor
-	 * @param intensity
 	 */
-	public DirectionalLight(Vector3D direction, RawColor ambientColor, RawColor diffuseColor, RawColor specularColor,
-			double intensity) {
-		super(ambientColor, diffuseColor, specularColor, Light.DEFAULT_EXPOSURE_FUNCTION(),
-				Functions.constant(intensity), (l, v) -> 1d, Optional.empty());
+	public void setDirection(Vector3D direction) {
+
 		this.direction = direction.normalize();
 	}
 

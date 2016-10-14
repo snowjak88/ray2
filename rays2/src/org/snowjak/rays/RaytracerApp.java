@@ -22,8 +22,7 @@ import org.apache.commons.cli.Options;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.ColorSchemeBuilder;
 import org.snowjak.rays.color.RawColor;
-import org.snowjak.rays.light.Light;
-import org.snowjak.rays.light.PointLight;
+import org.snowjak.rays.light.PointLightBuilder;
 import org.snowjak.rays.light.model.AdditiveCompositingLightingModel;
 import org.snowjak.rays.light.model.AmbientLightingModel;
 import org.snowjak.rays.light.model.EnvironmentMapDecoratingLightingModel;
@@ -164,7 +163,7 @@ public class RaytracerApp extends Application {
 		world.getShapes()
 				.add(SphereBuilder.builder()
 						.diffuse(ColorSchemeBuilder.builder().constant(Color.WHITE).build())
-						.material(MaterialBuilder.builder().surfaceTransparency(1d).refractiveIndex(1.3).build())
+						.material(MaterialBuilder.builder().surfaceTransparency(1d).refractiveIndex(1.8).build())
 						.transform(new Scale(2, 2, 2))
 						.transform(new Translation(-4, 0.1, 0))
 						.build());
@@ -186,7 +185,7 @@ public class RaytracerApp extends Application {
 		world.getShapes()
 				.add(PlaneBuilder.builder()
 						.diffuse(ColorSchemeBuilder.builder().constant(Color.GHOSTWHITE).build())
-						.transform(new Translation(0d, 10d, 0d))
+						.transform(new Translation(0d, 12d, 0d))
 						.build());
 
 		world.getShapes()
@@ -210,14 +209,17 @@ public class RaytracerApp extends Application {
 						.transform(new Translation(10d, 0d, 0d))
 						.build());
 
-		Light light = new PointLight(new RawColor(Color.WHITE).multiplyScalar(0.02), new RawColor(Color.WHITE),
-				new RawColor(Color.WHITE), 100d, 0.5);
-		light.getTransformers().add(new Translation(0d, 9d, 0d));
-		world.getLights().add(light);
+		world.getLights()
+				.add(PointLightBuilder.builder()
+						.ambient(new RawColor(Color.WHITE).multiplyScalar(0.04))
+						.intensity(100d)
+						.radius(0.5)
+						.transform(new Translation(0d, 9d, 0d))
+						.build());
 
 		Camera camera = new Camera(4.0, 60.0);
 		camera.getTransformers().add(new Translation(0d, 2.5d, -10d));
-		camera.getTransformers().add(new Rotation(-10d, 0d, 0d));
+		camera.getTransformers().add(new Rotation(-15d, 0d, 0d));
 		world.setCamera(camera);
 
 		world.setLightingModel(new EnvironmentMapDecoratingLightingModel(
