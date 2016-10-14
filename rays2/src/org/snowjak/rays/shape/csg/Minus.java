@@ -59,6 +59,34 @@ public class Minus extends Shape {
 		this.setMaterial(null);
 	}
 
+	/**
+	 * @return this Minus's "minuend" shape -- the thing which is subtracted
+	 *         from
+	 */
+	public Shape getMinuend() {
+
+		return minuend;
+	}
+
+	/**
+	 * Set this Minus's "minuend" shape -- the thing which is subtracted from
+	 * 
+	 * @param minuend
+	 */
+	public void setMinuend(Shape minuend) {
+
+		this.minuend = minuend;
+	}
+
+	/**
+	 * @return this Minus's list of "subtrahends" -- the things which subtract
+	 *         from the minuend
+	 */
+	public Collection<Shape> getSubtrahends() {
+
+		return subtrahends;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Intersection<Shape>> getIntersections(Ray ray, boolean includeBehindRayOrigin,
