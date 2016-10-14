@@ -6,6 +6,8 @@ import java.util.List;
 import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.HasColorSchemeBuilder;
+import org.snowjak.rays.color.RawColor;
+import org.snowjak.rays.color.SimpleColorScheme;
 import org.snowjak.rays.material.HasMaterialBuilder;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.transform.TransformableBuilder;
@@ -47,7 +49,19 @@ public abstract class ShapeBuilder<T extends Shape>
 	 */
 	protected abstract T createNewShapeInstance();
 
+	/**
+	 * Configure this Shape to use a constant diffuse RawColor
+	 * 
+	 * @param diffuseColor
+	 * @return this Builder, for method-chaining
+	 */
 	@HasName("diffuse")
+	public ShapeBuilder<T> diffuse(RawColor diffuseColor) {
+
+		this.diffuseColorScheme = new SimpleColorScheme(diffuseColor);
+		return this;
+	}
+
 	@Override
 	public ShapeBuilder<T> diffuse(ColorScheme diffuseColor) {
 
@@ -55,7 +69,19 @@ public abstract class ShapeBuilder<T extends Shape>
 		return this;
 	}
 
+	/**
+	 * Configure this Shape to use a constant specular RawColor
+	 * 
+	 * @param specularColor
+	 * @return this Builder, for method-chaining
+	 */
 	@HasName("specular")
+	public ShapeBuilder<T> specular(RawColor specularColor) {
+
+		this.specularColorScheme = new SimpleColorScheme(specularColor);
+		return this;
+	}
+
 	@Override
 	public ShapeBuilder<T> specular(ColorScheme specularColor) {
 
@@ -63,7 +89,19 @@ public abstract class ShapeBuilder<T extends Shape>
 		return this;
 	}
 
+	/**
+	 * Configure this Shape to use a constant emissive RawColor
+	 * 
+	 * @param emissiveColor
+	 * @return this Builder, for method-chaining
+	 */
 	@HasName("emissive")
+	public ShapeBuilder<T> emissive(RawColor emissiveColor) {
+
+		this.emissiveColorScheme = new SimpleColorScheme(emissiveColor);
+		return this;
+	}
+
 	@Override
 	public ShapeBuilder<T> emissive(ColorScheme emissiveColor) {
 
@@ -84,19 +122,6 @@ public abstract class ShapeBuilder<T extends Shape>
 	public ShapeBuilder<T> transform(Transformer transform) {
 
 		transformers.add(transform);
-		return this;
-	}
-
-	/**
-	 * Add a list of {@link Transformer}s to this shape.
-	 * 
-	 * @param transformers
-	 * @return this Builder, for method-chaining
-	 */
-	@HasName("transforms")
-	public ShapeBuilder<T> transform(List<Transformer> transformers) {
-
-		transformers.addAll(transformers);
 		return this;
 	}
 

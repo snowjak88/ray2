@@ -103,19 +103,6 @@ public class MaterialBuilder implements Builder<Material>, TransformableBuilder<
 		return this;
 	}
 
-	/**
-	 * Add a list of Transformers to this in-progress Material
-	 * 
-	 * @param transformers
-	 * @return this Builder, for method-chaining
-	 */
-	@HasName("transforms")
-	public MaterialBuilder transform(List<Transformer> transformers) {
-
-		this.transformers.addAll(transformers);
-		return this;
-	}
-
 	@Override
 	public Material build() {
 

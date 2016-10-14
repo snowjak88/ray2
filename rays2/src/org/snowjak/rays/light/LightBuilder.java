@@ -137,19 +137,6 @@ public abstract class LightBuilder<T extends Light> implements Builder<T>, Trans
 	}
 
 	/**
-	 * Add a list of Transformers to this in-progress Light.
-	 * 
-	 * @param transformers
-	 * @return this Builder, for method-chaining
-	 */
-	@HasName("transforms")
-	public LightBuilder<T> transform(List<Transformer> transformers) {
-
-		this.transformers.addAll(transformers);
-		return this;
-	}
-
-	/**
 	 * Create a new instance of a Light subtype. For example,
 	 * 
 	 * <pre>
