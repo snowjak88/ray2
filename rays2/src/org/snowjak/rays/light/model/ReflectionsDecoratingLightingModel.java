@@ -19,6 +19,7 @@ import org.snowjak.rays.shape.Shape;
  * @author snowjak88
  *
  */
+@Deprecated
 public class ReflectionsDecoratingLightingModel implements LightingModel {
 
 	private LightingModel child;
