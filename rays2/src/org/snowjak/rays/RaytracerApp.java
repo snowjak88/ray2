@@ -121,6 +121,11 @@ public class RaytracerApp extends Application {
 
 		Renderer renderer = new Renderer(new JavaFxPixelDrawer(primaryStage, settings));
 
+		renderer.setLightingModel(new EnvironmentMapDecoratingLightingModel(
+				new SphericalEnvironmentMap(new Image("resources/images/spherical-map-field2.jpg")),
+				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
+						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel()))));
+
 		RaytracerContext.getSingleton().setSettings(settings);
 		RaytracerContext.getSingleton().setCurrentRenderer(renderer);
 		RaytracerContext.getSingleton().setCurrentWorld(world);
@@ -197,14 +202,14 @@ public class RaytracerApp extends Application {
 
 		world.getShapes()
 				.add(PlaneBuilder.builder()
-						.diffuse(ColorSchemeBuilder.builder().constant(Color.ROYALBLUE).build())
+						.diffuse(ColorSchemeBuilder.builder().constant(Color.INDIANRED).build())
 						.transform(new Rotation(0d, 0d, -90d))
 						.transform(new Translation(-10d, 0d, 0d))
 						.build());
 
 		world.getShapes()
 				.add(PlaneBuilder.builder()
-						.diffuse(ColorSchemeBuilder.builder().constant(Color.INDIANRED).build())
+						.diffuse(ColorSchemeBuilder.builder().constant(Color.GREEN).build())
 						.transform(new Rotation(0d, 0d, 90d))
 						.transform(new Translation(10d, 0d, 0d))
 						.build());
@@ -221,11 +226,6 @@ public class RaytracerApp extends Application {
 		camera.getTransformers().add(new Translation(0d, 2.5d, -10d));
 		camera.getTransformers().add(new Rotation(-15d, 0d, 0d));
 		world.setCamera(camera);
-
-		world.setLightingModel(new EnvironmentMapDecoratingLightingModel(
-				new SphericalEnvironmentMap(new Image("resources/images/spherical-map-field2.jpg")),
-				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
-						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel()))));
 
 		return world;
 	}

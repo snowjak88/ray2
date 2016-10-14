@@ -73,7 +73,7 @@ public class Camera implements Transformable {
 				.getCurrentWorld()
 				.getClosestShapeIntersection(ray);
 
-		return RaytracerContext.getSingleton().getCurrentWorld().getLightingModel().determineRayColor(ray,
+		return RaytracerContext.getSingleton().getCurrentRenderer().getLightingModel().determineRayColor(ray,
 				intersection);
 
 	}

@@ -78,7 +78,7 @@ public class Group extends Shape {
 
 		if (onlyIncludeClosest)
 			results = results.stream()
-					.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.DOUBLE_ERROR) >= 0)
+					.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.NEARLY_ZERO) >= 0)
 					.sorted((s1, s2) -> Double.compare(s1.getDistanceFromRayOrigin(), s2.getDistanceFromRayOrigin()))
 					.limit(1)
 					.collect(Collectors.toCollection(LinkedList::new));

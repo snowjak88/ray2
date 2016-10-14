@@ -26,7 +26,7 @@ import org.snowjak.rays.shape.Shape;
  */
 public class DepthOfFieldCamera extends Camera {
 
-	private double focalLength;
+	private double focalDistance;
 
 	private double eyeDistance;
 
@@ -47,11 +47,11 @@ public class DepthOfFieldCamera extends Camera {
 	 * 
 	 * @param cameraFrameWidth
 	 * @param fieldOfView
-	 * @param focalLength
+	 * @param focalDistance
 	 * @param sampleCount
 	 */
-	public DepthOfFieldCamera(double cameraFrameWidth, double fieldOfView, double focalLength, int sampleCount) {
-		this(cameraFrameWidth, fieldOfView, focalLength, sampleCount, (1d / 10d) * cameraFrameWidth);
+	public DepthOfFieldCamera(double cameraFrameWidth, double fieldOfView, double focalDistance, int sampleCount) {
+		this(cameraFrameWidth, fieldOfView, focalDistance, sampleCount, (1d / 10d) * cameraFrameWidth);
 	}
 
 	/**
@@ -61,17 +61,17 @@ public class DepthOfFieldCamera extends Camera {
 	 * 
 	 * @param cameraFrameWidth
 	 * @param fieldOfView
-	 * @param focalLength
+	 * @param focalDistance
 	 * @param sampleCount
 	 * @param lensDiameter
 	 */
-	public DepthOfFieldCamera(double cameraFrameWidth, double fieldOfView, double focalLength, int sampleCount,
+	public DepthOfFieldCamera(double cameraFrameWidth, double fieldOfView, double focalDistance, int sampleCount,
 			double lensDiameter) {
 		super(cameraFrameWidth, fieldOfView);
 
 		this.sampleCount = sampleCount;
 		this.eyeDistance = getEyeLocation().distance(Vector3D.ZERO);
-		this.focalLength = focalLength;
+		this.focalDistance = focalDistance;
 		this.lensRadius = lensDiameter / 2d;
 
 		this.sampleWeighting = new UniformRealDistribution(0d, lensDiameter);
@@ -85,7 +85,7 @@ public class DepthOfFieldCamera extends Camera {
 		Vector3D caxelDirection = caxelLocation.subtract(eyeLocation).normalize();
 		double caxelDistance = caxelLocation.distance(eyeLocation);
 		Vector3D focalPoint = eyeLocation
-				.add(caxelDirection.scalarMultiply((caxelDistance / eyeDistance) * (eyeDistance + focalLength)));
+				.add(caxelDirection.scalarMultiply((caxelDistance / eyeDistance) * (eyeDistance + focalDistance)));
 
 		return antialiaser.execute(new Vector3D(cameraX, cameraY, 0d), (v) -> {
 			Collection<Vector3D> results = new LinkedList<>();
@@ -108,7 +108,7 @@ public class DepthOfFieldCamera extends Camera {
 					.getCurrentWorld()
 					.getClosestShapeIntersection(ray);
 
-			return RaytracerContext.getSingleton().getCurrentWorld().getLightingModel().determineRayColor(ray,
+			return RaytracerContext.getSingleton().getCurrentRenderer().getLightingModel().determineRayColor(ray,
 					intersection);
 
 		}, (lp) -> {

@@ -64,7 +64,7 @@ public class MonteCarloDiffuseIlluminationLightingModel implements LightingModel
 					.getCurrentWorld()
 					.getClosestShapeIntersection(samplingRay);
 			Optional<LightingResult> sampledLight = RaytracerContext.getSingleton()
-					.getCurrentWorld()
+					.getCurrentRenderer()
 					.getLightingModel()
 					.determineRayColor(samplingRay, sampledIntersection);
 			RawColor sampledColor = sampledLight.orElse(new LightingResult()).getRadiance();

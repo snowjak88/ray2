@@ -118,7 +118,7 @@ public class NormalPerturber extends Shape {
 				onlyIncludeClosest);
 		return childResults.parallelStream()
 				.limit(onlyIncludeClosest ? 1 : childResults.size())
-				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.DOUBLE_ERROR) >= 0)
+				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.NEARLY_ZERO) >= 0)
 				.peek(i -> i.setNormal(normalPerturbationFunction.apply(i.getNormal(), i)))
 				.map(i -> localToWorld(i))
 				.collect(Collectors.toCollection(LinkedList::new));

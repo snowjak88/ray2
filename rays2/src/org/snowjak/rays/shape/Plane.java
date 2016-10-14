@@ -74,7 +74,7 @@ public class Plane extends Shape {
 		//
 		// First: check for the trivial case: where the vector is parallel to
 		// the plane.
-		if (Double.compare(FastMath.abs(transformedRay.getVector().getY()), World.DOUBLE_ERROR) < 0) {
+		if (Double.compare(FastMath.abs(transformedRay.getVector().getY()), World.NEARLY_ZERO) < 0) {
 			//
 			// This ray is entirely parallel to the plane.
 			// In the past, we tried giving an intersection at 0 distance from
@@ -98,10 +98,10 @@ public class Plane extends Shape {
 			//
 			double t = -transformedRay.getOrigin().getY() / transformedRay.getVector().getY();
 
-			if (!includeBehindRayOrigin && Double.compare(t, World.DOUBLE_ERROR) <= 0)
+			if (!includeBehindRayOrigin && Double.compare(t, World.NEARLY_ZERO) <= 0)
 				return Collections.emptyList();
 
-			if (Double.compare(FastMath.abs(t), World.DOUBLE_ERROR) < 0)
+			if (Double.compare(FastMath.abs(t), World.NEARLY_ZERO) < 0)
 				return Collections.emptyList();
 
 			Vector3D intersectionPoint = transformedRay.getOrigin().add(transformedRay.getVector().scalarMultiply(t));
@@ -182,7 +182,7 @@ public class Plane extends Shape {
 
 		Vector3D localPoint = worldToLocal(point);
 
-		if (Double.compare(FastMath.abs(localPoint.getY()), World.DOUBLE_ERROR) <= 0)
+		if (Double.compare(FastMath.abs(localPoint.getY()), World.NEARLY_ZERO) <= 0)
 			return true;
 
 		return false;

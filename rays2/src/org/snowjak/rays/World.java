@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
-import org.snowjak.rays.light.model.FlatLightingModel;
-import org.snowjak.rays.light.model.LightingModel;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -30,21 +28,19 @@ public class World {
 	 * Double values smaller than this will be considered to be "close enough"
 	 * to zero.
 	 */
-	public static final double DOUBLE_ERROR = 1e-10;
+	public static final double NEARLY_ZERO = 1e-10;
 
 	/**
 	 * The distance from (0,0,0) after which points will be said to be "too far
 	 * away". Establishes "finite infinite distance".
 	 */
-	public static final double WORLD_BOUND = 1e10;
+	public static final double FAR_AWAY = 1e10;
 
 	private Camera camera = null;
 
 	private List<Shape> shapes = new LinkedList<>();
 
 	private List<Light> lights = new LinkedList<>();
-
-	private LightingModel lightingModel = new FlatLightingModel();
 
 	/**
 	 * Create a new (empty) {@link World} instance.
@@ -124,24 +120,6 @@ public class World {
 	public List<Light> getLights() {
 
 		return lights;
-	}
-
-	/**
-	 * @return the {@link LightingModel} currently in-use
-	 */
-	public LightingModel getLightingModel() {
-
-		return lightingModel;
-	}
-
-	/**
-	 * Set the {@link LightingModel} implementation to use.
-	 * 
-	 * @param lightingModel
-	 */
-	public void setLightingModel(LightingModel lightingModel) {
-
-		this.lightingModel = lightingModel;
 	}
 
 }

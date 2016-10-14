@@ -83,7 +83,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 			// because of double-value uncertainty.
 			if (toLightIntersections.stream()
 					.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), toLightVector.getNorm()) < 0)
-					.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0))
+					.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.NEARLY_ZERO) >= 0))
 				lightIsVisible = false;
 
 			if (lightIsVisible) {

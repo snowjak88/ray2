@@ -83,7 +83,7 @@ public class Intersect extends Shape {
 		List<Intersection<Shape>> childIntersections = children.parallelStream()
 				.map(s -> s.getIntersections(localRay, includeBehindRayOrigin))
 				.flatMap(li -> li.stream())
-				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.DOUBLE_ERROR) >= 0)
+				.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), World.NEARLY_ZERO) >= 0)
 				.sequential()
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.collect(Collectors.toCollection(LinkedList::new));
@@ -191,7 +191,7 @@ public class Intersect extends Shape {
 		return results.stream()
 				.sequential()
 				.limit(onlyIncludeClosest ? 1 : results.size())
-				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.DOUBLE_ERROR) >= 0)
+				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.NEARLY_ZERO) >= 0)
 				.peek(i -> {
 					//
 					// Has this Intersect been given its own definitive

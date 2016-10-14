@@ -111,15 +111,15 @@ public class Cube extends Shape {
 			n1 = n_z1;
 		}
 
-		boolean useT0 = includeBehindRayOrigin || Double.compare(t0, World.DOUBLE_ERROR) >= 0,
-				useT1 = includeBehindRayOrigin || Double.compare(t1, World.DOUBLE_ERROR) >= 0;
+		boolean useT0 = includeBehindRayOrigin || Double.compare(t0, World.NEARLY_ZERO) >= 0,
+				useT1 = includeBehindRayOrigin || Double.compare(t1, World.NEARLY_ZERO) >= 0;
 
 		List<Intersection<Shape>> results = new LinkedList<>();
-		if (useT0 && Double.compare(t0, World.DOUBLE_ERROR) >= 0) {
+		if (useT0 && Double.compare(t0, World.NEARLY_ZERO) >= 0) {
 			Vector3D intersectionPoint = transformedRay.getOrigin().add(transformedRay.getVector().scalarMultiply(t0));
-			if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
-					&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
-					&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.DOUBLE_ERROR) <= 0) {
+			if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.NEARLY_ZERO) <= 0
+					&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.NEARLY_ZERO) <= 0
+					&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.NEARLY_ZERO) <= 0) {
 				Vector3D normal = n0;
 				double normalSign = FastMath.signum(normal.negate().dotProduct(transformedRay.getVector()));
 				normal = normal.scalarMultiply(normalSign);
@@ -130,11 +130,11 @@ public class Cube extends Shape {
 						enteringMaterial)));
 			}
 		}
-		if (useT1 && Double.compare(t1, World.DOUBLE_ERROR) >= 0 && !(onlyIncludeClosest && results.size() > 0)) {
+		if (useT1 && Double.compare(t1, World.NEARLY_ZERO) >= 0 && !(onlyIncludeClosest && results.size() > 0)) {
 			Vector3D intersectionPoint = transformedRay.getOrigin().add(transformedRay.getVector().scalarMultiply(t1));
-			if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
-					&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
-					&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.DOUBLE_ERROR) <= 0) {
+			if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.NEARLY_ZERO) <= 0
+					&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.NEARLY_ZERO) <= 0
+					&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.NEARLY_ZERO) <= 0) {
 				Vector3D normal = n1;
 				double normalSign = FastMath.signum(normal.negate().dotProduct(transformedRay.getVector()));
 				normal = normal.scalarMultiply(normalSign);
@@ -176,9 +176,9 @@ public class Cube extends Shape {
 
 	private boolean isInsideLocal(Vector3D localPoint) {
 
-		return (Double.compare(FastMath.abs(localPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
-				&& Double.compare(FastMath.abs(localPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
-				&& Double.compare(FastMath.abs(localPoint.getZ()) - 1d, World.DOUBLE_ERROR) <= 0);
+		return (Double.compare(FastMath.abs(localPoint.getX()) - 1d, World.NEARLY_ZERO) <= 0
+				&& Double.compare(FastMath.abs(localPoint.getY()) - 1d, World.NEARLY_ZERO) <= 0
+				&& Double.compare(FastMath.abs(localPoint.getZ()) - 1d, World.NEARLY_ZERO) <= 0);
 	}
 
 	@Override

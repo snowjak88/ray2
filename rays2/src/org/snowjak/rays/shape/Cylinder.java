@@ -75,8 +75,8 @@ public class Cylinder extends Shape {
 		double t1_2d = t_ca - t_hc;
 		double t2_2d = t_ca + t_hc;
 
-		boolean useIntersection1 = (includeBehindRayOrigin || Double.compare(t1_2d, World.DOUBLE_ERROR) >= 0),
-				useIntersection2 = (includeBehindRayOrigin || Double.compare(t2_2d, World.DOUBLE_ERROR) >= 0);
+		boolean useIntersection1 = (includeBehindRayOrigin || Double.compare(t1_2d, World.NEARLY_ZERO) >= 0),
+				useIntersection2 = (includeBehindRayOrigin || Double.compare(t2_2d, World.NEARLY_ZERO) >= 0);
 		//
 		// Now we can determine the intersection-point(s) in 2D space.
 		Vector2D intersectionPoint1_2D = rayOrigin.add(rayVector.scalarMultiply(t1_2d));
@@ -95,7 +95,7 @@ public class Cylinder extends Shape {
 		// Time to see if those intersections are within the bounds of this
 		// cylinder.
 		//
-		if (useIntersection1 && Double.compare(FastMath.abs(t1), World.DOUBLE_ERROR) >= 0
+		if (useIntersection1 && Double.compare(FastMath.abs(t1), World.NEARLY_ZERO) >= 0
 				&& Double.compare(intersectionPoint1.getY(), -1d) >= 0
 				&& Double.compare(intersectionPoint1.getY(), 1d) <= 0) {
 
@@ -112,7 +112,7 @@ public class Cylinder extends Shape {
 		}
 
 		if (!(onlyIncludeClosest && results.size() > 0))
-			if (useIntersection2 && Double.compare(FastMath.abs(t2), World.DOUBLE_ERROR) >= 0
+			if (useIntersection2 && Double.compare(FastMath.abs(t2), World.NEARLY_ZERO) >= 0
 					&& Double.compare(intersectionPoint2.getY(), -1d) >= 0
 					&& Double.compare(intersectionPoint2.getY(), 1d) <= 0) {
 
@@ -172,7 +172,7 @@ public class Cylinder extends Shape {
 
 		return results.parallelStream()
 				.map(i -> localToWorld(i))
-				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.DOUBLE_ERROR) >= 0)
+				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.NEARLY_ZERO) >= 0)
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.peek(i -> {
 					if (Double.compare(
@@ -180,7 +180,7 @@ public class Cylinder extends Shape {
 									.map(ii -> ii.getDistanceFromRayOrigin())
 									.min(Double::compare)
 									.get()),
-							World.DOUBLE_ERROR) <= 0) {
+							World.NEARLY_ZERO) <= 0) {
 						i.setIntersected(this);
 						i.setLeavingMaterial(Material.AIR);
 					}
@@ -191,7 +191,7 @@ public class Cylinder extends Shape {
 									.map(ii -> ii.getDistanceFromRayOrigin())
 									.max(Double::compare)
 									.get()),
-							World.DOUBLE_ERROR) <= 0) {
+							World.NEARLY_ZERO) <= 0) {
 						i.setIntersected(this);
 						i.setEnteringMaterial(Material.AIR);
 					}

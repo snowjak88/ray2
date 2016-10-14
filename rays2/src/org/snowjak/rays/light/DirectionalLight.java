@@ -61,7 +61,7 @@ public final class DirectionalLight extends Light {
 	@Override
 	public Vector3D getLocation() {
 
-		return direction.negate().normalize().scalarMultiply(World.WORLD_BOUND);
+		return direction.negate().normalize().scalarMultiply(World.FAR_AWAY);
 	}
 
 }

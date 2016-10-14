@@ -109,7 +109,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 				return cp.parallelStream().map(p -> p.getValue()).reduce(0d, (d1, d2) -> d1 + d2) / (double) cp.size();
 			});
 
-			if (Double.compare(totalLightFraction, World.DOUBLE_ERROR) < 0)
+			if (Double.compare(totalLightFraction, World.NEARLY_ZERO) < 0)
 				continue;
 
 			visibleLights.add(light);

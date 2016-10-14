@@ -217,7 +217,7 @@ public class Union extends Shape {
 		return results.stream()
 				.sequential()
 				.limit(onlyIncludeClosest ? 1 : results.size())
-				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.DOUBLE_ERROR) >= 0)
+				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.NEARLY_ZERO) >= 0)
 				.peek(i -> {
 					//
 					// Has this Union been given its own definitive

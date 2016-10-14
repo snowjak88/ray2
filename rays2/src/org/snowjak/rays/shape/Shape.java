@@ -115,7 +115,7 @@ public abstract class Shape
 		//
 		// If the given point is "close enough" to the center, then this test is
 		// trivially true.
-		if (Double.compare(centerToPoint.getNorm(), World.DOUBLE_ERROR) <= 0)
+		if (Double.compare(centerToPoint.getNorm(), World.NEARLY_ZERO) <= 0)
 			return true;
 		//
 		// Else, construct a Ray from the point away from the center, and look
@@ -296,15 +296,15 @@ public abstract class Shape
 		double t1 = FastMath.max(FastMath.max(t_x1, t_y1), t_z1);
 
 		Vector3D intersectionPoint = localRay.getOrigin().add(localRay.getVector().scalarMultiply(t0));
-		if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
-				&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
-				&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.DOUBLE_ERROR) <= 0)
+		if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.NEARLY_ZERO) <= 0
+				&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.NEARLY_ZERO) <= 0
+				&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.NEARLY_ZERO) <= 0)
 			return true;
 
 		intersectionPoint = localRay.getOrigin().add(localRay.getVector().scalarMultiply(t1));
-		if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.DOUBLE_ERROR) <= 0
-				&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.DOUBLE_ERROR) <= 0
-				&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.DOUBLE_ERROR) <= 0)
+		if (Double.compare(FastMath.abs(intersectionPoint.getX()) - 1d, World.NEARLY_ZERO) <= 0
+				&& Double.compare(FastMath.abs(intersectionPoint.getY()) - 1d, World.NEARLY_ZERO) <= 0
+				&& Double.compare(FastMath.abs(intersectionPoint.getZ()) - 1d, World.NEARLY_ZERO) <= 0)
 			return true;
 
 		return false;

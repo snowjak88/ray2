@@ -68,7 +68,7 @@ public class FogDecoratingLightingModel implements LightingModel {
 
 		double colorDistance = 0d;
 		if (!intersection.isPresent())
-			colorDistance = World.WORLD_BOUND;
+			colorDistance = World.FAR_AWAY;
 		else
 			colorDistance = intersection.get().getDistanceFromRayOrigin();
 

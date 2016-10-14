@@ -151,7 +151,7 @@ public class PhotonMap {
 					} while (!isRayAcceptable(photonPath));
 
 					photonLightingResult = RaytracerContext.getSingleton()
-							.getCurrentWorld()
+							.getCurrentRenderer()
 							.getLightingModel()
 							.determineRayColor(photonPath, RaytracerContext.getSingleton()
 									.getCurrentWorld()
@@ -185,7 +185,7 @@ public class PhotonMap {
 	private void followPhoton(BlockingQueue<PhotonMap.Entry> buildingList, RawColor currentPhotonColor, Ray ray,
 			LightingResult photonLightingResult, Light light, int photonCount) {
 
-		if (ray.getOrigin().getNorm() >= World.WORLD_BOUND)
+		if (ray.getOrigin().getNorm() >= World.FAR_AWAY)
 			return;
 
 		if (photonLightingResult.getContributingResults().isEmpty()) {
@@ -257,13 +257,13 @@ public class PhotonMap {
 
 	/**
 	 * @param point
-	 * @return a photon-location that is at most {@link World#DOUBLE_ERROR}
+	 * @return a photon-location that is at most {@link World#NEARLY_ZERO}
 	 *         distant from the given point
 	 */
 	public Optional<PhotonMap.Entry> getPhotonCloseToPoint(Vector3D point) {
 
 		return photonLocations.parallelStream()
-				.filter(l -> Double.compare(l.getPoint().distance(point), World.DOUBLE_ERROR) <= 0)
+				.filter(l -> Double.compare(l.getPoint().distance(point), World.NEARLY_ZERO) <= 0)
 				.findFirst();
 	}
 

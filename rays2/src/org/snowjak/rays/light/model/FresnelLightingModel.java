@@ -10,6 +10,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.RaytracerContext;
+import org.snowjak.rays.Renderer;
 import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.function.Functions;
@@ -61,6 +62,7 @@ public class FresnelLightingModel implements LightingModel {
 			return Optional.empty();
 
 		World world = RaytracerContext.getSingleton().getCurrentWorld();
+		Renderer renderer = RaytracerContext.getSingleton().getCurrentRenderer();
 
 		if (ray.getRecursiveLevel() > RaytracerContext.getSingleton().getSettings().getMaxRayRecursion())
 			return surfaceLightingModel.determineRayColor(ray, intersection);
@@ -102,7 +104,7 @@ public class FresnelLightingModel implements LightingModel {
 		if (reflectance > 0d) {
 			Optional<Intersection<Shape>> reflectedIntersection = world
 					.getClosestShapeIntersection(fresnel.getReflectedRay());
-			reflectedResult = world.getLightingModel()
+			reflectedResult = renderer.getLightingModel()
 					.determineRayColor(fresnel.getReflectedRay(), reflectedIntersection)
 					.orElse(new LightingResult());
 			reflectedColor = reflectedResult.getRadiance();
@@ -118,7 +120,7 @@ public class FresnelLightingModel implements LightingModel {
 			// Get the color of the refracted ray.
 			Optional<Intersection<Shape>> refractedIntersection = world
 					.getClosestShapeIntersection(fresnel.getRefractedRay());
-			refractedResult = world.getLightingModel()
+			refractedResult = renderer.getLightingModel()
 					.determineRayColor(fresnel.getRefractedRay(), refractedIntersection)
 					.orElse(new LightingResult());
 			refractedColor = refractedResult.getRadiance();

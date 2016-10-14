@@ -91,7 +91,7 @@ public class ReflectionsDecoratingLightingModel implements LightingModel {
 		Optional<Intersection<Shape>> reflectedIntersection = RaytracerContext.getSingleton()
 				.getCurrentWorld()
 				.getClosestShapeIntersection(reflectedRay);
-		return RaytracerContext.getSingleton().getCurrentWorld().getLightingModel().determineRayColor(reflectedRay,
+		return RaytracerContext.getSingleton().getCurrentRenderer().getLightingModel().determineRayColor(reflectedRay,
 				reflectedIntersection);
 
 	}

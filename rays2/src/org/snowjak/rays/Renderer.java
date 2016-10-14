@@ -1,6 +1,8 @@
 package org.snowjak.rays;
 
 import org.snowjak.rays.camera.Camera;
+import org.snowjak.rays.light.model.FlatLightingModel;
+import org.snowjak.rays.light.model.LightingModel;
 import org.snowjak.rays.ui.AntialiasingScreenDecorator;
 import org.snowjak.rays.ui.CanBeShutdown;
 import org.snowjak.rays.ui.MultithreadedScreenDecorator;
@@ -16,6 +18,8 @@ import org.snowjak.rays.ui.ScreenDrawer;
 public class Renderer implements CanBeShutdown {
 
 	private ScreenDrawer rootScreenDrawer = null;
+
+	private LightingModel lightingModel = new FlatLightingModel();
 
 	/**
 	 * Create a new Renderer that does <strong>nothing</strong> -- a "data
@@ -54,6 +58,24 @@ public class Renderer implements CanBeShutdown {
 	 */
 	public Renderer(ScreenDrawer drawToolchain) {
 		this.rootScreenDrawer = drawToolchain;
+	}
+
+	/**
+	 * @return the {@link LightingModel} currently in-use
+	 */
+	public LightingModel getLightingModel() {
+
+		return lightingModel;
+	}
+
+	/**
+	 * Set the {@link LightingModel} implementation to use.
+	 * 
+	 * @param lightingModel
+	 */
+	public void setLightingModel(LightingModel lightingModel) {
+
+		this.lightingModel = lightingModel;
 	}
 
 	/**
