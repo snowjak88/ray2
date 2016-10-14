@@ -6,6 +6,7 @@ import java.util.List;
 import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.HasColorSchemeBuilder;
+import org.snowjak.rays.material.HasMaterialBuilder;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
@@ -19,7 +20,7 @@ import org.snowjak.rays.transform.Transformer;
  *            the Shape subtype to build
  */
 public abstract class ShapeBuilder<T extends Shape>
-		implements Builder<T>, HasColorSchemeBuilder<T>, TransformableBuilder<T> {
+		implements Builder<T>, HasColorSchemeBuilder<T>, TransformableBuilder<T>, HasMaterialBuilder<T> {
 
 	private ColorScheme diffuseColorScheme = Shape.DEFAULT_COLOR_SCHEME,
 			specularColorScheme = Shape.DEFAULT_SPECULAR_COLOR_SCHEME,
@@ -66,12 +67,7 @@ public abstract class ShapeBuilder<T extends Shape>
 		return this;
 	}
 
-	/**
-	 * Add a {@link Material} to this in-progress Shape
-	 * 
-	 * @param material
-	 * @return this ShapeBuilder, for method chaining
-	 */
+	@Override
 	public ShapeBuilder<T> material(Material material) {
 
 		this.material = material;

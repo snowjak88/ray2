@@ -1,0 +1,68 @@
+package org.snowjak.rays.shape;
+
+import org.snowjak.rays.material.Material;
+
+/**
+ * Provides a convenient interface for building {@link Plane}s.
+ * 
+ * @author snowjak88
+ *
+ */
+public class PlaneBuilder extends ShapeBuilder<Plane> {
+
+	private Material minusMaterial = Material.AIR, plusMaterial = Material.AIR;
+
+	/**
+	 * @return a new PlaneBuilder instance
+	 */
+	public static PlaneBuilder builder() {
+
+		return new PlaneBuilder();
+	}
+
+	protected PlaneBuilder() {
+
+	}
+
+	@Override
+	protected Plane createNewShapeInstance() {
+
+		return new Plane();
+	}
+
+	/**
+	 * Set's this {@link Plane}'s "minus material" -- the {@link Material} that
+	 * lies on the (local) Y- side of this plane.
+	 * 
+	 * @param minusMaterial
+	 * @return this PlaneBuilder, for method-chaining
+	 */
+	public PlaneBuilder minusMaterial(Material minusMaterial) {
+
+		this.minusMaterial = minusMaterial;
+		return this;
+	}
+
+	/**
+	 * Set's this {@link Plane}'s "plus material" -- the {@link Material} that
+	 * lies on the (local) Y+ side of this plane.
+	 * 
+	 * @param plusMaterial
+	 * @return this PlaneBuilder, for method-chaining
+	 */
+	public PlaneBuilder plusMaterial(Material plusMaterial) {
+
+		this.plusMaterial = plusMaterial;
+		return this;
+	}
+
+	@Override
+	protected Plane performTypeSpecificInitialization(Plane newShapeInstance) {
+
+		newShapeInstance.setMinusMaterial(minusMaterial);
+		newShapeInstance.setPlusMaterial(plusMaterial);
+
+		return newShapeInstance;
+	}
+
+}
