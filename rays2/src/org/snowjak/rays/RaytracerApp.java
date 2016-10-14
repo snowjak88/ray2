@@ -164,7 +164,7 @@ public class RaytracerApp extends Application {
 		world.getShapes()
 				.add(SphereBuilder.builder()
 						.diffuse(ColorSchemeBuilder.builder().constant(Color.WHITE).build())
-						.material(MaterialBuilder.builder().refractiveIndex(1.8).build())
+						.material(MaterialBuilder.builder().surfaceTransparency(1d).refractiveIndex(1.3).build())
 						.transform(new Scale(2, 2, 2))
 						.transform(new Translation(-4, 0.1, 0))
 						.build());
@@ -172,28 +172,25 @@ public class RaytracerApp extends Application {
 		world.getShapes()
 				.add(SphereBuilder.builder()
 						.diffuse(ColorSchemeBuilder.builder().constant(Color.WHITE).build())
-						.material(MaterialBuilder.builder().surfaceTransparency(0d).refractiveIndex(180d).build())
+						.material(MaterialBuilder.builder().refractiveIndex(200d).build())
 						.transform(new Scale(2, 2, 2))
 						.transform(new Translation(4d, 0.1d, 0d))
 						.build());
 
 		world.getShapes()
 				.add(PlaneBuilder.builder()
-						.minusMaterial(MaterialBuilder.builder().surfaceTransparency(0d).build())
 						.diffuse(ColorSchemeBuilder.builder().constant(Color.GHOSTWHITE).build())
 						.transform(new Translation(0d, -2d, 0d))
 						.build());
 
 		world.getShapes()
 				.add(PlaneBuilder.builder()
-						.plusMaterial(MaterialBuilder.builder().surfaceTransparency(0d).build())
 						.diffuse(ColorSchemeBuilder.builder().constant(Color.GHOSTWHITE).build())
-						.transform(new Translation(0d, 10.5, 0d))
+						.transform(new Translation(0d, 10d, 0d))
 						.build());
 
 		world.getShapes()
 				.add(PlaneBuilder.builder()
-						.plusMaterial(MaterialBuilder.builder().surfaceTransparency(0d).build())
 						.diffuse(ColorSchemeBuilder.builder().constant(Color.GHOSTWHITE).build())
 						.transform(new Rotation(-90d, 0d, 0d))
 						.transform(new Translation(0d, 0d, 5d))
@@ -201,7 +198,6 @@ public class RaytracerApp extends Application {
 
 		world.getShapes()
 				.add(PlaneBuilder.builder()
-						.plusMaterial(MaterialBuilder.builder().surfaceTransparency(0d).build())
 						.diffuse(ColorSchemeBuilder.builder().constant(Color.ROYALBLUE).build())
 						.transform(new Rotation(0d, 0d, -90d))
 						.transform(new Translation(-10d, 0d, 0d))
@@ -209,7 +205,6 @@ public class RaytracerApp extends Application {
 
 		world.getShapes()
 				.add(PlaneBuilder.builder()
-						.plusMaterial(MaterialBuilder.builder().surfaceTransparency(0d).build())
 						.diffuse(ColorSchemeBuilder.builder().constant(Color.INDIANRED).build())
 						.transform(new Rotation(0d, 0d, 90d))
 						.transform(new Translation(10d, 0d, 0d))
@@ -217,7 +212,7 @@ public class RaytracerApp extends Application {
 
 		Light light = new PointLight(new RawColor(Color.WHITE).multiplyScalar(0.02), new RawColor(Color.WHITE),
 				new RawColor(Color.WHITE), 100d, 0.5);
-		light.getTransformers().add(new Translation(0d, 10d, 0d));
+		light.getTransformers().add(new Translation(0d, 9d, 0d));
 		world.getLights().add(light);
 
 		Camera camera = new Camera(4.0, 60.0);
