@@ -39,7 +39,7 @@ public class AmbientLightingModel implements LightingModel {
 		for (Light light : RaytracerContext.getSingleton().getCurrentWorld().getLights())
 			totalLightAtPoint = totalLightAtPoint.add(light.getAmbientColor());
 
-		RawColor pointColor = intersection.getEnteringMaterial().getColor(point);
+		RawColor pointColor = intersection.getDiffuse(point);
 
 		LightingResult result = new LightingResult();
 		result.setEye(intersection.getRay());
