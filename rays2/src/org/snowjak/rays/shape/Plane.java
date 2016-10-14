@@ -128,17 +128,17 @@ public class Plane extends Shape {
 	}
 
 	@Override
+	@Deprecated
 	public Material getMaterial() {
 
-		throw new UnsupportedOperationException(
-				"Plane primitive has two Materials, not one -- use getMinusMaterial() and getPlusMaterial()");
+		return super.getMaterial();
 	}
 
 	@Override
+	@Deprecated
 	public void setMaterial(Material material) {
 
-		throw new UnsupportedOperationException(
-				"Plane primitive has two Materials, not one -- use setMinusMaterial() and setPlusMaterial()");
+		super.setMaterial(material);
 	}
 
 	/**
