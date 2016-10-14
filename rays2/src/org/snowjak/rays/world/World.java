@@ -1,10 +1,11 @@
-package org.snowjak.rays;
+package org.snowjak.rays.world;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.snowjak.rays.Ray;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
@@ -38,9 +39,9 @@ public class World {
 
 	private Camera camera = null;
 
-	private List<Shape> shapes = new LinkedList<>();
+	private final List<Shape> shapes = new LinkedList<>();
 
-	private List<Light> lights = new LinkedList<>();
+	private final List<Light> lights = new LinkedList<>();
 
 	/**
 	 * Create a new (empty) {@link World} instance.

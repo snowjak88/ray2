@@ -1,6 +1,7 @@
 package org.snowjak.rays.shape;
 
 import org.snowjak.rays.material.Material;
+import org.snowjak.rays.world.HasName;
 
 /**
  * Provides a convenient interface for building {@link Plane}s.
@@ -8,6 +9,7 @@ import org.snowjak.rays.material.Material;
  * @author snowjak88
  *
  */
+@HasName("plane")
 public class PlaneBuilder extends ShapeBuilder<Plane> {
 
 	private Material minusMaterial = Shape.DEFAULT_MATERIAL, plusMaterial = Shape.DEFAULT_MATERIAL;
@@ -37,6 +39,7 @@ public class PlaneBuilder extends ShapeBuilder<Plane> {
 	 * @param minusMaterial
 	 * @return this PlaneBuilder, for method-chaining
 	 */
+	@HasName("minus-material")
 	public PlaneBuilder minusMaterial(Material minusMaterial) {
 
 		this.minusMaterial = minusMaterial;
@@ -50,6 +53,7 @@ public class PlaneBuilder extends ShapeBuilder<Plane> {
 	 * @param plusMaterial
 	 * @return this PlaneBuilder, for method-chaining
 	 */
+	@HasName("plus-material")
 	public PlaneBuilder plusMaterial(Material plusMaterial) {
 
 		this.plusMaterial = plusMaterial;

@@ -12,7 +12,6 @@ import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Locatable;
 import org.snowjak.rays.Prototype;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.HasColorScheme;
 import org.snowjak.rays.color.SimpleColorScheme;
@@ -23,6 +22,7 @@ import org.snowjak.rays.material.HasMaterial;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
+import org.snowjak.rays.world.World;
 
 import javafx.scene.paint.Color;
 

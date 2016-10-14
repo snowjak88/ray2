@@ -4,7 +4,6 @@ import static org.apache.commons.math3.util.FastMath.cos;
 import static org.apache.commons.math3.util.FastMath.sin;
 import static org.apache.commons.math3.util.FastMath.toRadians;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.snowjak.rays.Ray;
@@ -20,17 +19,6 @@ import org.snowjak.rays.intersect.Intersection;
 public class Rotation implements Transformer {
 
 	private RealMatrix matrix, inverseMatrix;
-
-	/**
-	 * Create a new Rotation using the given set of angles. Each angle
-	 * represents a rotation about the associated axis.
-	 * 
-	 * @param angles
-	 */
-	public Rotation(Vector3D angles) {
-
-		this(angles.getX(), angles.getY(), angles.getZ());
-	}
 
 	/**
 	 * Create a new Rotation with the given set of angles.

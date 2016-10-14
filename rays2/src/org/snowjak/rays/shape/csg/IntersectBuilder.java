@@ -1,10 +1,12 @@
 package org.snowjak.rays.shape.csg;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.shape.ShapeBuilder;
+import org.snowjak.rays.world.HasName;
 
 /**
  * A convenient interface for building {@link Intersect} instances
@@ -12,6 +14,7 @@ import org.snowjak.rays.shape.ShapeBuilder;
  * @author snowjak88
  *
  */
+@HasName("intersect")
 public class IntersectBuilder extends ShapeBuilder<Intersect> {
 
 	private Set<Shape> children = new HashSet<>();
@@ -33,9 +36,23 @@ public class IntersectBuilder extends ShapeBuilder<Intersect> {
 	 * @param child
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("child")
 	public IntersectBuilder child(Shape child) {
 
 		this.children.add(child);
+		return this;
+	}
+
+	/**
+	 * Add a list of child Shapes to this in-progress {@link Intersect}.
+	 * 
+	 * @param children
+	 * @return this Builder, for method-chaining
+	 */
+	@HasName("children")
+	public IntersectBuilder children(List<Shape> children) {
+
+		this.children.addAll(children);
 		return this;
 	}
 

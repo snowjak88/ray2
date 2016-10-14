@@ -10,6 +10,7 @@ import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
+import org.snowjak.rays.world.HasName;
 
 /**
  * A convenient interface for building {@link Material}s.
@@ -22,6 +23,7 @@ import org.snowjak.rays.transform.Transformer;
  * @author snowjak88
  *
  */
+@HasName("material")
 public class MaterialBuilder implements Builder<Material>, TransformableBuilder<Material> {
 
 	private Function<Vector3D, Double> surfaceTransparency = Shape.DEFAULT_MATERIAL.getSurfaceTransparency(),
@@ -48,6 +50,7 @@ public class MaterialBuilder implements Builder<Material>, TransformableBuilder<
 	 * @param transparency
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("surface-transparency")
 	public MaterialBuilder surfaceTransparency(double transparency) {
 
 		return surfaceTransparency(Functions.constant(transparency));
@@ -73,6 +76,7 @@ public class MaterialBuilder implements Builder<Material>, TransformableBuilder<
 	 * @param refractiveIndex
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("refractive-index")
 	public MaterialBuilder refractiveIndex(double refractiveIndex) {
 
 		return refractiveIndex(Functions.constant(refractiveIndex));
@@ -91,10 +95,24 @@ public class MaterialBuilder implements Builder<Material>, TransformableBuilder<
 		return this;
 	}
 
+	@HasName("transform")
 	@Override
 	public MaterialBuilder transform(Transformer transformer) {
 
 		this.transformers.add(transformer);
+		return this;
+	}
+
+	/**
+	 * Add a list of Transformers to this in-progress Material
+	 * 
+	 * @param transformers
+	 * @return this Builder, for method-chaining
+	 */
+	@HasName("transforms")
+	public MaterialBuilder transform(List<Transformer> transformers) {
+
+		this.transformers.addAll(transformers);
 		return this;
 	}
 

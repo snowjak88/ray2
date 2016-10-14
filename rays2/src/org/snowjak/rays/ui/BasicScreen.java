@@ -1,7 +1,7 @@
 package org.snowjak.rays.ui;
 
-import org.snowjak.rays.World;
 import org.snowjak.rays.camera.Camera;
+import org.snowjak.rays.world.World;
 
 /**
  * Represents the raytracer's output at the UI-level. Interfaces with a

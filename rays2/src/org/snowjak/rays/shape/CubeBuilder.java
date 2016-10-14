@@ -1,11 +1,14 @@
 package org.snowjak.rays.shape;
 
+import org.snowjak.rays.world.HasName;
+
 /**
  * A convenient interface for building {@link Cube} instances.
  * 
  * @author snowjak88
  *
  */
+@HasName("cube")
 public class CubeBuilder extends ShapeBuilder<Cube> {
 
 	/**

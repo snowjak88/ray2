@@ -3,12 +3,15 @@ package org.snowjak.rays.shape;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.snowjak.rays.world.HasName;
+
 /**
  * A convenient interface for building Shape {@link Group}s
  * 
  * @author snowjak88
  *
  */
+@HasName("group")
 public class GroupBuilder extends ShapeBuilder<Group> {
 
 	private List<Shape> children = new LinkedList<>();
@@ -31,6 +34,7 @@ public class GroupBuilder extends ShapeBuilder<Group> {
 	 * @param child
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("child")
 	public GroupBuilder child(Shape child) {
 
 		this.children.add(child);

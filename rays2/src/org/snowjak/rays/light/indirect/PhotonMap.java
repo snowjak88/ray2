@@ -21,12 +21,12 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.RaytracerContext;
-import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.indirect.PhotonMap.Kd3dTree.Dimension;
 import org.snowjak.rays.light.model.LightingModel.LightingResult;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.world.World;
 
 /**
  * A photon-map is a relatively-simple method for obtaining indirect

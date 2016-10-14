@@ -5,10 +5,10 @@ import java.util.Optional;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.world.World;
 
 /**
  * A Decorator-type LightingModel that enhances another LightingModel with

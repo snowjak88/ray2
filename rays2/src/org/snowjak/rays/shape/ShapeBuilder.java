@@ -10,6 +10,7 @@ import org.snowjak.rays.material.HasMaterialBuilder;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
+import org.snowjak.rays.world.HasName;
 
 /**
  * Base class for all shape Builders.
@@ -46,6 +47,7 @@ public abstract class ShapeBuilder<T extends Shape>
 	 */
 	protected abstract T createNewShapeInstance();
 
+	@HasName("diffuse")
 	@Override
 	public ShapeBuilder<T> diffuse(ColorScheme diffuseColor) {
 
@@ -53,6 +55,7 @@ public abstract class ShapeBuilder<T extends Shape>
 		return this;
 	}
 
+	@HasName("specular")
 	@Override
 	public ShapeBuilder<T> specular(ColorScheme specularColor) {
 
@@ -60,6 +63,7 @@ public abstract class ShapeBuilder<T extends Shape>
 		return this;
 	}
 
+	@HasName("emissive")
 	@Override
 	public ShapeBuilder<T> emissive(ColorScheme emissiveColor) {
 
@@ -67,6 +71,7 @@ public abstract class ShapeBuilder<T extends Shape>
 		return this;
 	}
 
+	@HasName("material")
 	@Override
 	public ShapeBuilder<T> material(Material material) {
 
@@ -74,10 +79,24 @@ public abstract class ShapeBuilder<T extends Shape>
 		return this;
 	}
 
+	@HasName("transform")
 	@Override
 	public ShapeBuilder<T> transform(Transformer transform) {
 
 		transformers.add(transform);
+		return this;
+	}
+
+	/**
+	 * Add a list of {@link Transformer}s to this shape.
+	 * 
+	 * @param transformers
+	 * @return this Builder, for method-chaining
+	 */
+	@HasName("transforms")
+	public ShapeBuilder<T> transform(List<Transformer> transformers) {
+
+		transformers.addAll(transformers);
 		return this;
 	}
 

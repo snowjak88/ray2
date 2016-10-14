@@ -10,13 +10,13 @@ import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.RaytracerContext;
-import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.model.LightingModel.LightingResult;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
 import org.snowjak.rays.ui.BasicScreen;
+import org.snowjak.rays.world.World;
 
 /**
  * Represents a virtual window onto the {@link World}. A {@link BasicScreen}

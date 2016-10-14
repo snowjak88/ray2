@@ -2,11 +2,13 @@ package org.snowjak.rays.shape.csg;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.snowjak.rays.shape.NullShape;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.shape.ShapeBuilder;
+import org.snowjak.rays.world.HasName;
 
 /**
  * A convenient interface for building {@link Minus} instances
@@ -14,6 +16,7 @@ import org.snowjak.rays.shape.ShapeBuilder;
  * @author snowjak88
  *
  */
+@HasName("minus")
 public class MinusBuilder extends ShapeBuilder<Minus> {
 
 	private Shape minuend = new NullShape();
@@ -39,6 +42,7 @@ public class MinusBuilder extends ShapeBuilder<Minus> {
 	 * @see Minus#setMinuend(Shape)
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("minuend")
 	public MinusBuilder minuend(Shape minuend) {
 
 		this.minuend = minuend;
@@ -52,9 +56,24 @@ public class MinusBuilder extends ShapeBuilder<Minus> {
 	 * @see Minus#getSubtrahends()
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("subtrahend")
 	public MinusBuilder subtrahend(Shape subtrahend) {
 
 		this.subtrahends.add(subtrahend);
+		return this;
+	}
+
+	/**
+	 * Add a list of "subtrahend" shapes to this in-progress Minus.
+	 * 
+	 * @param subtrahends
+	 * @see Minus#getSubtrahends()
+	 * @return this Builder, for method-chaining
+	 */
+	@HasName("subtrahends")
+	public MinusBuilder subtrahend(List<Shape> subtrahends) {
+
+		this.subtrahends.addAll(subtrahends);
 		return this;
 	}
 

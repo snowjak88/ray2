@@ -1,8 +1,8 @@
 package org.snowjak.rays.light;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.snowjak.rays.World;
 import org.snowjak.rays.transform.Transformer;
+import org.snowjak.rays.world.World;
 
 /**
  * Implements a simple directional light -- a {@link Light} which shines its

@@ -9,10 +9,10 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.transform.Translation;
+import org.snowjak.rays.world.World;
 
 /**
  * Represents an open-ended cylinder aligned with the Y-axis, centered on

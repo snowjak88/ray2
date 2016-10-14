@@ -5,6 +5,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.ui.CanBeShutdown;
+import org.snowjak.rays.world.World;
 
 /**
  * Represents the raytracer's global context.

@@ -37,6 +37,7 @@ import org.snowjak.rays.transform.Rotation;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.impl.JavaFxPixelDrawer;
+import org.snowjak.rays.world.World;
 
 import javafx.application.Application;
 import javafx.application.Platform;

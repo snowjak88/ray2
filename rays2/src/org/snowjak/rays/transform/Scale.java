@@ -1,6 +1,5 @@
 package org.snowjak.rays.transform;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.snowjak.rays.Ray;
@@ -16,15 +15,6 @@ import org.snowjak.rays.intersect.Intersection;
 public class Scale implements Transformer {
 
 	private RealMatrix matrix, inverseMatrix;
-
-	/**
-	 * Create a new Scale with the given scaling-factors for each axis.
-	 * 
-	 * @param scale
-	 */
-	public Scale(Vector3D scale) {
-		this(scale.getX(), scale.getY(), scale.getZ());
-	}
 
 	/**
 	 * Create a new Scale with the given scaling-factors for each axis.

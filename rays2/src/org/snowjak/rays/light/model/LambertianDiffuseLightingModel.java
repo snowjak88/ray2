@@ -9,12 +9,12 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.RaytracerContext;
-import org.snowjak.rays.World;
 import org.snowjak.rays.antialias.SuperSamplingAntialiaser;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.world.World;
 
 /**
  * Implements the Lambertian diffuse lighting model.

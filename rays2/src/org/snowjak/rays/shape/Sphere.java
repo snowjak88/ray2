@@ -10,9 +10,9 @@ import java.util.List;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.material.Material;
+import org.snowjak.rays.world.World;
 
 /**
  * Represents a Sphere, centered on (0,0,0) (absent any transformations you may

@@ -9,6 +9,7 @@ import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
+import org.snowjak.rays.world.HasName;
 
 import javafx.scene.paint.Color;
 
@@ -18,6 +19,7 @@ import javafx.scene.paint.Color;
  * @author snowjak88
  *
  */
+@HasName("color-scheme")
 public class ColorSchemeBuilder implements Builder<ColorScheme>, TransformableBuilder<ColorScheme> {
 
 	private Function<Vector3D, RawColor> colorFunction = Functions.constant(Color.HOTPINK);
@@ -54,6 +56,7 @@ public class ColorSchemeBuilder implements Builder<ColorScheme>, TransformableBu
 	 * @param color
 	 * @return this ColorSchemeBuilder
 	 */
+	@HasName("color")
 	public ColorSchemeBuilder constant(RawColor color) {
 
 		this.colorFunction = Functions.constant(color);
@@ -78,9 +81,23 @@ public class ColorSchemeBuilder implements Builder<ColorScheme>, TransformableBu
 	 * @param transform
 	 * @return this ColorSchemeBuilder
 	 */
+	@HasName("transform")
 	public ColorSchemeBuilder transform(Transformer transform) {
 
 		this.transformers.add(transform);
+		return this;
+	}
+
+	/**
+	 * Add a list of Transformers to this in-progress ColorScheme.
+	 * 
+	 * @param transforms
+	 * @return this Builder, for method-chaining
+	 */
+	@HasName("transforms")
+	public ColorSchemeBuilder transform(List<Transformer> transforms) {
+
+		this.transformers.addAll(transforms);
 		return this;
 	}
 

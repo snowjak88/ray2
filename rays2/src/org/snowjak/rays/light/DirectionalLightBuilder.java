@@ -1,6 +1,7 @@
 package org.snowjak.rays.light;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.snowjak.rays.world.HasName;
 
 /**
  * A convenient interface for building {@link DirectionalLight} instances.
@@ -8,6 +9,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  * @author snowjak88
  *
  */
+@HasName("directional-light")
 public class DirectionalLightBuilder extends LightBuilder<DirectionalLight> {
 
 	private Vector3D direction = DirectionalLight.DEFAULT_DIRECTION;
@@ -31,6 +33,7 @@ public class DirectionalLightBuilder extends LightBuilder<DirectionalLight> {
 	 * @param direction
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("direction")
 	public DirectionalLightBuilder direction(Vector3D direction) {
 
 		this.direction = direction.normalize();

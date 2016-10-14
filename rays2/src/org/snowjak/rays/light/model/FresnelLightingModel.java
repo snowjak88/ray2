@@ -11,11 +11,11 @@ import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.Renderer;
-import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.world.World;
 
 import javafx.scene.paint.Color;
 

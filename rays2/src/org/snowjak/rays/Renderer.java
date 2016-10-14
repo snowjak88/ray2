@@ -8,6 +8,7 @@ import org.snowjak.rays.ui.CanBeShutdown;
 import org.snowjak.rays.ui.MultithreadedScreenDecorator;
 import org.snowjak.rays.ui.PixelDrawer;
 import org.snowjak.rays.ui.ScreenDrawer;
+import org.snowjak.rays.world.World;
 
 /**
  * Represents the origination-point for all scene-rendering.

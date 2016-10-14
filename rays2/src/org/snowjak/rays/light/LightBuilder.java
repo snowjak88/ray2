@@ -12,6 +12,7 @@ import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
+import org.snowjak.rays.world.HasName;
 
 /**
  * A convenient interface for building {@link Light}s.
@@ -40,6 +41,7 @@ public abstract class LightBuilder<T extends Light> implements Builder<T>, Trans
 	 * @param ambientRadiance
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("ambient")
 	public LightBuilder<T> ambient(RawColor ambientRadiance) {
 
 		this.ambient = ambientRadiance;
@@ -52,6 +54,7 @@ public abstract class LightBuilder<T extends Light> implements Builder<T>, Trans
 	 * @param diffuseRadiance
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("diffuse")
 	public LightBuilder<T> diffuse(RawColor diffuseRadiance) {
 
 		this.diffuse = diffuseRadiance;
@@ -64,6 +67,7 @@ public abstract class LightBuilder<T extends Light> implements Builder<T>, Trans
 	 * @param specularRadiance
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("specular")
 	public LightBuilder<T> specular(RawColor specularRadiance) {
 
 		this.specular = specularRadiance;
@@ -77,6 +81,7 @@ public abstract class LightBuilder<T extends Light> implements Builder<T>, Trans
 	 * @param intensity
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("intensity")
 	public LightBuilder<T> intensity(double intensity) {
 
 		this.intensity = Functions.constant(intensity);
@@ -115,17 +120,32 @@ public abstract class LightBuilder<T extends Light> implements Builder<T>, Trans
 	 * @param radius
 	 * @return this Builder, for method-chaining
 	 */
+	@HasName("radius")
 	public LightBuilder<T> radius(double radius) {
 
 		this.radius = (Double.compare(radius, 0d) <= 0) ? Optional.empty() : Optional.of(radius);
 		return this;
 	}
 
+	@HasName("transform")
 	@Override
 	public LightBuilder<T> transform(Transformer transformer) {
 
 		this.transformers.add(transformer);
 
+		return this;
+	}
+
+	/**
+	 * Add a list of Transformers to this in-progress Light.
+	 * 
+	 * @param transformers
+	 * @return this Builder, for method-chaining
+	 */
+	@HasName("transforms")
+	public LightBuilder<T> transform(List<Transformer> transformers) {
+
+		this.transformers.addAll(transformers);
 		return this;
 	}
 

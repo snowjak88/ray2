@@ -1,11 +1,14 @@
 package org.snowjak.rays.light;
 
+import org.snowjak.rays.world.HasName;
+
 /**
  * A convenient interface for building {@link PointLight} instances.
  * 
  * @author snowjak88
  *
  */
+@HasName("point-light")
 public class PointLightBuilder extends LightBuilder<PointLight> {
 
 	/**

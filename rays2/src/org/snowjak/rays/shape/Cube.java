@@ -8,9 +8,9 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.material.Material;
+import org.snowjak.rays.world.World;
 
 /**
  * Represents a cube, with edges aligned to the primary axes and opposite

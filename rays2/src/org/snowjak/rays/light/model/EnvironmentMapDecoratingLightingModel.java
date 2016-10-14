@@ -5,10 +5,10 @@ import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.snowjak.rays.Ray;
-import org.snowjak.rays.World;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.world.World;
 
 /**
  * A {@link LightingModel} that implements an environment map at "infinite"

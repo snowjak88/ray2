@@ -1,6 +1,5 @@
 package org.snowjak.rays.transform;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.snowjak.rays.Ray;
@@ -16,16 +15,6 @@ import org.snowjak.rays.intersect.Intersection;
 public class Translation implements Transformer {
 
 	private RealMatrix matrix, inverseMatrix;
-
-	/**
-	 * Create a new Translation with the given displacements along each axis.
-	 * 
-	 * @param translation
-	 */
-	public Translation(Vector3D translation) {
-
-		this(translation.getX(), translation.getY(), translation.getZ());
-	}
 
 	/**
 	 * Create a new Translation with the given displacements along each axis.
