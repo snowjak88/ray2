@@ -6,12 +6,9 @@ import java.util.function.Function;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.builder.Builder;
-import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
-
-import javafx.scene.paint.Color;
 
 /**
  * A convenient interface for building {@link Material}s.
@@ -20,8 +17,6 @@ import javafx.scene.paint.Color;
  *
  */
 public class MaterialBuilder implements Builder<Material>, TransformableBuilder<Material> {
-
-	private Function<Vector3D, RawColor> color = Material.AIR.getSurfaceColor();
 
 	private Function<Vector3D, Double> surfaceTransparency = Material.AIR.getSurfaceTransparency(),
 			refractiveIndex = Material.AIR.getRefractiveIndex();
@@ -38,41 +33,6 @@ public class MaterialBuilder implements Builder<Material>, TransformableBuilder<
 
 	protected MaterialBuilder() {
 
-	}
-
-	/**
-	 * Configures this in-progress Material to use a specified constant color.
-	 * 
-	 * @param constantColor
-	 * @return this Builder, for method-chaining
-	 */
-	public MaterialBuilder color(Color constantColor) {
-
-		return color(new RawColor(constantColor));
-	}
-
-	/**
-	 * Configures this in-progress Material to use a specified constant color.
-	 * 
-	 * @param constantColor
-	 * @return this Builder, for method-chaining
-	 */
-	public MaterialBuilder color(RawColor constantColor) {
-
-		return color(Functions.constant(constantColor));
-	}
-
-	/**
-	 * Configures this in-progress Material to use the specified
-	 * {@link Function} when computing coloring.
-	 * 
-	 * @param colorFunction
-	 * @return this Builder, for method-chaining
-	 */
-	public MaterialBuilder color(Function<Vector3D, RawColor> colorFunction) {
-
-		this.color = colorFunction;
-		return this;
 	}
 
 	/**
@@ -135,7 +95,7 @@ public class MaterialBuilder implements Builder<Material>, TransformableBuilder<
 	@Override
 	public Material build() {
 
-		Material newMaterial = new Material(color, surfaceTransparency, refractiveIndex);
+		Material newMaterial = new Material(surfaceTransparency, refractiveIndex);
 		newMaterial.getTransformers().addAll(transformers);
 
 		return newMaterial;

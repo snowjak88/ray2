@@ -22,7 +22,6 @@ import org.apache.commons.cli.Options;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.ColorSchemeBuilder;
 import org.snowjak.rays.color.RawColor;
-import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.light.PointLight;
 import org.snowjak.rays.light.model.AdditiveCompositingLightingModel;
@@ -32,7 +31,6 @@ import org.snowjak.rays.light.model.FresnelLightingModel;
 import org.snowjak.rays.light.model.LambertianDiffuseLightingModel;
 import org.snowjak.rays.light.model.PhongSpecularLightingModel;
 import org.snowjak.rays.light.model.SphericalEnvironmentMap;
-import org.snowjak.rays.material.Material;
 import org.snowjak.rays.material.MaterialBuilder;
 import org.snowjak.rays.shape.PlaneBuilder;
 import org.snowjak.rays.shape.SphereBuilder;
@@ -163,21 +161,21 @@ public class RaytracerApp extends Application {
 
 		World world = new World();
 
-		world.getShapes().add(SphereBuilder.builder()
-				.diffuse(ColorSchemeBuilder.builder().constant(Color.WHITE).build())
-				.material(
-						new Material(Functions.constant(Color.WHITE), Functions.constant(1d), Functions.constant(1.3d)))
-				.transform(new Scale(2, 2, 2))
-				.transform(new Translation(-4, 0.1, 0))
-				.build());
+		world.getShapes()
+				.add(SphereBuilder.builder()
+						.diffuse(ColorSchemeBuilder.builder().constant(Color.WHITE).build())
+						.material(MaterialBuilder.builder().refractiveIndex(1.8).build())
+						.transform(new Scale(2, 2, 2))
+						.transform(new Translation(-4, 0.1, 0))
+						.build());
 
-		world.getShapes().add(SphereBuilder.builder()
-				.diffuse(ColorSchemeBuilder.builder().constant(Color.WHITE).build())
-				.material(
-						new Material(Functions.constant(Color.WHITE), Functions.constant(0d), Functions.constant(180d)))
-				.transform(new Scale(2, 2, 2))
-				.transform(new Translation(4d, 0.1d, 0d))
-				.build());
+		world.getShapes()
+				.add(SphereBuilder.builder()
+						.diffuse(ColorSchemeBuilder.builder().constant(Color.WHITE).build())
+						.material(MaterialBuilder.builder().surfaceTransparency(0d).refractiveIndex(180d).build())
+						.transform(new Scale(2, 2, 2))
+						.transform(new Translation(4d, 0.1d, 0d))
+						.build());
 
 		world.getShapes()
 				.add(PlaneBuilder.builder()
