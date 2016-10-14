@@ -7,19 +7,25 @@ import java.util.function.Function;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.function.Functions;
+import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
 
 /**
  * A convenient interface for building {@link Material}s.
  * 
+ * <p>
+ * <strong>Note:</strong> this Material uses {@link Shape#DEFAULT_MATERIAL} for
+ * all its initial values.
+ * </p>
+ * 
  * @author snowjak88
  *
  */
 public class MaterialBuilder implements Builder<Material>, TransformableBuilder<Material> {
 
-	private Function<Vector3D, Double> surfaceTransparency = Material.AIR.getSurfaceTransparency(),
-			refractiveIndex = Material.AIR.getRefractiveIndex();
+	private Function<Vector3D, Double> surfaceTransparency = Shape.DEFAULT_MATERIAL.getSurfaceTransparency(),
+			refractiveIndex = Shape.DEFAULT_MATERIAL.getRefractiveIndex();
 
 	private List<Transformer> transformers = new LinkedList<>();
 

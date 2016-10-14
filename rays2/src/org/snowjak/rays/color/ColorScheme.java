@@ -16,7 +16,7 @@ import org.snowjak.rays.transform.Transformer;
  */
 public abstract class ColorScheme implements Transformable, Prototype<ColorScheme> {
 
-	private Deque<Transformer> transformers = new LinkedList<>();
+	private final Deque<Transformer> transformers = new LinkedList<>();
 
 	private double shininess = 1e5, reflectivity = -1d;
 
@@ -113,6 +113,7 @@ public abstract class ColorScheme implements Transformable, Prototype<ColorSchem
 	/**
 	 * @return this color scheme's "reflectivity" fraction
 	 */
+	@Deprecated
 	public double getReflectivity() {
 
 		return reflectivity;
@@ -125,6 +126,7 @@ public abstract class ColorScheme implements Transformable, Prototype<ColorSchem
 	 * @return this color scheme's "reflectivity" fraction for the given point
 	 *         in global coordinates
 	 */
+	@Deprecated
 	public double getReflectivity(double x, double y, double z) {
 
 		return getReflectivity(new Vector3D(x, y, z));
@@ -135,6 +137,7 @@ public abstract class ColorScheme implements Transformable, Prototype<ColorSchem
 	 * @return this color scheme's "reflectivity" fraction for the given point
 	 *         in global coordinates
 	 */
+	@Deprecated
 	public double getReflectivity(Vector3D coord) {
 
 		return getReflectivity();
@@ -145,6 +148,7 @@ public abstract class ColorScheme implements Transformable, Prototype<ColorSchem
 	 * 
 	 * @param reflectivity
 	 */
+	@Deprecated
 	public void setReflectivity(double reflectivity) {
 
 		this.reflectivity = reflectivity;

@@ -23,7 +23,7 @@ public class Material implements Transformable, Prototype<Material> {
 
 	private Function<Vector3D, Double> surfaceTransparency, refractiveIndex;
 
-	private Deque<Transformer> transformers = new LinkedList<>();
+	private final Deque<Transformer> transformers = new LinkedList<>();
 
 	/**
 	 * Predefined Material: totally transparent, with a refractive index of 1.0
@@ -51,7 +51,7 @@ public class Material implements Transformable, Prototype<Material> {
 	}
 
 	/**
-	 * Create a new Material.
+	 * Create a new Material -- totally opaque, with a refractive index of 1.0
 	 */
 	public Material() {
 		this(Functions.constant(0d), Functions.constant(1d));
