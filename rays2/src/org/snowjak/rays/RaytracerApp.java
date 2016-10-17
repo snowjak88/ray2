@@ -22,6 +22,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.snowjak.rays.camera.Camera;
+import org.snowjak.rays.camera.CameraBuilder;
 import org.snowjak.rays.color.ColorSchemeBuilder;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.light.PointLightBuilder;
@@ -36,8 +37,10 @@ import org.snowjak.rays.material.MaterialBuilder;
 import org.snowjak.rays.shape.PlaneBuilder;
 import org.snowjak.rays.shape.SphereBuilder;
 import org.snowjak.rays.transform.Rotation;
+import org.snowjak.rays.transform.RotationBuilder;
 import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
+import org.snowjak.rays.transform.TranslationBuilder;
 import org.snowjak.rays.ui.impl.JavaFxPixelDrawer;
 import org.snowjak.rays.world.World;
 import org.snowjak.rays.world.importfile.BuilderInvoker;
@@ -179,11 +182,6 @@ public class RaytracerApp extends Application {
 			assert (worldFileDefinition.isPresent());
 
 			World world = (World) BuilderInvoker.getSingleton().invokeBuilders(worldFileDefinition.get()).get();
-
-			Camera camera = new Camera(4.0, 60.0);
-			camera.getTransformers().add(new Translation(0d, 2.5d, -10d));
-			camera.getTransformers().add(new Rotation(-15d, 0d, 0d));
-			world.setCamera(camera);
 
 			return world;
 

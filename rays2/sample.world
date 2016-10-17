@@ -18,4 +18,11 @@ world {
 		intensity : 100
 		radius : 0.5
 	}
+	
+	camera : camera {
+		transform : translate { x : 0 y : 2.5 z : -10 }
+		transform : rotate { pitch : -15 yaw : 0 roll : 0 }
+		frame-width : 4
+		field-of-view : 60
+	}
 }
