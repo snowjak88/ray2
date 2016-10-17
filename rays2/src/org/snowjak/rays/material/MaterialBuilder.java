@@ -10,7 +10,7 @@ import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * A convenient interface for building {@link Material}s.

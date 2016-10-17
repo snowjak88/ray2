@@ -1,6 +1,7 @@
 package org.snowjak.rays.antialias;
 
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.light.model.LightingModel;
 import org.snowjak.rays.shape.Shape;
 
 /**

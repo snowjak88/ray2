@@ -1,7 +1,7 @@
 package org.snowjak.rays.builder;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * Allows automated instantiation of {@link Vector3D} instances.

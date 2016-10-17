@@ -1,7 +1,7 @@
 package org.snowjak.rays.transform;
 
 import org.snowjak.rays.builder.Builder;
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * A convenient interface for instantiating {@link Scale}s.

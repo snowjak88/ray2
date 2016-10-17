@@ -1,7 +1,7 @@
 package org.snowjak.rays.color;
 
 import org.snowjak.rays.builder.Builder;
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * Allows automatic instantiation of {@link RawColor} instances.

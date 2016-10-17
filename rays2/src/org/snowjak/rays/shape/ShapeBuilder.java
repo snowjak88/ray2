@@ -12,7 +12,7 @@ import org.snowjak.rays.material.HasMaterialBuilder;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * Base class for all shape Builders.

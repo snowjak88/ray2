@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.shape.ShapeBuilder;
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * A convenient interface for building {@link Union}s.

@@ -9,7 +9,7 @@ import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.transform.TransformableBuilder;
 import org.snowjak.rays.transform.Transformer;
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 import javafx.scene.paint.Color;
 

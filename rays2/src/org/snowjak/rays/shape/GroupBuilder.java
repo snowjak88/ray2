@@ -3,7 +3,7 @@ package org.snowjak.rays.shape;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * A convenient interface for building Shape {@link Group}s

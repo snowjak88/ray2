@@ -1,6 +1,6 @@
 package org.snowjak.rays.shape;
 
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * A convenient interface for building {@link Cylinder} instances

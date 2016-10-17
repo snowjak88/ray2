@@ -7,6 +7,7 @@ import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * A convenient interface for instantiating a {@link World} instance.

@@ -1,6 +1,6 @@
 package org.snowjak.rays.light;
 
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * A convenient interface for building {@link PointLight} instances.

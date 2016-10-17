@@ -1,7 +1,7 @@
 package org.snowjak.rays.light;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * A convenient interface for building {@link DirectionalLight} instances.

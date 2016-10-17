@@ -1,7 +1,7 @@
 package org.snowjak.rays.shape;
 
 import org.snowjak.rays.material.Material;
-import org.snowjak.rays.world.HasName;
+import org.snowjak.rays.world.importfile.HasName;
 
 /**
  * Provides a convenient interface for building {@link Plane}s.

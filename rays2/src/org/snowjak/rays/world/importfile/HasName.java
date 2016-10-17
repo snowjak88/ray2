@@ -1,4 +1,4 @@
-package org.snowjak.rays.world;
+package org.snowjak.rays.world.importfile;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
