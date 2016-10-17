@@ -17,7 +17,7 @@ public class RotationBuilder implements Builder<Rotation> {
 	/**
 	 * @return a new RotationBuilder instance
 	 */
-	public RotationBuilder builder() {
+	public static RotationBuilder builder() {
 
 		return new RotationBuilder();
 	}
