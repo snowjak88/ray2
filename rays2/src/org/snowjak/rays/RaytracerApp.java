@@ -38,6 +38,8 @@ import org.snowjak.rays.transform.Scale;
 import org.snowjak.rays.transform.Translation;
 import org.snowjak.rays.ui.impl.JavaFxPixelDrawer;
 import org.snowjak.rays.world.World;
+import org.snowjak.rays.world.importfile.BuilderInvoker;
+import org.snowjak.rays.world.importfile.WorldFileObjectDefinition;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -59,7 +61,8 @@ public class RaytracerApp extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 
-		World world = buildWorld();
+		// World world = buildWorld();
+		World world = createWorldFromDefinitions();
 		Settings settings = Settings.presetFast();
 
 		CommandLine cmd = new DefaultParser().parse(getCommandLineOptions(), args);
@@ -160,6 +163,43 @@ public class RaytracerApp extends Application {
 		options.addOption(Option.builder("h").longOpt("help").desc("show this help message").build());
 
 		return options;
+	}
+
+	private World createWorldFromDefinitions() {
+
+		WorldFileObjectDefinition colorDefinition = new WorldFileObjectDefinition("color");
+		colorDefinition.addLiteralValue("r", "0.5");
+		colorDefinition.addLiteralValue("g", "0.2");
+		colorDefinition.addLiteralValue("b", "1.0");
+
+		WorldFileObjectDefinition translationDefinition = new WorldFileObjectDefinition("translate");
+		translationDefinition.addLiteralValue("x", "0.0");
+		translationDefinition.addLiteralValue("y", "0.0");
+		translationDefinition.addLiteralValue("z", "0.0");
+
+		WorldFileObjectDefinition sphereDefinition = new WorldFileObjectDefinition("sphere");
+		sphereDefinition.addChildObject("diffuse", colorDefinition);
+		sphereDefinition.addChildObject("transform", translationDefinition);
+
+		WorldFileObjectDefinition worldDefinition = new WorldFileObjectDefinition("world");
+		worldDefinition.addChildObject("shape", sphereDefinition);
+
+		World world = (World) BuilderInvoker.getSingleton().invokeBuilders(worldDefinition).get();
+
+		world.getLights()
+				.add(PointLightBuilder.builder()
+						.ambient(new RawColor(Color.WHITE).multiplyScalar(0.04))
+						.intensity(100d)
+						.radius(0.5)
+						.transform(new Translation(0d, 9d, 0d))
+						.build());
+
+		Camera camera = new Camera(4.0, 60.0);
+		camera.getTransformers().add(new Translation(0d, 2.5d, -10d));
+		camera.getTransformers().add(new Rotation(-15d, 0d, 0d));
+		world.setCamera(camera);
+
+		return world;
 	}
 
 	private World buildWorld() {
