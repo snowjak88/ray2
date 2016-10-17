@@ -1,28 +1,28 @@
 world {
-    shape : sphere {
-		diffuse : color { r : 0.9 g : 0.5 b : 0.1 }
-		transform : scale { x : 2 y : 2 z : 2 }
-		transform : translate { x : -1 y : 0 z : -2 }
+    shape: sphere {
+		diffuse: color { r:0.9 g:0.5 b:0.1 }
+		transform: scale { x:2 y:2 z:2 }
+		transform: translate { x:-1 y:0 z:-2 }
 	}
 	
-	shape : sphere {
-		diffuse : color { r : 0.1 g : 0.5 b : 0.9 }
-		transform : scale { x : 2 y : 2 z : 2 }
-		transform : translate { x : 1 y : 0 z : 2 }
+	shape: sphere {
+		diffuse: color { r:0.1 g:0.5 b:0.9 }
+		transform: scale { x:2 y:2 z:2 }
+		transform: translate { x:1 y:0 z:2 }
 	}
 	
-	light : point-light {
-		ambient : color { r : 0.01 g : 0.01 b : 0.01 }
-		diffuse : color { r : 1 g : 1 b : 1 }
-		transform : translate { x : 0 y : 10 z : 0 }
-		intensity : 100
-		radius : 0.5
+	light: point-light {
+		ambient: color { r:0.01 g:0.01 b:0.01 }
+		diffuse: color { r:1 g:1 b:1 }
+		transform: translate { x:0 y:10 z:0 }
+		intensity: 100
+		radius: 0.5
 	}
 	
-	camera : camera {
-		transform : translate { x : 0 y : 2.5 z : -10 }
-		transform : rotate { pitch : -15 yaw : 0 roll : 0 }
-		frame-width : 4
-		field-of-view : 60
+	camera: camera {
+		transform: translate { x:0 y:2.5 z:-10 }
+		transform: rotate { pitch:-15 yaw:0 roll:0 }
+		frame-width: 4
+		field-of-view: 60
 	}
 }

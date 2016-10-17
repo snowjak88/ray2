@@ -171,9 +171,12 @@ public class WorldFileScanner {
 					if (nextLine == null)
 						throw new NoSuchElementException();
 
-					StringTokenizer tokenizer = new StringTokenizer(nextLine);
-					while (tokenizer.hasMoreTokens())
-						tokens.add(tokenizer.nextToken());
+					StringTokenizer tokenizer = new StringTokenizer(nextLine, " \t\r\n\f:{}", true);
+					while (tokenizer.hasMoreTokens()) {
+						String currentToken = tokenizer.nextToken();
+						if (!currentToken.matches("[ \\t\\r\\n\\f]"))
+							tokens.add(currentToken);
+					}
 				}
 
 				return tokens.remove();
