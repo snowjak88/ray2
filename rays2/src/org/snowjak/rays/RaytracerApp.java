@@ -1,13 +1,12 @@
 package org.snowjak.rays;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -48,8 +47,24 @@ public class RaytracerApp extends Application {
 
 	public static void main(String[] args) {
 
-		settings = Settings.presetFast();
-		world = loadWorldFromFile(new File("sample.world"));
+		File defaultSettingsFile, defaultWorldFile;
+		try {
+			defaultSettingsFile = new File(Thread.currentThread()
+					.getContextClassLoader()
+					.getResource("resources/defaults/default-settings.properties")
+					.toURI());
+			defaultWorldFile = new File(Thread.currentThread()
+					.getContextClassLoader()
+					.getResource("resources/defaults/sample.world")
+					.toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace(System.err);
+			System.exit(-1);
+			return;
+		}
+
+		settings = loadSettingsFromFile(defaultSettingsFile);
+		world = loadWorldFromFile(defaultWorldFile);
 
 		processCommandLineOptions(args);
 
@@ -94,7 +109,7 @@ public class RaytracerApp extends Application {
 				.build());
 		options.addOption(Option.builder("d")
 				.longOpt("create-default-settings")
-				.desc("create a default settings file as './settings.properties'")
+				.desc("create a default settings file as './default-settings.properties'")
 				.build());
 		options.addOption(Option.builder("w")
 				.longOpt("world")
@@ -122,7 +137,7 @@ public class RaytracerApp extends Application {
 		}
 
 		if (cmd.hasOption('d')) {
-			File settingsFile = new File("settings.properties");
+			File settingsFile = new File("default-settings.properties");
 			Properties settingsProperties = settings.saveToProperties();
 			DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd @ HH:mm:ss");
 
@@ -152,17 +167,7 @@ public class RaytracerApp extends Application {
 				System.exit(-1);
 			}
 
-			Properties settingsProperties = new Properties();
-			try {
-				Reader reader = new BufferedReader(new FileReader(settingsFile));
-				settingsProperties.load(reader);
-				reader.close();
-			} catch (IOException e) {
-				System.err.println("Could not read settings file '" + settingsFile.getPath() + "': '" + e.getMessage()
-						+ "'. Please try again.");
-				System.exit(-1);
-			}
-			settings = Settings.fromProperties(settingsProperties, settings);
+			settings = loadSettingsFromFile(settingsFile);
 
 		}
 		if (cmd.hasOption("w")) {
@@ -190,6 +195,19 @@ public class RaytracerApp extends Application {
 			new HelpFormatter().printHelp("java -jar rays2.jar", getCommandLineOptions(), true);
 			System.exit(-1);
 		}
+	}
+
+	private static Settings loadSettingsFromFile(File file) {
+
+		Properties settingsProperties = new Properties();
+		try {
+			settingsProperties.load(new FileReader(file));
+
+		} catch (IOException e) {
+			System.err.println("Could not load settings from '" + file.getPath()
+					+ "'. Reverting to backup (hard-coded) default settings.");
+		}
+		return Settings.fromProperties(settingsProperties, Settings.presetFast());
 	}
 
 	private static World loadWorldFromFile(File file) {
