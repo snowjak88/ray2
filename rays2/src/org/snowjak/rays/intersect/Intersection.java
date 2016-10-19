@@ -1,9 +1,12 @@
 package org.snowjak.rays.intersect;
 
+import java.util.Optional;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.HasColorScheme;
+import org.snowjak.rays.light.CanEmitLight;
 import org.snowjak.rays.material.Material;
 
 /**
@@ -15,7 +18,7 @@ import org.snowjak.rays.material.Material;
  *            an Intersectable type
  *
  */
-public class Intersection<S extends Intersectable> implements HasColorScheme {
+public class Intersection<S extends Intersectable> implements HasColorScheme, CanEmitLight {
 
 	private Vector3D point, normal;
 
@@ -25,7 +28,9 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 
 	private S intersected;
 
-	private ColorScheme diffuseColorScheme, specularColorScheme, emissiveColorScheme;
+	private ColorScheme diffuseColorScheme, specularColorScheme;
+
+	private Optional<ColorScheme> emissiveColorScheme;
 
 	private Material leavingMaterial, enteringMaterial;
 
@@ -77,7 +82,7 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	 * @param enteringMaterial
 	 */
 	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, ColorScheme diffuseColorScheme,
-			ColorScheme specularColorScheme, ColorScheme emissiveColorScheme, Material leavingMaterial,
+			ColorScheme specularColorScheme, Optional<ColorScheme> emissiveColorScheme, Material leavingMaterial,
 			Material enteringMaterial) {
 		this.point = point;
 		this.normal = normal;
@@ -109,7 +114,7 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	 * @param enteringMaterial
 	 */
 	public Intersection(Vector3D point, Vector3D normal, Ray ray, S intersected, double distanceFromRayOrigin,
-			ColorScheme diffuseColorScheme, ColorScheme specularColorScheme, ColorScheme emissiveColorScheme,
+			ColorScheme diffuseColorScheme, ColorScheme specularColorScheme, Optional<ColorScheme> emissiveColorScheme,
 			Material leavingMaterial, Material enteringMaterial) {
 		this.point = point;
 		this.normal = normal;
@@ -189,13 +194,13 @@ public class Intersection<S extends Intersectable> implements HasColorScheme {
 	}
 
 	@Override
-	public ColorScheme getEmissiveColorScheme() {
+	public Optional<ColorScheme> getEmissiveColorScheme() {
 
 		return emissiveColorScheme;
 	}
 
 	@Override
-	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme) {
+	public void setEmissiveColorScheme(Optional<ColorScheme> emissiveColorScheme) {
 
 		this.emissiveColorScheme = emissiveColorScheme;
 	}

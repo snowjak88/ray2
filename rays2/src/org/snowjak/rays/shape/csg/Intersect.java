@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -201,7 +202,7 @@ public class Intersect extends Shape {
 							: i.getDiffuseColorScheme();
 					ColorScheme specular = (this.getSpecularColorScheme() != null) ? this.getSpecularColorScheme()
 							: i.getSpecularColorScheme();
-					ColorScheme emissive = (this.getEmissiveColorScheme() != null) ? this.getEmissiveColorScheme()
+					Optional<ColorScheme> emissive = (this.isEmissive()) ? this.getEmissiveColorScheme()
 							: i.getEmissiveColorScheme();
 
 					i.setIntersected(this);

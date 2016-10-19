@@ -2,12 +2,14 @@ package org.snowjak.rays.shape;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.HasColorSchemeBuilder;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.color.SimpleColorScheme;
+import org.snowjak.rays.light.CanEmitLightBuilder;
 import org.snowjak.rays.material.HasMaterialBuilder;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.transform.TransformableBuilder;
@@ -22,12 +24,13 @@ import org.snowjak.rays.world.importfile.HasName;
  * @param <T>
  *            the Shape subtype to build
  */
-public abstract class ShapeBuilder<T extends Shape>
-		implements Builder<T>, HasColorSchemeBuilder<T>, TransformableBuilder<T>, HasMaterialBuilder<T> {
+public abstract class ShapeBuilder<T extends Shape> implements Builder<T>, HasColorSchemeBuilder<T>,
+		CanEmitLightBuilder<T>, TransformableBuilder<T>, HasMaterialBuilder<T> {
 
 	private ColorScheme diffuseColorScheme = Shape.DEFAULT_COLOR_SCHEME,
-			specularColorScheme = Shape.DEFAULT_SPECULAR_COLOR_SCHEME,
-			emissiveColorScheme = Shape.DEFAULT_EMISSIVE_COLOR_SCHEME;
+			specularColorScheme = Shape.DEFAULT_SPECULAR_COLOR_SCHEME;
+
+	private Optional<ColorScheme> emissiveColorScheme = Shape.DEFAULT_EMISSIVE_COLOR_SCHEME;
 
 	private Material material = Shape.DEFAULT_MATERIAL;
 
@@ -98,14 +101,13 @@ public abstract class ShapeBuilder<T extends Shape>
 	@HasName("emissive")
 	public ShapeBuilder<T> emissive(RawColor emissiveColor) {
 
-		this.emissiveColorScheme = new SimpleColorScheme(emissiveColor);
-		return this;
+		return emissive(new SimpleColorScheme(emissiveColor));
 	}
 
 	@Override
 	public ShapeBuilder<T> emissive(ColorScheme emissiveColor) {
 
-		this.emissiveColorScheme = emissiveColor;
+		this.emissiveColorScheme = Optional.of(emissiveColor);
 		return this;
 	}
 

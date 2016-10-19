@@ -18,6 +18,7 @@ import org.snowjak.rays.color.SimpleColorScheme;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.intersect.Intersectable;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.light.CanEmitLight;
 import org.snowjak.rays.material.HasMaterial;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.transform.Transformable;
@@ -33,8 +34,8 @@ import javafx.scene.paint.Color;
  * @author snowjak88
  *
  */
-public abstract class Shape
-		implements Transformable, Locatable, Intersectable, HasColorScheme, HasMaterial, Prototype<Shape> {
+public abstract class Shape implements Transformable, Locatable, Intersectable, HasColorScheme, CanEmitLight,
+		HasMaterial, Prototype<Shape> {
 
 	/**
 	 * By default, the ambient and diffuse color-schemes will take this value.
@@ -49,17 +50,19 @@ public abstract class Shape
 	/**
 	 * By default, the emissive color-scheme will take this value.
 	 */
-	public static final ColorScheme DEFAULT_EMISSIVE_COLOR_SCHEME = new SimpleColorScheme(Color.BLACK);
+	public static final Optional<ColorScheme> DEFAULT_EMISSIVE_COLOR_SCHEME = Optional.empty();
 
 	/**
 	 * By default, this Shape will use this Material.
 	 */
-	public static final Material DEFAULT_MATERIAL = new Material(Functions.constant(0d), Functions.constant(0d), Functions.constant(1d));
+	public static final Material DEFAULT_MATERIAL = new Material(Functions.constant(0d), Functions.constant(0d),
+			Functions.constant(1d));
 
 	private final Deque<Transformer> transformers = new LinkedList<>();
 
-	private ColorScheme diffuseColorScheme = DEFAULT_COLOR_SCHEME, specularColorScheme = DEFAULT_SPECULAR_COLOR_SCHEME,
-			emissiveColorScheme = DEFAULT_EMISSIVE_COLOR_SCHEME;
+	private ColorScheme diffuseColorScheme = DEFAULT_COLOR_SCHEME, specularColorScheme = DEFAULT_SPECULAR_COLOR_SCHEME;
+
+	private Optional<ColorScheme> emissiveColorScheme = DEFAULT_EMISSIVE_COLOR_SCHEME;
 
 	private Material material = DEFAULT_MATERIAL;
 
@@ -146,13 +149,13 @@ public abstract class Shape
 	}
 
 	@Override
-	public ColorScheme getEmissiveColorScheme() {
+	public Optional<ColorScheme> getEmissiveColorScheme() {
 
 		return emissiveColorScheme;
 	}
 
 	@Override
-	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme) {
+	public void setEmissiveColorScheme(Optional<ColorScheme> emissiveColorScheme) {
 
 		this.emissiveColorScheme = emissiveColorScheme;
 	}
@@ -182,7 +185,8 @@ public abstract class Shape
 
 		copy.setDiffuseColorScheme(this.getDiffuseColorScheme().copy());
 		copy.setSpecularColorScheme(this.getSpecularColorScheme().copy());
-		copy.setEmissiveColorScheme(this.getEmissiveColorScheme().copy());
+		if (this.isEmissive())
+			copy.setEmissiveColorScheme(this.getEmissiveColorScheme().get().copy());
 		copy.setMaterial(this.getMaterial().copy());
 		copy.getTransformers().addAll(this.getTransformers());
 		return copy;

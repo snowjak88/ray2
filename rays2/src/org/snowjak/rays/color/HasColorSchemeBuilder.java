@@ -29,11 +29,4 @@ public interface HasColorSchemeBuilder<T extends HasColorScheme> extends Builder
 	 */
 	public HasColorSchemeBuilder<T> specular(ColorScheme specularColor);
 
-	/**
-	 * Add an emissive {@link ColorScheme} to this in-progress object.
-	 * 
-	 * @param emissiveColor
-	 * @return this Builder, for method-chaining
-	 */
-	public HasColorSchemeBuilder<T> emissive(ColorScheme emissiveColor);
 }

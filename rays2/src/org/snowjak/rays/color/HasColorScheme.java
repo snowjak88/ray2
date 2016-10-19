@@ -53,26 +53,6 @@ public interface HasColorScheme {
 	}
 
 	/**
-	 * @param worldCoord
-	 * @return this object's emissive color for the given global location
-	 */
-	public default RawColor getEmissive(Vector3D worldCoord) {
-
-		return getEmissiveColorScheme().getColorForWorld(worldCoord);
-	}
-
-	/**
-	 * @param worldX
-	 * @param worldY
-	 * @param worldZ
-	 * @return this object's emissive color for the given global location
-	 */
-	public default RawColor getEmissive(double worldX, double worldY, double worldZ) {
-
-		return getEmissiveColorScheme().getColorForWorld(worldX, worldY, worldZ);
-	}
-
-	/**
 	 * @return this object's diffuse {@link ColorScheme}
 	 */
 	public ColorScheme getDiffuseColorScheme();
@@ -116,29 +96,6 @@ public interface HasColorScheme {
 	public default void setSpecularColorScheme(Function<Vector3D, RawColor> functionalSpecularColor) {
 
 		setSpecularColorScheme(new FunctionalColorScheme(functionalSpecularColor));
-	}
-
-	/**
-	 * @return this object's emissive {@link ColorScheme}
-	 */
-	public ColorScheme getEmissiveColorScheme();
-
-	/**
-	 * Set this object's emissive {@link ColorScheme}.
-	 * 
-	 * @param emissiveColorScheme
-	 */
-	public void setEmissiveColorScheme(ColorScheme emissiveColorScheme);
-
-	/**
-	 * Set this object's emissive ColorScheme to use the provided
-	 * {@link Function}
-	 * 
-	 * @param functionalEmissiveColor
-	 */
-	public default void setEmissiveColorScheme(Function<Vector3D, RawColor> functionalEmissiveColor) {
-
-		setEmissiveColorScheme(new FunctionalColorScheme(functionalEmissiveColor));
 	}
 
 }

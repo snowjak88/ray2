@@ -2,6 +2,7 @@ package org.snowjak.rays.shape.perturb;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -149,7 +150,7 @@ public class NormalPerturber extends Shape {
 	}
 
 	@Override
-	public ColorScheme getEmissiveColorScheme() {
+	public Optional<ColorScheme> getEmissiveColorScheme() {
 
 		return child.getEmissiveColorScheme();
 	}

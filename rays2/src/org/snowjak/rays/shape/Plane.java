@@ -202,7 +202,8 @@ public class Plane extends Shape {
 		Plane newPlane = new Plane(this.getPlusMaterial(), this.getMinusMaterial());
 		newPlane.setDiffuseColorScheme(this.getDiffuseColorScheme().copy());
 		newPlane.setSpecularColorScheme(this.getSpecularColorScheme().copy());
-		newPlane.setEmissiveColorScheme(this.getEmissiveColorScheme().copy());
+		if (this.isEmissive())
+			newPlane.setEmissiveColorScheme(this.getEmissiveColorScheme().get().copy());
 		newPlane.getTransformers().addAll(this.getTransformers());
 		return newPlane;
 	}
