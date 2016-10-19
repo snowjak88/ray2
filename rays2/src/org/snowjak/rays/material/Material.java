@@ -21,14 +21,15 @@ import org.snowjak.rays.transform.Transformer;
  */
 public class Material implements Transformable, Prototype<Material> {
 
-	private Function<Vector3D, Double> surfaceTransparency, refractiveIndex;
+	private Function<Vector3D, Double> surfaceTransparency, refractiveIndex, albedo;
 
 	private final Deque<Transformer> transformers = new LinkedList<>();
 
 	/**
 	 * Predefined Material: totally transparent, with a refractive index of 1.0
 	 */
-	public static final Material AIR = new Material(Functions.constant(1d), Functions.constant(1d));
+	public static final Material AIR = new Material(Functions.constant(1d), Functions.constant(0d),
+			Functions.constant(1d));
 
 	/**
 	 * Create a new Material by linearly-interpolating all visual properties of
@@ -46,27 +47,29 @@ public class Material implements Transformable, Prototype<Material> {
 		return new Material(
 				Functions.lerp(material1.getSurfaceTransparency(point1), point1,
 						material2.getSurfaceTransparency(point2), point2),
-				Functions.lerp(material1.getRefractiveIndex(point1), point1, material2.getRefractiveIndex(point2),
-						point2));
+				Functions.constant(0d), Functions.lerp(material1.getRefractiveIndex(point1), point1,
+						material2.getRefractiveIndex(point2), point2));
 	}
 
 	/**
 	 * Create a new Material -- totally opaque, with a refractive index of 1.0
 	 */
 	public Material() {
-		this(Functions.constant(0d), Functions.constant(1d));
+		this(Functions.constant(0d), Functions.constant(0d), Functions.constant(1d));
 	}
 
 	/**
 	 * Create a new Material with the specified visual properties.
 	 * 
-	 * @param surfaceColor
 	 * @param surfaceTransparency
+	 * @param albedo
 	 * @param refractiveIndex
 	 */
-	public Material(Function<Vector3D, Double> surfaceTransparency, Function<Vector3D, Double> refractiveIndex) {
+	public Material(Function<Vector3D, Double> surfaceTransparency, Function<Vector3D, Double> albedo,
+			Function<Vector3D, Double> refractiveIndex) {
 
 		this.surfaceTransparency = surfaceTransparency;
+		this.albedo = albedo;
 		this.refractiveIndex = refractiveIndex;
 	}
 
@@ -95,6 +98,26 @@ public class Material implements Transformable, Prototype<Material> {
 	public void setSurfaceTransparency(double surfaceTransparency) {
 
 		this.surfaceTransparency = Functions.constant(surfaceTransparency);
+	}
+
+	/**
+	 * Set this Material's albedo function
+	 * 
+	 * @param albedo
+	 */
+	public void setAlbedo(Function<Vector3D, Double> albedo) {
+
+		this.albedo = albedo;
+	}
+
+	/**
+	 * Set this Material's albedo function to a constant value
+	 * 
+	 * @param albedo
+	 */
+	public void setAlbedo(double albedo) {
+
+		this.albedo = Functions.constant(albedo);
 	}
 
 	/**
@@ -136,6 +159,23 @@ public class Material implements Transformable, Prototype<Material> {
 	}
 
 	/**
+	 * @return this Material's albedo function
+	 */
+	public Function<Vector3D, Double> getAlbedo() {
+
+		return albedo;
+	}
+
+	/**
+	 * @param localPoint
+	 * @return this Material's albedo at the given point
+	 */
+	public double getAlbedo(Vector3D localPoint) {
+
+		return albedo.apply(localPoint);
+	}
+
+	/**
 	 * @return this Material's refractive-index function
 	 */
 	public Function<Vector3D, Double> getRefractiveIndex() {
@@ -155,7 +195,7 @@ public class Material implements Transformable, Prototype<Material> {
 	@Override
 	public Material copy() {
 
-		Material copy = new Material(surfaceTransparency, refractiveIndex);
+		Material copy = new Material(surfaceTransparency, albedo, refractiveIndex);
 		copy.getTransformers().addAll(getTransformers());
 		return copy;
 	}

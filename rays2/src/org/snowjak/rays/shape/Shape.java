@@ -54,7 +54,7 @@ public abstract class Shape
 	/**
 	 * By default, this Shape will use this Material.
 	 */
-	public static final Material DEFAULT_MATERIAL = new Material(Functions.constant(0d), Functions.constant(1d));
+	public static final Material DEFAULT_MATERIAL = new Material(Functions.constant(0d), Functions.constant(0d), Functions.constant(1d));
 
 	private final Deque<Transformer> transformers = new LinkedList<>();
 

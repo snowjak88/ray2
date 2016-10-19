@@ -99,6 +99,7 @@ public class FresnelLightingModel implements LightingModel {
 		LightingResult reflectedResult, refractedResult;
 		RawColor reflectedColor = new RawColor(), refractedColor = new RawColor();
 		double surfaceTransparency = intersect.getEnteringMaterial().getSurfaceTransparency(intersect.getPoint());
+		double albedo = intersect.getEnteringMaterial().getAlbedo(intersect.getPoint());
 		RawColor reflectedTint = new RawColor(Color.WHITE), refractedTint = new RawColor(Color.WHITE);
 
 		if (reflectance > 0d) {
@@ -109,8 +110,7 @@ public class FresnelLightingModel implements LightingModel {
 					.orElse(new LightingResult());
 			reflectedColor = reflectedResult.getRadiance();
 
-			reflectedTint = Functions.lerp(reflectedTint, intersect.getDiffuse(intersect.getPoint()),
-					1d - surfaceTransparency);
+			reflectedTint = Functions.lerp(reflectedTint, intersect.getDiffuse(intersect.getPoint()), 1d - albedo);
 
 			finalResult.getContributingResults().add(new Pair<>(reflectedResult, reflectance));
 

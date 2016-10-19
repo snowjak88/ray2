@@ -27,7 +27,7 @@ import org.snowjak.rays.world.importfile.HasName;
 public class MaterialBuilder implements Builder<Material>, TransformableBuilder<Material> {
 
 	private Function<Vector3D, Double> surfaceTransparency = Shape.DEFAULT_MATERIAL.getSurfaceTransparency(),
-			refractiveIndex = Shape.DEFAULT_MATERIAL.getRefractiveIndex();
+			albedo = Shape.DEFAULT_MATERIAL.getAlbedo(), refractiveIndex = Shape.DEFAULT_MATERIAL.getRefractiveIndex();
 
 	private List<Transformer> transformers = new LinkedList<>();
 
@@ -70,6 +70,31 @@ public class MaterialBuilder implements Builder<Material>, TransformableBuilder<
 	}
 
 	/**
+	 * Configures this in-progress Material to use a constant value for albedo.
+	 * 
+	 * @param albedo
+	 * @return this Builder, for method-chaining
+	 */
+	@HasName("albedo")
+	public MaterialBuilder albedo(double albedo) {
+
+		return albedo(Functions.constant(albedo));
+	}
+
+	/**
+	 * Configures this in-progress Material to use the specified
+	 * {@link Function} when computing albedo.
+	 * 
+	 * @param albedoFunction
+	 * @return this Builder, for method-chaining
+	 */
+	public MaterialBuilder albedo(Function<Vector3D, Double> albedoFunction) {
+
+		this.albedo = albedoFunction;
+		return this;
+	}
+
+	/**
 	 * Configures this in-progress Material to use a constant value for the
 	 * Material's refractive index.
 	 * 
@@ -106,7 +131,7 @@ public class MaterialBuilder implements Builder<Material>, TransformableBuilder<
 	@Override
 	public Material build() {
 
-		Material newMaterial = new Material(surfaceTransparency, refractiveIndex);
+		Material newMaterial = new Material(surfaceTransparency, albedo, refractiveIndex);
 		newMaterial.getTransformers().addAll(transformers);
 
 		return newMaterial;

@@ -2,11 +2,13 @@ package org.snowjak.rays;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,24 +49,23 @@ public class RaytracerApp extends Application {
 
 	public static void main(String[] args) {
 
-		File defaultSettingsFile, defaultWorldFile;
 		try {
-			defaultSettingsFile = new File(Thread.currentThread()
+			settings = loadSettingsFromFile(Thread.currentThread()
 					.getContextClassLoader()
 					.getResource("resources/defaults/default-settings.properties")
-					.toURI());
-			defaultWorldFile = new File(Thread.currentThread()
+					.openStream());
+
+			world = loadWorldFromFile(Thread.currentThread()
 					.getContextClassLoader()
 					.getResource("resources/defaults/sample.world")
-					.toURI());
-		} catch (URISyntaxException e) {
-			e.printStackTrace(System.err);
+					.openStream());
+
+		} catch (IOException e) {
+			System.err.println("Could not load application defaults -- unexpected exception!");
+			System.err.println("Exception message: " + e.getMessage());
 			System.exit(-1);
 			return;
 		}
-
-		settings = loadSettingsFromFile(defaultSettingsFile);
-		world = loadWorldFromFile(defaultWorldFile);
 
 		processCommandLineOptions(args);
 
@@ -167,7 +168,14 @@ public class RaytracerApp extends Application {
 				System.exit(-1);
 			}
 
-			settings = loadSettingsFromFile(settingsFile);
+			try {
+				settings = loadSettingsFromFile(new FileInputStream(settingsFile));
+
+			} catch (FileNotFoundException e) {
+				System.err.println("Settings file-name '" + settingsFile.getPath()
+						+ "' does not map to a file. Please try again.");
+				System.exit(-1);
+			}
 
 		}
 		if (cmd.hasOption("w")) {
@@ -188,7 +196,13 @@ public class RaytracerApp extends Application {
 				System.exit(-1);
 			}
 
-			world = loadWorldFromFile(worldFile);
+			try {
+				world = loadWorldFromFile(new FileInputStream(worldFile));
+			} catch (FileNotFoundException e) {
+				System.err.println("Error: the indicated world-file '" + worldFile.getPath()
+						+ "' does not appear to exist.\n" + "Please double-check your file-name and try again.");
+				System.exit(-1);
+			}
 
 		}
 		if (cmd.hasOption('h')) {
@@ -197,23 +211,24 @@ public class RaytracerApp extends Application {
 		}
 	}
 
-	private static Settings loadSettingsFromFile(File file) {
+	private static Settings loadSettingsFromFile(InputStream settingsFileStream) {
 
 		Properties settingsProperties = new Properties();
 		try {
-			settingsProperties.load(new FileReader(file));
+			settingsProperties.load(new InputStreamReader(settingsFileStream));
 
 		} catch (IOException e) {
-			System.err.println("Could not load settings from '" + file.getPath()
-					+ "'. Reverting to backup (hard-coded) default settings.");
+			System.err.println(
+					"Could not load settings from the given file. Reverting to backup (hard-coded) default settings.");
+			System.err.println("Exception: " + e.getMessage());
 		}
 		return Settings.fromProperties(settingsProperties, Settings.presetFast());
 	}
 
-	private static World loadWorldFromFile(File file) {
+	private static World loadWorldFromFile(InputStream worldFileStream) {
 
 		try {
-			WorldFileScanner worldScanner = new WorldFileScanner(new FileReader(file));
+			WorldFileScanner worldScanner = new WorldFileScanner(new InputStreamReader(worldFileStream));
 
 			Optional<WorldFileObjectDefinition> worldFileDefinition = worldScanner.scan();
 			worldScanner.close();
@@ -226,7 +241,8 @@ public class RaytracerApp extends Application {
 
 		} catch (IOException e) {
 
-			e.printStackTrace();
+			System.err.println("Could not load the given world file.");
+			System.err.println("Exception: " + e.getMessage());
 
 			Platform.exit();
 			System.exit(-1);
