@@ -343,4 +343,15 @@ public class Minus extends Shape {
 				.getNormal();
 	}
 
+	@Override
+	public Vector3D selectPointWithin() {
+
+		Vector3D result;
+		do {
+			result = minuend.selectPointWithin();
+		} while (currentlyInAnySubtrahend(result));
+
+		return localToWorld(result);
+	}
+
 }

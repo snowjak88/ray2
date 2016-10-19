@@ -11,12 +11,10 @@ world {
 		transform: translate { x:1 y:0 z:2 }
 	}
 	
-	light: point-light {
-		ambient: color { r:0.01 g:0.01 b:0.01 }
-		diffuse: color { r:1 g:1 b:1 }
-		transform: translate { x:0 y:10 z:0 }
-		intensity: 100
-		radius: 0.5
+	shape: sphere {
+		emissive: color { r:100 g:100 b:100 }
+		transform: scale { x:0.5 y:0.5 z:0.5 }
+		transform: translate { y:10 }
 	}
 	
 	camera: camera {

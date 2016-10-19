@@ -3,6 +3,7 @@ package org.snowjak.rays.shape;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -18,6 +19,8 @@ import org.snowjak.rays.world.World;
  *
  */
 public class Plane extends Shape {
+
+	private static final Random RND = new Random();
 
 	private Material plusMaterial, minusMaterial;
 
@@ -213,6 +216,13 @@ public class Plane extends Shape {
 
 		double normalSign = FastMath.signum(localPoint.normalize().dotProduct(Vector3D.PLUS_J));
 		return Vector3D.PLUS_J.scalarMultiply(normalSign).normalize();
+	}
+
+	@Override
+	public Vector3D selectPointWithin() {
+
+		return localToWorld(new Vector3D((RND.nextDouble() * 2d - 1d) * World.FAR_AWAY, 0d,
+				(RND.nextDouble() * 2d - 1d) * World.FAR_AWAY));
 	}
 
 }

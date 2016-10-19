@@ -180,4 +180,10 @@ public class NormalPerturber extends Shape {
 		return configureCopy(perturber);
 	}
 
+	@Override
+	public Vector3D selectPointWithin() {
+
+		return child.selectPointWithin();
+	}
+
 }

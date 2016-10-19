@@ -3,7 +3,6 @@ package org.snowjak.rays.light.model;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Optional;
-import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -12,9 +11,7 @@ import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.antialias.SuperSamplingAntialiaser;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
-import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
-import org.snowjak.rays.world.World;
 
 /**
  * Implements the Lambertian diffuse lighting model.
@@ -28,9 +25,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 
 	private final int softShadowRayCount;
 
-	private final SuperSamplingAntialiaser<Vector3D, Double, Double> lightAntialiaser = new SuperSamplingAntialiaser<>();
-
-	private final Random rnd = new Random();
+	private final SuperSamplingAntialiaser<Vector3D, RawColor, RawColor> lightAntialiaser = new SuperSamplingAntialiaser<>();
 
 	/**
 	 * Construct a new {@link LambertianDiffuseLightingModel}.
@@ -78,50 +73,55 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 		Vector3D normal = intersection.getNormal();
 		RawColor totalLightAtPoint = new RawColor();
 
-		Collection<Light> visibleLights = new LinkedList<>();
-		for (Light light : RaytracerContext.getSingleton().getCurrentWorld().getLights()) {
+		for (Shape emissiveShape : RaytracerContext.getSingleton().getCurrentWorld().getEmissiveShapes()) {
+
+			if (emissiveShape == intersection.getIntersected())
+				continue;
 
 			// If this light has a radius, then we're doing soft shadows and
 			// therefore shooting many shadow-rays.
 			// Otherwise, we're only doing 1 shadow-ray.
-			int rayCount = (light.getRadius().isPresent() ? softShadowRayCount : 1);
+			int rayCount = softShadowRayCount;
 
-			double totalLightFraction = lightAntialiaser.execute(light.getLocation(), (v) -> {
+			RawColor totalLightFromEmissive = lightAntialiaser.execute(emissiveShape.getLocation(), (v) -> {
 				Collection<Vector3D> samples = new LinkedList<>();
 				samples.add(v);
-
-				for (int i = 0; i < rayCount; i++) {
-					double theta = rnd.nextDouble() * FastMath.PI;
-					double phi = 2d * rnd.nextDouble() * FastMath.PI;
-					double r = rnd.nextDouble() * light.getRadius().orElse(0d);
-					samples.add(v.add(new Vector3D(r * FastMath.sin(theta) * FastMath.cos(phi),
-							r * FastMath.sin(theta) * FastMath.cos(theta), r * FastMath.cos(theta))));
-				}
+				samples.addAll(emissiveShape.selectPointsWithin(rayCount));
 				return samples;
 
 			}, (v) -> {
-				if (isPointVisibleFromPoint(point, v))
-					return 1d;
-				else
-					return 0d;
+				if (isPointVisibleFromPoint(point, v, emissiveShape)) {
+
+					Ray toEmissiveRay = new Ray(point, v.subtract(point));
+					Optional<Intersection<Shape>> emissiveIntersection = emissiveShape
+							.getIntersections(toEmissiveRay, false, true).stream().findFirst();
+					if (!emissiveIntersection.isPresent())
+						return new RawColor();
+
+					Vector3D emissiveSurfacePoint = emissiveIntersection.get().getPoint();
+					RawColor emissiveSurfaceRadiance = emissiveIntersection.get()
+							.getEmissive(emissiveSurfacePoint)
+							.orElse(new RawColor());
+					//
+					// Calculate the received radiance for this sample ray using
+					// both exposure (via Lambert's Law) and falloff ( == 1 / (4
+					// * PI * d))
+					double exposure = FastMath.max(emissiveSurfacePoint.subtract(point).normalize().dotProduct(normal),
+							0d);
+					double falloff = 1d / (4d * FastMath.PI * point.distance(emissiveSurfacePoint));
+
+					return emissiveSurfaceRadiance.multiplyScalar(exposure * falloff);
+				} else
+					return new RawColor();
 
 			}, (cp) -> {
-				return cp.parallelStream().map(p -> p.getValue()).reduce(0d, (d1, d2) -> d1 + d2) / (double) cp.size();
+				return cp.parallelStream()
+						.map(p -> p.getValue())
+						.reduce(new RawColor(), (c1, c2) -> (c1.add(c2)))
+						.multiplyScalar(1d / cp.size());
 			});
 
-			if (Double.compare(totalLightFraction, World.NEARLY_ZERO) < 0)
-				continue;
-
-			visibleLights.add(light);
-
-			double exposure = light.getExposure(point, normal);
-
-			if (Double.compare(exposure, 0d) <= 0)
-				continue;
-
-			double intensity = exposure * light.getIntensity(point) * light.getFalloff(point) * totalLightFraction;
-
-			totalLightAtPoint = totalLightAtPoint.add(light.getDiffuseColor().multiplyScalar(intensity));
+			totalLightAtPoint = totalLightAtPoint.add(totalLightFromEmissive);
 
 		}
 
@@ -132,19 +132,18 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 		result.setNormal(normal);
 		result.setEye(intersection.getRay());
 		result.setRadiance(pointColor.multiply(totalLightAtPoint));
-		result.getVisibleLights().addAll(visibleLights);
 
 		return result;
 	}
 
-	private boolean isPointVisibleFromPoint(Vector3D observingPoint, Vector3D observedPoint) {
+	private boolean isPointVisibleFromPoint(Vector3D observingPoint, Vector3D observedPoint, Shape observedShape) {
 
 		Optional<Intersection<Shape>> occludingIntersection = RaytracerContext.getSingleton()
 				.getCurrentWorld()
 				.getClosestShapeIntersection(new Ray(observingPoint, observedPoint.subtract(observingPoint)));
 
 		if (doLightOccluding) {
-			if (occludingIntersection.isPresent()
+			if (occludingIntersection.isPresent() && occludingIntersection.get().getIntersected() != observedShape
 					&& Double.compare(occludingIntersection.get().getDistanceFromRayOrigin(),
 							observingPoint.distance(observedPoint)) < 0)
 				return false;

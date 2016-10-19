@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,7 +48,9 @@ import org.snowjak.rays.world.World;
  */
 public class Union extends Shape {
 
-	private Collection<Shape> children = new LinkedList<>();
+	private static final Random RND = new Random();
+
+	private List<Shape> children = new LinkedList<>();
 
 	/**
 	 * Create a new Union of the given child Shapes.
@@ -274,5 +277,11 @@ public class Union extends Shape {
 				.findFirst()
 				.get()
 				.getNormal();
+	}
+
+	@Override
+	public Vector3D selectPointWithin() {
+
+		return children.get(RND.nextInt(children.size())).selectPointWithin();
 	}
 }

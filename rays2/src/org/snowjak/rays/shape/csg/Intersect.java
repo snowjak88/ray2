@@ -236,4 +236,22 @@ public class Intersect extends Shape {
 				.get()
 				.getNormal();
 	}
+
+	@Override
+	public boolean isInside(Vector3D point) {
+
+		return children.parallelStream().allMatch(s -> s.isInside(worldToLocal(point)));
+	}
+
+	@Override
+	public Vector3D selectPointWithin() {
+
+		Vector3D result;
+		do {
+			result = children.parallelStream().map(s -> s.selectPointWithin()).reduce(Vector3D.ZERO,
+					(v1, v2) -> v1.add(v2).scalarMultiply(0.5));
+		} while (!isInside(result));
+
+		return localToWorld(result);
+	}
 }

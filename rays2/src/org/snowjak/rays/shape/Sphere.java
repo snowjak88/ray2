@@ -6,6 +6,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -22,6 +23,8 @@ import org.snowjak.rays.world.World;
  *
  */
 public class Sphere extends Shape {
+
+	private static final Random RND = new Random();
 
 	/**
 	 * Create a Sphere of radius {@code 1.0}
@@ -160,6 +163,16 @@ public class Sphere extends Shape {
 	public Vector3D getNormalRelativeTo(Vector3D localPoint) {
 
 		return localPoint.normalize();
+	}
+
+	@Override
+	public Vector3D selectPointWithin() {
+
+		double theta = FastMath.PI * RND.nextDouble();
+		double phi = 2d * FastMath.PI * RND.nextDouble();
+		double r = 1d * RND.nextDouble();
+		return localToWorld(new Vector3D(r * FastMath.sin(theta) * FastMath.cos(phi),
+				r * FastMath.sin(theta) * FastMath.cos(theta), r * FastMath.cos(theta)));
 	}
 
 }

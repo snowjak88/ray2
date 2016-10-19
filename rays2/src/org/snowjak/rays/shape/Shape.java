@@ -2,10 +2,12 @@ package org.snowjak.rays.shape;
 
 import static org.apache.commons.math3.util.FastMath.pow;
 
+import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -83,6 +85,24 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	public Vector3D getLocation() {
 
 		return localToWorld(Vector3D.ZERO);
+	}
+
+	/**
+	 * @return a randomly-selected point (expressed in global coordinates) within the volume contained by this
+	 *         Shape
+	 */
+	public abstract Vector3D selectPointWithin();
+
+	/**
+	 * @param count
+	 * @return a set of {@code count} points (expressed in global coordinates)
+	 *         located within the volume contained this Shape
+	 * @see #selectPointWithin()
+	 */
+	public Collection<Vector3D> selectPointsWithin(int count) {
+
+		return IntStream.range(0, count).mapToObj(i -> selectPointWithin()).collect(LinkedList::new, LinkedList::add,
+				LinkedList::addAll);
 	}
 
 	@SuppressWarnings("unchecked")

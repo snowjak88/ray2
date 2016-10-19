@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.camera.Camera;
+import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
-import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -41,7 +41,11 @@ public class World {
 
 	private final List<Shape> shapes = new LinkedList<>();
 
-	private final List<Light> lights = new LinkedList<>();
+	private List<Shape> emissiveShapes = null;
+
+	private long lastShapesHashWhenGeneratedEmissiveShapes = -1;
+
+	private RawColor ambientRadiance = new RawColor();
 
 	/**
 	 * Create a new (empty) {@link World} instance.
@@ -116,11 +120,37 @@ public class World {
 	}
 
 	/**
-	 * @return the world's current set of {@link Light}s
+	 * @return the world's set of Shapes that are emissive
+	 * @see Shape#isEmissive()
 	 */
-	public List<Light> getLights() {
+	public List<Shape> getEmissiveShapes() {
 
-		return lights;
+		if (emissiveShapes == null || lastShapesHashWhenGeneratedEmissiveShapes != shapes.hashCode()) {
+			lastShapesHashWhenGeneratedEmissiveShapes = shapes.hashCode();
+			emissiveShapes = shapes.parallelStream()
+					.filter(s -> s.isEmissive())
+					.collect(Collectors.toCollection(LinkedList::new));
+		}
+
+		return emissiveShapes;
+	}
+
+	/**
+	 * Set the ambient radiance to use in this world
+	 * 
+	 * @param ambient
+	 */
+	public void setAmbientRadiance(RawColor ambient) {
+
+		this.ambientRadiance = ambient;
+	}
+
+	/**
+	 * @return the ambient radiance present in this world
+	 */
+	public RawColor getAmbientRadiance() {
+
+		return ambientRadiance;
 	}
 
 }

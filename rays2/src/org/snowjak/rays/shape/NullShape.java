@@ -39,4 +39,10 @@ public class NullShape extends Shape {
 		return new NullShape();
 	}
 
+	@Override
+	public Vector3D selectPointWithin() {
+
+		return localToWorld(Vector3D.ZERO);
+	}
+
 }

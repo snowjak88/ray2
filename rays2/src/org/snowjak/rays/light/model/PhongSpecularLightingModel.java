@@ -9,7 +9,6 @@ import org.snowjak.rays.Ray;
 import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
-import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.world.World;
 
@@ -47,15 +46,15 @@ public class PhongSpecularLightingModel implements LightingModel {
 		//
 		// The total light received by this ray is partially a function of all
 		// the lights in the world ...
-		for (Light light : RaytracerContext.getSingleton().getCurrentWorld().getLights()) {
+		for (Shape emissiveShape : RaytracerContext.getSingleton().getCurrentWorld().getEmissiveShapes()) {
 
 			//
 			// Where does this light lie in relation to the intersection?
-			Vector3D lightLocation = light.getLocation();
-			Vector3D toLightVector = lightLocation.subtract(intersect.getPoint());
+			Vector3D emissiveLocation = emissiveShape.getLocation();
+			Vector3D toEmissiveVector = emissiveLocation.subtract(intersect.getPoint());
 			//
 			// toLightRay == ray from the intersection-point to the light.
-			Ray toLightRay = new Ray(intersect.getPoint(), toLightVector.normalize());
+			Ray toLightRay = new Ray(intersect.getPoint(), toEmissiveVector.normalize());
 
 			//
 			//
@@ -72,7 +71,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 			// intersection-point.
 			//
 			boolean lightIsVisible = true;
-			List<Intersection<Shape>> toLightIntersections = RaytracerContext.getSingleton()
+			List<Intersection<Shape>> occludingIntersections = RaytracerContext.getSingleton()
 					.getCurrentWorld()
 					.getShapeIntersections(toLightRay);
 			//
@@ -81,46 +80,68 @@ public class PhongSpecularLightingModel implements LightingModel {
 			// This is meant to help exclude reported intersections that are
 			// really identical with the current intersection, double-reported
 			// because of double-value uncertainty.
-			if (toLightIntersections.stream()
-					.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), toLightVector.getNorm()) < 0)
+			if (occludingIntersections.parallelStream()
+					.filter(i -> i.getIntersected() != emissiveShape)
+					.filter(i -> Double.compare(i.getDistanceFromRayOrigin(), toEmissiveVector.getNorm()) < 0)
 					.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.NEARLY_ZERO) >= 0))
 				lightIsVisible = false;
 
 			if (lightIsVisible) {
-				//
-				//
-				// Calculate the diffuse light the current Light contributes to
-				// this ray
-				double lightExposure = light.getExposure(intersect);
-				if (Double.compare(lightExposure, 0d) > 0) {
+
+				Optional<Intersection<Shape>> emissiveSurfaceIntersection = occludingIntersections.parallelStream()
+						.filter(i -> i.getIntersected() == emissiveShape)
+						.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(),
+								i2.getDistanceFromRayOrigin()))
+						.findFirst();
+
+				if (emissiveSurfaceIntersection.isPresent()) {
 
 					//
 					//
-					// Calculate the specular light the current Light
-					// contributes to this ray
+					// Calculate the diffuse light the current Light contributes
+					// to
+					// this ray
+					double emissiveExposure = emissiveSurfaceIntersection.get()
+							.getPoint()
+							.subtract(intersect.getPoint())
+							.normalize()
+							.dotProduct(intersect.getNormal());
+					if (Double.compare(emissiveExposure, 0d) > 0) {
 
-					//
-					// toEyeVector == the direction from the eye to the
-					// intersection-point.
-					Vector3D fromEyeVector = intersect.getRay().getVector();
+						//
+						//
+						// Calculate the specular light the current Light
+						// contributes to this ray
 
-					//
-					// reflectedLightVector = the vector from the light,
-					// reflecting off the surface at the intersection-point
-					Vector3D reflectedLightVector = getReflection(toLightVector, intersect.getNormal()).normalize();
+						//
+						// toEyeVector == the direction from the eye to the
+						// intersection-point.
+						Vector3D fromEyeVector = intersect.getRay().getVector();
 
-					double specularDotProduct = reflectedLightVector.dotProduct(fromEyeVector.normalize());
-					if (Double.compare(specularDotProduct, 0d) > 0) {
-						double specularIntensity = FastMath.pow(specularDotProduct, shininess);
-						RawColor lightSpecularIntensity = light.getSpecularColor()
-								.multiplyScalar(specularIntensity)
-								.multiplyScalar(light.getIntensity(intersect.getPoint())
-										* light.getFalloff(intersect.getPoint()));
+						//
+						// reflectedLightVector = the vector from the light,
+						// reflecting off the surface at the intersection-point
+						Vector3D reflectedLightVector = getReflection(toEmissiveVector, intersect.getNormal())
+								.normalize();
 
-						totalSpecular = totalSpecular.add(intersectSpecularColor.multiply(lightSpecularIntensity));
+						double specularDotProduct = reflectedLightVector.dotProduct(fromEyeVector.normalize());
+
+						if (Double.compare(specularDotProduct, 0d) > 0) {
+							double specularIntensity = FastMath.pow(specularDotProduct, shininess);
+
+							double falloff = 1d / (4d * FastMath.PI
+									* intersect.getPoint().distance(emissiveSurfaceIntersection.get().getPoint()));
+
+							RawColor lightSpecularIntensity = emissiveSurfaceIntersection.get()
+									.getEmissive(emissiveSurfaceIntersection.get().getPoint())
+									.orElse(new RawColor())
+									.multiplyScalar(specularIntensity)
+									.multiplyScalar(falloff);
+
+							totalSpecular = totalSpecular.add(intersectSpecularColor.multiply(lightSpecularIntensity));
+						}
 					}
 				}
-
 			}
 		}
 

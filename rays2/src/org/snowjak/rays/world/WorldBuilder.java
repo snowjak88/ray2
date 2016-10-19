@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.camera.Camera;
-import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.world.importfile.HasName;
 
@@ -21,8 +20,6 @@ public class WorldBuilder implements Builder<World> {
 	private Camera camera = new Camera(1d, 75d);
 
 	private List<Shape> shapes = new LinkedList<>();
-
-	private List<Light> lights = new LinkedList<>();
 
 	/**
 	 * @return a new WorldBuilder instance
@@ -62,19 +59,6 @@ public class WorldBuilder implements Builder<World> {
 		return this;
 	}
 
-	/**
-	 * Add a new Light to this in-progress World.
-	 * 
-	 * @param light
-	 * @return this Builder, for method-chaining
-	 */
-	@HasName("light")
-	public WorldBuilder light(Light light) {
-
-		this.lights.add(light);
-		return this;
-	}
-
 	@Override
 	public World build() {
 
@@ -82,7 +66,6 @@ public class WorldBuilder implements Builder<World> {
 
 		world.setCamera(camera);
 		world.getShapes().addAll(shapes);
-		world.getLights().addAll(lights);
 
 		return world;
 	}

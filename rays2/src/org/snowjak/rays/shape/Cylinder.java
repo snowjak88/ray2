@@ -3,6 +3,7 @@ package org.snowjak.rays.shape;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -23,6 +24,8 @@ import org.snowjak.rays.world.World;
  *
  */
 public class Cylinder extends Shape {
+
+	private static final Random RND = new Random();
 
 	private Plane minusYCap, plusYCap;
 
@@ -214,6 +217,15 @@ public class Cylinder extends Shape {
 
 		Vector3D normal = localPoint.normalize();
 		return new Vector3D(normal.getX(), 0d, normal.getZ());
+	}
+
+	@Override
+	public Vector3D selectPointWithin() {
+
+		double theta = 2d * FastMath.PI * RND.nextDouble();
+		double r = 1d * RND.nextDouble();
+		double h = (2d * RND.nextDouble()) - 1d;
+		return localToWorld(new Vector3D(r * FastMath.cos(theta), h, r * FastMath.sin(theta)));
 	}
 
 }

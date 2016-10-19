@@ -3,6 +3,7 @@ package org.snowjak.rays.shape;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -20,6 +21,8 @@ import org.snowjak.rays.world.World;
  *
  */
 public class Cube extends Shape {
+
+	private static final Random RND = new Random();
 
 	/**
 	 * Create a new Cube of side-length 1, with edges aligned to the primary
@@ -203,6 +206,13 @@ public class Cube extends Shape {
 				.findFirst()
 				.get()
 				.getKey();
+	}
+
+	@Override
+	public Vector3D selectPointWithin() {
+
+		return localToWorld(
+				new Vector3D(2d * RND.nextDouble() - 1d, 2d * RND.nextDouble() - 1d, 2d * RND.nextDouble() - 1d));
 	}
 
 }

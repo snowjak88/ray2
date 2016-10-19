@@ -24,6 +24,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.snowjak.rays.light.model.AdditiveCompositingLightingModel;
 import org.snowjak.rays.light.model.AmbientLightingModel;
+import org.snowjak.rays.light.model.EmissiveLightingModel;
 import org.snowjak.rays.light.model.EnvironmentMapDecoratingLightingModel;
 import org.snowjak.rays.light.model.FresnelLightingModel;
 import org.snowjak.rays.light.model.LambertianDiffuseLightingModel;
@@ -80,7 +81,8 @@ public class RaytracerApp extends Application {
 		renderer.setLightingModel(new EnvironmentMapDecoratingLightingModel(
 				new SphericalEnvironmentMap(new Image("resources/images/spherical-map-field2.jpg")),
 				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
-						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel()))));
+						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel(),
+						new EmissiveLightingModel()))));
 
 		RaytracerContext.getSingleton().setSettings(settings);
 		RaytracerContext.getSingleton().setCurrentRenderer(renderer);

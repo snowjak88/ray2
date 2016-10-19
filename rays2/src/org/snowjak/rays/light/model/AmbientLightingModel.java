@@ -7,7 +7,6 @@ import org.snowjak.rays.Ray;
 import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
-import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -34,10 +33,7 @@ public class AmbientLightingModel implements LightingModel {
 	private LightingResult lightIntersection(Intersection<Shape> intersection) {
 
 		Vector3D point = intersection.getPoint();
-		RawColor totalLightAtPoint = new RawColor();
-
-		for (Light light : RaytracerContext.getSingleton().getCurrentWorld().getLights())
-			totalLightAtPoint = totalLightAtPoint.add(light.getAmbientColor());
+		RawColor worldAmbientRadiance = RaytracerContext.getSingleton().getCurrentWorld().getAmbientRadiance();
 
 		RawColor pointColor = intersection.getDiffuse(point);
 
@@ -45,8 +41,7 @@ public class AmbientLightingModel implements LightingModel {
 		result.setEye(intersection.getRay());
 		result.setNormal(intersection.getNormal());
 		result.setPoint(point);
-		result.setRadiance(totalLightAtPoint.multiply(pointColor));
-		result.getVisibleLights().addAll(RaytracerContext.getSingleton().getCurrentWorld().getLights());
+		result.setRadiance(worldAmbientRadiance.multiply(pointColor));
 
 		return result;
 	}
