@@ -156,8 +156,7 @@ public abstract class Light implements Transformable, Locatable {
 	 */
 	public double getExposure(Intersection<Shape> intersection) {
 
-		Intersection<Shape> localIntersection = worldToLocal(intersection);
-		return exposureFunction.apply(this, localIntersection);
+		return exposureFunction.apply(this, intersection);
 	}
 
 	/**
@@ -168,7 +167,7 @@ public abstract class Light implements Transformable, Locatable {
 	 */
 	public double getExposure(Vector3D point, Vector3D normal) {
 
-		return getExposure(new Intersection<Shape>(point, normal, new Ray(point, normal), null));
+		return getExposure(new Intersection<Shape>(point, normal, new Ray(point, getLocation().subtract(point)), null));
 	}
 
 	/**
