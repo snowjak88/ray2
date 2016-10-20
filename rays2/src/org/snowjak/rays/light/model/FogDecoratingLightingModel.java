@@ -80,7 +80,6 @@ public class FogDecoratingLightingModel implements LightingModel {
 		foggedResult.setNormal(decoratedLightingResult.get().getNormal());
 		foggedResult.setPoint(decoratedLightingResult.get().getPoint());
 		foggedResult.setRadiance(foggedColor);
-		foggedResult.getVisibleLights().addAll(decoratedLightingResult.get().getVisibleLights());
 		foggedResult.getContributingResults().add(new Pair<>(decoratedLightingResult.get(), 1d));
 
 		return decoratedLightingResult;

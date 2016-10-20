@@ -71,12 +71,6 @@ public class AdditiveCompositingLightingModel extends CompositingLightingModel {
 		result.getContributingResults().addAll(childResults.parallelStream()
 				.map(lr -> new Pair<>(lr, 1d))
 				.collect(Collectors.toCollection(LinkedList::new)));
-		result.getVisibleLights()
-				.addAll(childResults.parallelStream()
-						.map(lr -> lr.getVisibleLights())
-						.flatMap(lc -> lc.stream())
-						.distinct()
-						.collect(Collectors.toCollection(LinkedList::new)));
 
 		return Optional.of(result);
 

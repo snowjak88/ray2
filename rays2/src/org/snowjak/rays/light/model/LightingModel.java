@@ -9,7 +9,6 @@ import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
-import org.snowjak.rays.light.Light;
 import org.snowjak.rays.shape.Shape;
 
 import javafx.scene.paint.Color;
@@ -48,8 +47,6 @@ public interface LightingModel {
 
 		private Ray eye = new Ray(Vector3D.ZERO, Vector3D.ZERO);
 
-		private Collection<Light> visibleLights = new LinkedList<>();
-
 		private RawColor radiance = new RawColor(), tint = new RawColor(Color.WHITE);
 
 		private Collection<Pair<LightingResult, Double>> contributingResults = new LinkedList<>();
@@ -82,11 +79,6 @@ public interface LightingModel {
 		public void setEye(Ray eye) {
 
 			this.eye = eye;
-		}
-
-		public Collection<Light> getVisibleLights() {
-
-			return visibleLights;
 		}
 
 		public RawColor getRadiance() {
