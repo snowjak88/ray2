@@ -23,25 +23,13 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 
 	private final boolean doLightOccluding;
 
-	private final int softShadowRayCount;
-
 	private final SuperSamplingAntialiaser<Vector3D, RawColor, RawColor> lightAntialiaser = new SuperSamplingAntialiaser<>();
 
 	/**
 	 * Construct a new {@link LambertianDiffuseLightingModel}.
 	 */
 	public LambertianDiffuseLightingModel() {
-		this(16);
-	}
-
-	/**
-	 * Construct a new {@link LambertianDiffuseLightingModel}, specifying the
-	 * number of shadow-rays to use when calculating soft-shadows.
-	 * 
-	 * @param softShadowRayCount
-	 */
-	public LambertianDiffuseLightingModel(int softShadowRayCount) {
-		this(true, softShadowRayCount);
+		this(true);
 	}
 
 	/**
@@ -53,9 +41,8 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 	 * @param doSoftShadows
 	 * @param softShadowRayCount
 	 */
-	public LambertianDiffuseLightingModel(boolean doLightOccluding, int softShadowRayCount) {
+	public LambertianDiffuseLightingModel(boolean doLightOccluding) {
 		this.doLightOccluding = doLightOccluding;
-		this.softShadowRayCount = softShadowRayCount;
 	}
 
 	@Override
@@ -81,7 +68,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 			// If this light has a radius, then we're doing soft shadows and
 			// therefore shooting many shadow-rays.
 			// Otherwise, we're only doing 1 shadow-ray.
-			int rayCount = softShadowRayCount;
+			int rayCount = RaytracerContext.getSingleton().getSettings().getDistributedRayCount();
 
 			RawColor totalLightFromEmissive = lightAntialiaser.execute(emissiveShape.getLocation(), (v) -> {
 				Collection<Vector3D> samples = new LinkedList<>();
@@ -90,7 +77,8 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 				return samples;
 
 			}, (v) -> {
-				if (isPointVisibleFromPoint(point, v, emissiveShape)) {
+				if (!doLightOccluding || RaytracerContext.getSingleton().getCurrentWorld().isPointVisibleFromEye(v,
+						point, emissiveShape)) {
 
 					Ray toEmissiveRay = new Ray(point, v.subtract(point));
 					Optional<Intersection<Shape>> emissiveIntersection = emissiveShape
@@ -134,22 +122,6 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 		result.setRadiance(pointColor.multiply(totalLightAtPoint));
 
 		return result;
-	}
-
-	private boolean isPointVisibleFromPoint(Vector3D observingPoint, Vector3D observedPoint, Shape observedShape) {
-
-		Optional<Intersection<Shape>> occludingIntersection = RaytracerContext.getSingleton()
-				.getCurrentWorld()
-				.getClosestShapeIntersection(new Ray(observingPoint, observedPoint.subtract(observingPoint)));
-
-		if (doLightOccluding) {
-			if (occludingIntersection.isPresent() && occludingIntersection.get().getIntersected() != observedShape
-					&& Double.compare(occludingIntersection.get().getDistanceFromRayOrigin(),
-							observingPoint.distance(observedPoint)) < 0)
-				return false;
-		}
-
-		return true;
 	}
 
 }

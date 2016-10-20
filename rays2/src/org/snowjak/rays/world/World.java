@@ -1,11 +1,14 @@
 package org.snowjak.rays.world;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
+import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
@@ -52,6 +55,35 @@ public class World {
 	 */
 	public World() {
 
+	}
+
+	/**
+	 * Determine if the given {@code eyePoint} can see the given {@code point}
+	 * -- i.e., if there are no Shapes between the two points. Ignore any Shapes
+	 * included in {@code ignoreShapes}.
+	 * 
+	 * @param point
+	 * @param eyePoint
+	 * @param ignoreShapes
+	 * @return <code>true</code> if the two points are not occluded from each
+	 *         other by any Shape (not including those Shapes in
+	 *         {@code ignoreShapes})
+	 */
+	public boolean isPointVisibleFromEye(Vector3D point, Vector3D eyePoint, Shape... ignoreShapes) {
+
+		List<Shape> ignoreShapesList = Arrays.asList(ignoreShapes);
+		List<Intersection<Shape>> occludingIntersections = RaytracerContext.getSingleton()
+				.getCurrentWorld()
+				.getShapeIntersections(new Ray(eyePoint, point.subtract(eyePoint)));
+
+		double pointDistanceFromEye = eyePoint.distance(point);
+
+		if (!occludingIntersections.isEmpty() && occludingIntersections.parallelStream()
+				.filter(i -> !ignoreShapesList.contains(i.getIntersected()))
+				.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), pointDistanceFromEye) < 0))
+			return false;
+
+		return true;
 	}
 
 	/**

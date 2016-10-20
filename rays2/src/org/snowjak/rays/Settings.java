@@ -29,7 +29,15 @@ public class Settings {
 	 */
 	public static final int DEFAULT_MAX_RAY_RECURSION = 4;
 
+	/**
+	 * Specifies the default number of rays to use when conducting distributed
+	 * ray-tracing.
+	 */
+	public static final int DEFAULT_DISTRIBUTED_RAY_COUNT = 8;
+
 	private int maxRayRecursion = DEFAULT_MAX_RAY_RECURSION;
+
+	private int distributedRayCount = DEFAULT_DISTRIBUTED_RAY_COUNT;
 
 	private int imageWidth, imageHeight;
 
@@ -64,6 +72,11 @@ public class Settings {
 	public static final String PROPERTY_MAX_RAY_RECURSION = "rays2.render.maxRayRecursion";
 
 	/**
+	 * Defines the property name to associate with
+	 */
+	public static final String PROPERTY_DISTRIBUTED_RAY_COUNT = "rays2.distributed.maxRayCount";
+
+	/**
 	 * Create a new {@link Settings} instance.
 	 * 
 	 * @param imageWidth
@@ -71,14 +84,16 @@ public class Settings {
 	 * @param antialiasing
 	 * @param renderSplitType
 	 * @param maxRayRecursion
+	 * @param distributedRayCount
 	 */
 	public Settings(int imageWidth, int imageHeight, AntialiasingScreenDecorator.AA antialiasing,
-			RenderSplitType renderSplitType, int maxRayRecursion) {
+			RenderSplitType renderSplitType, int maxRayRecursion, int distributedRayCount) {
 		this.imageWidth = imageWidth;
 		this.imageHeight = imageHeight;
 		this.antialiasing = antialiasing;
 		this.renderSplitType = renderSplitType;
 		this.maxRayRecursion = maxRayRecursion;
+		this.distributedRayCount = distributedRayCount;
 	}
 
 	/**
@@ -92,6 +107,7 @@ public class Settings {
 		this.antialiasing = toCopy.antialiasing;
 		this.renderSplitType = toCopy.renderSplitType;
 		this.maxRayRecursion = toCopy.maxRayRecursion;
+		this.distributedRayCount = toCopy.distributedRayCount;
 	}
 
 	/**
@@ -106,7 +122,8 @@ public class Settings {
 	 */
 	public static Settings presetFast() {
 
-		return new Settings(400, 250, AA.OFF, RenderSplitType.REGION, Settings.DEFAULT_MAX_RAY_RECURSION);
+		return new Settings(400, 250, AA.OFF, RenderSplitType.REGION, Settings.DEFAULT_MAX_RAY_RECURSION,
+				Settings.DEFAULT_DISTRIBUTED_RAY_COUNT);
 	}
 
 	/**
@@ -121,7 +138,8 @@ public class Settings {
 	 */
 	public static Settings presetDetailed() {
 
-		return new Settings(800, 500, AA.x8, RenderSplitType.REGION, Settings.DEFAULT_MAX_RAY_RECURSION);
+		return new Settings(800, 500, AA.x8, RenderSplitType.REGION, Settings.DEFAULT_MAX_RAY_RECURSION,
+				Settings.DEFAULT_DISTRIBUTED_RAY_COUNT);
 	}
 
 	/**
@@ -219,6 +237,28 @@ public class Settings {
 	}
 
 	/**
+	 * Specifies the number of rays to use when performing distributed
+	 * ray-tracing.
+	 * 
+	 * @return the number of distributed rays to use
+	 */
+	public int getDistributedRayCount() {
+
+		return distributedRayCount;
+	}
+
+	/**
+	 * Specifies the number of rays to use when performing distributed
+	 * ray-tracing.
+	 * 
+	 * @param distributedRayCount
+	 */
+	public void setDistributedRayCount(int distributedRayCount) {
+
+		this.distributedRayCount = distributedRayCount;
+	}
+
+	/**
 	 * @return a {@link Properties} instance containing this {@link Settings}'
 	 *         encoded values
 	 */
@@ -231,6 +271,7 @@ public class Settings {
 		prop.setProperty(PROPERTY_ANTIALIASING, AA.toString(getAntialiasing()));
 		prop.setProperty(PROPERTY_RENDER_SPLIT_TYPE, RenderSplitType.toString(getRenderSplitType()));
 		prop.setProperty(PROPERTY_MAX_RAY_RECURSION, Integer.toString(getMaxRayRecursion()));
+		prop.setProperty(PROPERTY_DISTRIBUTED_RAY_COUNT, Integer.toString(getDistributedRayCount()));
 
 		return prop;
 	}
@@ -255,6 +296,9 @@ public class Settings {
 
 		newSettings.setMaxRayRecursion(
 				parsePropertyAsInt(properties, PROPERTY_MAX_RAY_RECURSION).orElse(newSettings.getMaxRayRecursion()));
+
+		newSettings.setDistributedRayCount(parsePropertyAsInt(properties, PROPERTY_DISTRIBUTED_RAY_COUNT)
+				.orElse(newSettings.getDistributedRayCount()));
 
 		String antialias = properties.getProperty(PROPERTY_ANTIALIASING);
 		if (antialias != null)
