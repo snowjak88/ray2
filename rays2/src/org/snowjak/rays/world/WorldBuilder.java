@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.camera.Camera;
+import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.world.importfile.HasName;
 
@@ -20,6 +21,8 @@ public class WorldBuilder implements Builder<World> {
 	private Camera camera = new Camera(1d, 75d);
 
 	private List<Shape> shapes = new LinkedList<>();
+
+	private RawColor ambientRadiance = new RawColor();
 
 	/**
 	 * @return a new WorldBuilder instance
@@ -59,6 +62,19 @@ public class WorldBuilder implements Builder<World> {
 		return this;
 	}
 
+	/**
+	 * Sets the World's ambient-radiance to the given value.
+	 * 
+	 * @param ambientRadiance
+	 * @return this Builder, for method-chaining
+	 */
+	@HasName("ambient")
+	public WorldBuilder ambient(RawColor ambientRadiance) {
+
+		this.ambientRadiance = ambientRadiance;
+		return this;
+	}
+
 	@Override
 	public World build() {
 
@@ -66,6 +82,7 @@ public class WorldBuilder implements Builder<World> {
 
 		world.setCamera(camera);
 		world.getShapes().addAll(shapes);
+		world.setAmbientRadiance(ambientRadiance);
 
 		return world;
 	}

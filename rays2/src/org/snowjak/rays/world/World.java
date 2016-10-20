@@ -157,6 +157,25 @@ public class World {
 	 */
 	public List<Shape> getEmissiveShapes() {
 
+		//
+		// We don't originally store a list of emissive-shapes as distinct from
+		// all shapes.
+		// However, we still want to cache that list instead of recomputing it
+		// every time, as
+		// we'll be referring to it many times per pixel.
+		//
+		// Obviously, this emissive-shape cache should be recomputed if the list
+		// of all shapes
+		// has changed.
+		// We can't tell explicitly when the user has modified the list of all
+		// shapes,
+		// but we *can* look at that list's hash-code.
+		// Therefore, we check the current hashcode against our cached hash, and
+		// recalculate
+		// the emissive-shapes list if they differ.
+		//
+		// It's admittedly crude, but I don't yet have the heart to modify my
+		// World model to admit of a more efficient solution.
 		if (emissiveShapes == null || lastShapesHashWhenGeneratedEmissiveShapes != shapes.hashCode()) {
 			lastShapesHashWhenGeneratedEmissiveShapes = shapes.hashCode();
 			emissiveShapes = shapes.parallelStream()

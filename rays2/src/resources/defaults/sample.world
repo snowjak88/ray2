@@ -23,4 +23,6 @@ world {
 		frame-width: 4
 		field-of-view: 60
 	}
+	
+	ambient: color { r:0.05 g:0.05 b:0.05 }
 }
