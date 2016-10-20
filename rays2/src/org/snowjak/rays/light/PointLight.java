@@ -9,6 +9,7 @@ package org.snowjak.rays.light;
  * @author snowjak88
  *
  */
+@Deprecated
 public class PointLight extends Light {
 
 	/**

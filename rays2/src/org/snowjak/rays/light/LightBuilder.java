@@ -22,6 +22,7 @@ import org.snowjak.rays.world.importfile.HasName;
  *            any subtype of Light
  *
  */
+@Deprecated
 public abstract class LightBuilder<T extends Light> implements Builder<T>, TransformableBuilder<T> {
 
 	private RawColor ambient = Light.DEFAULT_AMBIENT, diffuse = Light.DEFAULT_DIFFUSE,

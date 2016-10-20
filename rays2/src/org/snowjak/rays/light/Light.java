@@ -49,6 +49,7 @@ import javafx.scene.paint.Color;
  * @author snowjak88
  *
  */
+@Deprecated
 public abstract class Light implements Transformable, Locatable {
 
 	/**

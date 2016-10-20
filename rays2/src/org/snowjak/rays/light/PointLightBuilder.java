@@ -9,6 +9,7 @@ import org.snowjak.rays.world.importfile.HasName;
  *
  */
 @HasName("point-light")
+@Deprecated
 public class PointLightBuilder extends LightBuilder<PointLight> {
 
 	/**
