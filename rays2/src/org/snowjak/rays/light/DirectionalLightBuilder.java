@@ -1,6 +1,8 @@
 package org.snowjak.rays.light;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.snowjak.rays.builder.Builder;
+import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.world.importfile.HasName;
 
 /**
@@ -10,9 +12,11 @@ import org.snowjak.rays.world.importfile.HasName;
  *
  */
 @HasName("directional-light")
-public class DirectionalLightBuilder extends LightBuilder<DirectionalLight> {
+public class DirectionalLightBuilder implements Builder<DirectionalLight> {
 
 	private Vector3D direction = DirectionalLight.DEFAULT_DIRECTION;
+
+	private RawColor radiance = DirectionalLight.DEFAULT_RADIANCE;
 
 	/**
 	 * @return a new DirectionalLightBuilder instance
@@ -40,18 +44,29 @@ public class DirectionalLightBuilder extends LightBuilder<DirectionalLight> {
 		return this;
 	}
 
-	@Override
-	protected DirectionalLight createNewLightInstance() {
+	/**
+	 * Configure this in-progress {@link DirectionalLight} to afford the given
+	 * radiance.
+	 * 
+	 * @param radiance
+	 * @return this Builder, for method-chaining
+	 */
+	@HasName("radiance")
+	public DirectionalLightBuilder radiance(RawColor radiance) {
 
-		return new DirectionalLight();
+		this.radiance = radiance;
+		return this;
 	}
 
 	@Override
-	protected DirectionalLight performTypeSpecificInitialization(DirectionalLight newLightInstance) {
+	public DirectionalLight build() {
 
-		newLightInstance.setDirection(direction);
+		DirectionalLight light = new DirectionalLight();
 
-		return newLightInstance;
+		light.setDirection(direction);
+		light.setRadiance(radiance);
+
+		return light;
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.snowjak.rays.builder.Builder;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
+import org.snowjak.rays.light.DirectionalLight;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.world.importfile.HasName;
 
@@ -23,6 +24,8 @@ public class WorldBuilder implements Builder<World> {
 	private List<Shape> shapes = new LinkedList<>();
 
 	private RawColor ambientRadiance = new RawColor();
+
+	private List<DirectionalLight> directionalLights = new LinkedList<>();
 
 	/**
 	 * @return a new WorldBuilder instance
@@ -75,6 +78,19 @@ public class WorldBuilder implements Builder<World> {
 		return this;
 	}
 
+	/**
+	 * Adds a {@link DirectionalLight} instance to this in-progress World.
+	 * 
+	 * @param directionalLight
+	 * @return this Builder, for method-chaining
+	 */
+	@HasName("directional-light")
+	public WorldBuilder directionalLight(DirectionalLight directionalLight) {
+
+		this.directionalLights.add(directionalLight);
+		return this;
+	}
+
 	@Override
 	public World build() {
 
@@ -83,6 +99,7 @@ public class WorldBuilder implements Builder<World> {
 		world.setCamera(camera);
 		world.getShapes().addAll(shapes);
 		world.setAmbientRadiance(ambientRadiance);
+		world.getDirectionalLights().addAll(directionalLights);
 
 		return world;
 	}

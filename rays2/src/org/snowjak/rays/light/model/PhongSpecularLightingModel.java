@@ -11,6 +11,7 @@ import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.antialias.SuperSamplingAntialiaser;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.light.DirectionalLight;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -58,13 +59,19 @@ public class PhongSpecularLightingModel implements LightingModel {
 
 			}, (v) -> {
 				if (RaytracerContext.getSingleton().getCurrentWorld().isPointVisibleFromEye(v, point, emissiveShape))
-					return calculatePhongSpecularity(intersect, emissiveShape);
+					return calculatePhongSpecularityForEmissive(intersect, emissiveShape);
 				else
 					return new RawColor();
 
 			}, (cp) -> cp.parallelStream().map(p -> p.getValue()).reduce(new RawColor(), (c1, c2) -> c1.add(c2)));
 
 			totalSpecular = totalSpecular.add(specularLightFromThisEmissive);
+		}
+
+		for (DirectionalLight light : RaytracerContext.getSingleton().getCurrentWorld().getDirectionalLights()) {
+
+			totalSpecular = totalSpecular.add(calculatePhongSpecularityForDirectionalLight(intersect, light));
+
 		}
 
 		LightingResult result = new LightingResult();
@@ -81,12 +88,11 @@ public class PhongSpecularLightingModel implements LightingModel {
 		return v.subtract(normal.scalarMultiply(2d * v.dotProduct(normal)));
 	}
 
-	private RawColor calculatePhongSpecularity(Intersection<Shape> intersect, Shape emissiveShape) {
+	private RawColor calculatePhongSpecularityForEmissive(Intersection<Shape> intersect, Shape emissiveShape) {
 
 		Vector3D emissiveLocation = emissiveShape.getLocation();
 		Vector3D toEmissiveVector = emissiveLocation.subtract(intersect.getPoint());
-		//
-		// toLightRay == ray from the intersection-point to the light.
+
 		Ray toLightRay = new Ray(intersect.getPoint(), toEmissiveVector.normalize());
 
 		Optional<Intersection<Shape>> emissiveSurfaceIntersection = RaytracerContext.getSingleton()
@@ -98,11 +104,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 				.findFirst();
 
 		if (emissiveSurfaceIntersection.isPresent()) {
-			//
-			//
-			// Calculate the diffuse light the current Light contributes
-			// to
-			// this ray
+
 			double emissiveExposure = emissiveSurfaceIntersection.get()
 					.getPoint()
 					.subtract(intersect.getPoint())
@@ -110,47 +112,70 @@ public class PhongSpecularLightingModel implements LightingModel {
 					.dotProduct(intersect.getNormal());
 			if (Double.compare(emissiveExposure, 0d) > 0) {
 
-				//
-				//
-				// Calculate the specular light the current Light
-				// contributes to this ray
+				double falloff = 1d / (4d * FastMath.PI
+						* intersect.getPoint().distance(emissiveSurfaceIntersection.get().getPoint()));
 
-				//
-				// toEyeVector == the direction from the eye to the
-				// intersection-point.
-				Vector3D fromEyeVector = intersect.getRay().getVector();
+				RawColor emissiveRadiance = emissiveSurfaceIntersection.get()
+						.getEmissive(emissiveSurfaceIntersection.get().getPoint())
+						.orElse(new RawColor())
+						.multiplyScalar(falloff);
 
-				//
-				// reflectedLightVector = the vector from the light,
-				// reflecting off the surface at the intersection-point
-				Vector3D reflectedLightVector = getReflection(toEmissiveVector, intersect.getNormal()).normalize();
-
-				double specularDotProduct = reflectedLightVector.dotProduct(fromEyeVector.normalize());
-
-				if (Double.compare(specularDotProduct, 0d) > 0) {
-
-					//
-					// What are the configured colors for this shape?
-					RawColor intersectSpecularColor = intersect.getSpecular(intersect.getPoint());
-					double shininess = intersect.getSpecularColorScheme().getShininess(intersect.getPoint());
-
-					double specularIntensity = FastMath.pow(specularDotProduct, shininess);
-
-					double falloff = 1d / (4d * FastMath.PI
-							* intersect.getPoint().distance(emissiveSurfaceIntersection.get().getPoint()));
-
-					RawColor lightSpecularIntensity = emissiveSurfaceIntersection.get()
-							.getEmissive(emissiveSurfaceIntersection.get().getPoint())
-							.orElse(new RawColor())
-							.multiplyScalar(specularIntensity)
-							.multiplyScalar(falloff);
-
-					return intersectSpecularColor.multiply(lightSpecularIntensity);
-				}
+				return calculateSpecularRadiance(intersect, toEmissiveVector, emissiveRadiance);
 			}
 		}
 
 		return new RawColor();
 	}
 
+	private RawColor calculatePhongSpecularityForDirectionalLight(Intersection<Shape> intersect,
+			DirectionalLight light) {
+
+		double lightExposure = light.getDirection().negate().normalize().dotProduct(intersect.getNormal());
+
+		if (lightExposure > 0d) {
+
+			return calculateSpecularRadiance(intersect, light.getDirection().negate().normalize(),
+					light.getRadiance());
+
+		}
+		return new RawColor();
+
+	}
+
+	private RawColor calculateSpecularRadiance(Intersection<Shape> intersect, Vector3D toLightVector,
+			RawColor lightSpecularRadiance) {
+
+		//
+		//
+		// Calculate the specular light the current Light
+		// contributes to this ray
+
+		//
+		// fromEyeVector == the direction from the eye to the
+		// intersection-point.
+		Vector3D fromEyeVector = intersect.getRay().getVector();
+
+		//
+		// reflectedLightVector = the vector from the light,
+		// reflecting off the surface at the intersection-point
+		Vector3D reflectedLightVector = getReflection(toLightVector, intersect.getNormal()).normalize();
+
+		double specularDotProduct = reflectedLightVector.dotProduct(fromEyeVector.normalize());
+
+		if (Double.compare(specularDotProduct, 0d) > 0) {
+
+			//
+			// What are the configured colors for this shape?
+			RawColor intersectSpecularColor = intersect.getSpecular(intersect.getPoint());
+			double shininess = intersect.getSpecularColorScheme().getShininess(intersect.getPoint());
+
+			double specularIntensity = FastMath.pow(specularDotProduct, shininess);
+
+			RawColor lightSpecularIntensity = lightSpecularRadiance.multiplyScalar(specularIntensity);
+
+			return intersectSpecularColor.multiply(lightSpecularIntensity);
+		}
+
+		return new RawColor();
+	}
 }

@@ -12,6 +12,7 @@ import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.camera.Camera;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.light.DirectionalLight;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -49,6 +50,8 @@ public class World {
 	private long lastShapesHashWhenGeneratedEmissiveShapes = -1;
 
 	private RawColor ambientRadiance = new RawColor();
+
+	private List<DirectionalLight> directionalLights = new LinkedList<>();
 
 	/**
 	 * Create a new (empty) {@link World} instance.
@@ -202,6 +205,14 @@ public class World {
 	public RawColor getAmbientRadiance() {
 
 		return ambientRadiance;
+	}
+
+	/**
+	 * @return this World's list of {@link DirectionalLight}s
+	 */
+	public List<DirectionalLight> getDirectionalLights() {
+
+		return directionalLights;
 	}
 
 }

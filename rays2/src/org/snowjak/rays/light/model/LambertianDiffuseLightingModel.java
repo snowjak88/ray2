@@ -11,7 +11,9 @@ import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.antialias.SuperSamplingAntialiaser;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
+import org.snowjak.rays.light.DirectionalLight;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.world.World;
 
 /**
  * Implements the Lambertian diffuse lighting model.
@@ -111,6 +113,25 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 
 			totalLightAtPoint = totalLightAtPoint.add(totalLightFromEmissive);
 
+		}
+
+		for (DirectionalLight light : RaytracerContext.getSingleton().getCurrentWorld().getDirectionalLights()) {
+
+			Ray toLightRay = new Ray(intersection.getPoint(), light.getDirection().negate());
+			if (!doLightOccluding || !RaytracerContext.getSingleton()
+					.getCurrentWorld()
+					.getShapeIntersections(toLightRay)
+					.parallelStream()
+					.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), World.NEARLY_ZERO) > 0)) {
+
+				//
+				// Calculate the received radiance for this sample ray using
+				// both exposure (via Lambert's Law) and falloff ( == 1 / (4
+				// * PI * d))
+				double exposure = FastMath.max(light.getDirection().negate().normalize().dotProduct(normal), 0d);
+
+				totalLightAtPoint = totalLightAtPoint.add(light.getRadiance().multiplyScalar(exposure));
+			}
 		}
 
 		RawColor pointColor = intersection.getDiffuse(point);
