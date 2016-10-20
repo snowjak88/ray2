@@ -1,24 +1,20 @@
 package org.snowjak.rays.light;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.snowjak.rays.transform.Transformer;
-import org.snowjak.rays.world.World;
+import org.snowjak.rays.color.RawColor;
+
+import javafx.scene.paint.Color;
 
 /**
  * Implements a simple directional light -- a {@link Light} which shines its
  * light-rays into the world at the same angle. A directional light is a simple
  * method of simulating a light-source that is extremely far away -- so far that
  * the received light-rays are practically parallel.
- * <p>
- * One consequence of this is that a DirectionalLight's position is immaterial:
- * it gives the same light to the entire world regardless of any
- * {@link Transformer}s applied to it.
- * </p>
  * 
  * @author snowjak88
  *
  */
-public final class DirectionalLight extends Light {
+public final class DirectionalLight {
 
 	/**
 	 * The direction which this DirectionalLight will point at by default.
@@ -28,14 +24,19 @@ public final class DirectionalLight extends Light {
 	private Vector3D direction = DEFAULT_DIRECTION;
 
 	/**
+	 * The default radiance that this DirectionalLight affords.
+	 */
+	public static final RawColor DEFAULT_RADIANCE = new RawColor(Color.WHITE);
+
+	private RawColor radiance = DEFAULT_RADIANCE;
+
+	/**
 	 * Create a new DirectionalLight with the default pointing-to direction
 	 * (i.e., {@link #DEFAULT_DIRECTION}).
 	 * 
 	 * @param direction
 	 */
 	public DirectionalLight() {
-		super();
-		this.setFalloffFunction((l, v) -> 1d);
 	}
 
 	/**
@@ -58,10 +59,21 @@ public final class DirectionalLight extends Light {
 		this.direction = direction.normalize();
 	}
 
-	@Override
-	public Vector3D getLocation() {
+	/**
+	 * @return the radiance that this {@link DirectionalLight} affords
+	 */
+	public RawColor getRadiance() {
 
-		return direction.negate().normalize().scalarMultiply(World.FAR_AWAY);
+		return radiance;
 	}
 
+	/**
+	 * Set the radiance that this {@link DirectionalLight} should afford.
+	 * 
+	 * @param radiance
+	 */
+	public void setRadiance(RawColor radiance) {
+
+		this.radiance = radiance;
+	}
 }
