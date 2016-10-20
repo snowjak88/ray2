@@ -34,7 +34,7 @@ public class FunctionalColorScheme extends ColorScheme {
 	@Override
 	public RawColor getColor(double x, double y, double z) {
 
-		return function.apply(new Vector3D(x, y, z));
+		return function.apply(worldToLocal(new Vector3D(x, y, z)));
 	}
 
 }

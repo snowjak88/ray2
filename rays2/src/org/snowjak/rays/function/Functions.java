@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.util.Pair;
+import org.snowjak.rays.color.ColorScheme;
 import org.snowjak.rays.color.RawColor;
 
 import javafx.scene.paint.Color;
@@ -136,6 +137,24 @@ public class Functions {
 			}
 
 			return new RawColor(higher.getValue());
+		};
+	}
+
+	/**
+	 * Create a new function that linearly-interpolates between two colors based
+	 * on the point's distance from two control points.
+	 * 
+	 * @param color1
+	 * @param p1
+	 * @param color2
+	 * @param p2
+	 * @return a new linear-interpolation function
+	 */
+	public static Function<Vector3D, RawColor> lerp(ColorScheme color1, Vector3D p1, ColorScheme color2, Vector3D p2) {
+
+		return (v) -> {
+			double dotProduct = p2.subtract(p1).normalize().dotProduct(v.subtract(p1)), distance = p2.distance(p1);
+			return Functions.lerp(color1.getColor(v), color2.getColor(v), dotProduct / distance);
 		};
 	}
 

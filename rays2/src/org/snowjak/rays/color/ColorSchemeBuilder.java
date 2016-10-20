@@ -69,6 +69,7 @@ public class ColorSchemeBuilder implements Builder<ColorScheme>, TransformableBu
 	 * @param colorFunction
 	 * @return this ColorSchemeBuilder
 	 */
+	@HasName("function")
 	public ColorSchemeBuilder function(Function<Vector3D, RawColor> colorFunction) {
 
 		this.colorFunction = colorFunction;
