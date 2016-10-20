@@ -66,6 +66,7 @@ public abstract class ShapeBuilder<T extends Shape> implements Builder<T>, HasCo
 	}
 
 	@Override
+	@HasName("diffuse")
 	public ShapeBuilder<T> diffuse(ColorScheme diffuseColor) {
 
 		this.diffuseColorScheme = diffuseColor;
@@ -86,6 +87,7 @@ public abstract class ShapeBuilder<T extends Shape> implements Builder<T>, HasCo
 	}
 
 	@Override
+	@HasName("specular")
 	public ShapeBuilder<T> specular(ColorScheme specularColor) {
 
 		this.specularColorScheme = specularColor;
@@ -105,6 +107,7 @@ public abstract class ShapeBuilder<T extends Shape> implements Builder<T>, HasCo
 	}
 
 	@Override
+	@HasName("emissive")
 	public ShapeBuilder<T> emissive(ColorScheme emissiveColor) {
 
 		this.emissiveColorScheme = Optional.of(emissiveColor);

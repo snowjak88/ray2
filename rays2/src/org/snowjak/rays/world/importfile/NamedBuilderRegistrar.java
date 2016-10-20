@@ -2,6 +2,7 @@ package org.snowjak.rays.world.importfile;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -116,9 +117,11 @@ public class NamedBuilderRegistrar {
 	 * 
 	 * @param builderClass
 	 * @param name
+	 * @param givenArgumentClass
 	 * @return a Method on the given class with a matching name, if any exists
 	 */
-	public Optional<Method> getBuilderMethodByName(Class<? extends Builder<?>> builderClass, String name) {
+	public Optional<Method> getBuilderMethodByName(Class<? extends Builder<?>> builderClass, String name,
+			Optional<Class<?>> givenArgumentClass) {
 
 		if (!discoveredBuilderMethods.containsKey(builderClass))
 			return Optional.empty();
@@ -127,6 +130,8 @@ public class NamedBuilderRegistrar {
 				.parallelStream()
 				.filter(p -> p.getKey().equals(name))
 				.map(p -> p.getValue())
+				.filter(m -> Arrays.stream(m.getParameterTypes())
+						.anyMatch(c -> c.isAssignableFrom(givenArgumentClass.orElse(c))))
 				.findAny();
 
 	}

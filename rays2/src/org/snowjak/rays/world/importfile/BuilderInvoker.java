@@ -76,7 +76,8 @@ public class BuilderInvoker {
 		@SuppressWarnings("unchecked")
 		Class<? extends Builder<?>> builderClass = (Class<? extends Builder<?>>) builder.getClass();
 
-		Optional<Method> builderMethod = registrar.getBuilderMethodByName(builderClass, literalEntry.getKey());
+		Optional<Method> builderMethod = registrar.getBuilderMethodByName(builderClass, literalEntry.getKey(),
+				Optional.empty());
 		if (builderMethod.isPresent()) {
 
 			Class<?> parameterType = builderMethod.get().getParameterTypes()[0];
@@ -116,20 +117,22 @@ public class BuilderInvoker {
 		@SuppressWarnings("unchecked")
 		Class<? extends Builder<?>> builderClass = (Class<? extends Builder<?>>) builder.getClass();
 
-		Optional<Method> builderMethod = registrar.getBuilderMethodByName(builderClass, childObjectEntry.getKey());
-		if (builderMethod.isPresent()) {
+		Optional<Builder<?>> childObjectBuilder = registrar
+				.getBuilderByName(childObjectEntry.getValue().getObjectName());
 
-			Class<?> parameterType = builderMethod.get().getParameterTypes()[0];
-			Optional<Builder<?>> childObjectBuilder = registrar
-					.getBuilderByName(childObjectEntry.getValue().getObjectName());
+		if (childObjectBuilder.isPresent()) {
 
-			if (childObjectBuilder.isPresent()) {
+			@SuppressWarnings("unchecked")
+			Class<? extends Builder<?>> childObjectBuilderClass = (Class<? extends Builder<?>>) childObjectBuilder.get()
+					.getClass();
+			Optional<Class<?>> childObjectBuilderProductType = registrar
+					.getBuilderProductClass(childObjectBuilderClass);
 
-				@SuppressWarnings("unchecked")
-				Class<? extends Builder<?>> childObjectBuilderClass = (Class<? extends Builder<?>>) childObjectBuilder
-						.get().getClass();
-				Optional<Class<?>> childObjectBuilderProductType = registrar
-						.getBuilderProductClass(childObjectBuilderClass);
+			Optional<Method> builderMethod = registrar.getBuilderMethodByName(builderClass, childObjectEntry.getKey(),
+					childObjectBuilderProductType);
+			if (builderMethod.isPresent()) {
+
+				Class<?> parameterType = builderMethod.get().getParameterTypes()[0];
 
 				if (childObjectBuilderProductType.isPresent()) {
 
