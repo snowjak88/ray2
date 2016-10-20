@@ -18,7 +18,7 @@ public abstract class ColorScheme implements Transformable, Prototype<ColorSchem
 
 	private final Deque<Transformer> transformers = new LinkedList<>();
 
-	private double shininess = 1e5, reflectivity = -1d;
+	private double shininess = 1e5;
 
 	/**
 	 * Determine which color to use for the object, given the provided
@@ -108,50 +108,6 @@ public abstract class ColorScheme implements Transformable, Prototype<ColorSchem
 	public void setShininess(double shininess) {
 
 		this.shininess = shininess;
-	}
-
-	/**
-	 * @return this color scheme's "reflectivity" fraction
-	 */
-	@Deprecated
-	public double getReflectivity() {
-
-		return reflectivity;
-	}
-
-	/**
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return this color scheme's "reflectivity" fraction for the given point
-	 *         in global coordinates
-	 */
-	@Deprecated
-	public double getReflectivity(double x, double y, double z) {
-
-		return getReflectivity(new Vector3D(x, y, z));
-	}
-
-	/**
-	 * @param coord
-	 * @return this color scheme's "reflectivity" fraction for the given point
-	 *         in global coordinates
-	 */
-	@Deprecated
-	public double getReflectivity(Vector3D coord) {
-
-		return getReflectivity();
-	}
-
-	/**
-	 * Set this color scheme's "reflectivity" fraction
-	 * 
-	 * @param reflectivity
-	 */
-	@Deprecated
-	public void setReflectivity(double reflectivity) {
-
-		this.reflectivity = reflectivity;
 	}
 
 	@Override

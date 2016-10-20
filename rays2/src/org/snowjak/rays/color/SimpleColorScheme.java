@@ -63,7 +63,6 @@ public class SimpleColorScheme extends ColorScheme {
 	public SimpleColorScheme copy() {
 
 		SimpleColorScheme newColorScheme = new SimpleColorScheme(this.color);
-		newColorScheme.setReflectivity(this.getReflectivity());
 		newColorScheme.setShininess(this.getShininess());
 		return newColorScheme;
 	}
