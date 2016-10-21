@@ -55,7 +55,6 @@ public class Intersect extends Shape {
 		this.children.addAll(children);
 		this.setDiffuseColorScheme((ColorScheme) null);
 		this.setSpecularColorScheme((ColorScheme) null);
-		this.setEmissiveColorScheme((ColorScheme) null);
 		this.setMaterial(null);
 	}
 

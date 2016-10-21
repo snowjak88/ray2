@@ -56,7 +56,6 @@ public class Minus extends Shape {
 		this.subtrahends.addAll(children);
 		this.setDiffuseColorScheme((ColorScheme) null);
 		this.setSpecularColorScheme((ColorScheme) null);
-		this.setEmissiveColorScheme((ColorScheme) null);
 		this.setMaterial(null);
 	}
 
