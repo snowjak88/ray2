@@ -23,7 +23,7 @@ public class NormalPerturberBuilder extends ShapeBuilder<NormalPerturber> {
 	/**
 	 * @return a new NormalPerturberBuilder instance
 	 */
-	public NormalPerturberBuilder builder() {
+	public static NormalPerturberBuilder builder() {
 
 		return new NormalPerturberBuilder();
 	}

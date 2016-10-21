@@ -22,7 +22,7 @@ public class IntersectBuilder extends ShapeBuilder<Intersect> {
 	/**
 	 * @return a new IntersectBuilder instance
 	 */
-	public IntersectBuilder builder() {
+	public static IntersectBuilder builder() {
 
 		return new IntersectBuilder();
 	}

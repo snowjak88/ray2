@@ -26,7 +26,7 @@ public class MinusBuilder extends ShapeBuilder<Minus> {
 	/**
 	 * @return a new MinusBuilder instance
 	 */
-	public MinusBuilder builder() {
+	public static MinusBuilder builder() {
 
 		return new MinusBuilder();
 	}
