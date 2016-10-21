@@ -173,34 +173,19 @@ public class Cylinder extends Shape {
 					.collect(Collectors.toCollection(LinkedList::new)));
 		}
 
-		return results.parallelStream()
+		results = results.parallelStream()
 				.map(i -> localToWorld(i))
 				.filter(i -> Double.compare(FastMath.abs(i.getDistanceFromRayOrigin()), World.NEARLY_ZERO) >= 0)
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.peek(i -> {
-					if (Double.compare(
-							FastMath.abs(i.getDistanceFromRayOrigin() - results.stream()
-									.map(ii -> ii.getDistanceFromRayOrigin())
-									.min(Double::compare)
-									.get()),
-							World.NEARLY_ZERO) <= 0) {
-						i.setIntersected(this);
-						i.setLeavingMaterial(Material.AIR);
-					}
-				})
-				.peek(i -> {
-					if (Double.compare(
-							FastMath.abs(i.getDistanceFromRayOrigin() - results.stream()
-									.map(ii -> ii.getDistanceFromRayOrigin())
-									.max(Double::compare)
-									.get()),
-							World.NEARLY_ZERO) <= 0) {
-						i.setIntersected(this);
-						i.setEnteringMaterial(Material.AIR);
-					}
-				})
 				.limit(onlyIncludeClosest ? 1 : 2)
+				.peek(i -> i.setIntersected(this))
 				.collect(Collectors.toCollection(LinkedList::new));
+		if (results.size() > 0)
+			results.get(0).setLeavingMaterial(Material.AIR);
+		if (results.size() > 1)
+			results.get(1).setEnteringMaterial(Material.AIR);
+
+		return results;
 	}
 
 	@Override
