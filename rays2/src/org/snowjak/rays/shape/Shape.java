@@ -88,21 +88,47 @@ public abstract class Shape implements Transformable, Locatable, Intersectable, 
 	}
 
 	/**
-	 * @return a randomly-selected point (expressed in global coordinates) within the volume contained by this
-	 *         Shape
+	 * @return a randomly-selected point (expressed in global coordinates)
+	 *         within the volume contained by this Shape
 	 */
-	public abstract Vector3D selectPointWithin();
+	public Vector3D selectPointWithin() {
+
+		return selectPointWithin(false);
+	}
+
+	/**
+	 * @param selectSurfaceOnly
+	 *            indicate that only points located close-to/on the surface
+	 *            should be selected
+	 * @return a randomly-selected point (expressed in global coordinates)
+	 *         within the volume contained by this Shape
+	 */
+	public abstract Vector3D selectPointWithin(boolean selectSurfaceOnly);
 
 	/**
 	 * @param count
 	 * @return a set of {@code count} points (expressed in global coordinates)
 	 *         located within the volume contained this Shape
-	 * @see #selectPointWithin()
+	 * @see #selectPointWithin(boolean)
 	 */
 	public Collection<Vector3D> selectPointsWithin(int count) {
 
-		return IntStream.range(0, count).mapToObj(i -> selectPointWithin()).collect(LinkedList::new, LinkedList::add,
-				LinkedList::addAll);
+		return selectPointsWithin(count, false);
+	}
+
+	/**
+	 * @param count
+	 * @param selectSurfaceOnly
+	 *            indicate that only points located close-to/on the surface
+	 *            should be selected
+	 * @return a set of {@code count} points (expressed in global coordinates)
+	 *         located within the volume contained this Shape
+	 * @see #selectPointWithin(boolean)
+	 */
+	public Collection<Vector3D> selectPointsWithin(int count, boolean selectSurfaceOnly) {
+
+		return IntStream.range(0, count).mapToObj(i -> selectPointWithin(selectSurfaceOnly)).collect(LinkedList::new,
+				LinkedList::add, LinkedList::addAll);
 	}
 
 	@SuppressWarnings("unchecked")

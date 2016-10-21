@@ -75,7 +75,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 			RawColor totalLightFromEmissive = lightAntialiaser.execute(emissiveShape.getLocation(), (v) -> {
 				Collection<Vector3D> samples = new LinkedList<>();
 				samples.add(v);
-				samples.addAll(emissiveShape.selectPointsWithin(rayCount));
+				samples.addAll(emissiveShape.selectPointsWithin(rayCount, true));
 				return samples;
 
 			}, (v) -> {

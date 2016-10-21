@@ -220,10 +220,10 @@ public class Cylinder extends Shape {
 	}
 
 	@Override
-	public Vector3D selectPointWithin() {
+	public Vector3D selectPointWithin(boolean selectSurfaceOnly) {
 
 		double theta = 2d * FastMath.PI * RND.nextDouble();
-		double r = 1d * RND.nextDouble();
+		double r = (selectSurfaceOnly ? 1d : 1d * RND.nextDouble());
 		double h = (2d * RND.nextDouble()) - 1d;
 		return localToWorld(new Vector3D(r * FastMath.cos(theta), h, r * FastMath.sin(theta)));
 	}

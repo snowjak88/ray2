@@ -211,6 +211,34 @@ public class Cube extends Shape {
 	@Override
 	public Vector3D selectPointWithin() {
 
+		return selectPointWithin(true);
+	}
+
+	@Override
+	public Vector3D selectPointWithin(boolean selectSurfaceOnly) {
+
+		if (selectSurfaceOnly) {
+			switch (RND.nextInt(6)) {
+			case 0:
+				// -X
+				return localToWorld(new Vector3D(-1d, 2d * RND.nextDouble() - 1d, 2d * RND.nextDouble() - 1d));
+			case 1:
+				// +X
+				return localToWorld(new Vector3D(+1d, 2d * RND.nextDouble() - 1d, 2d * RND.nextDouble() - 1d));
+			case 2:
+				// -Y
+				return localToWorld(new Vector3D(2d * RND.nextDouble() - 1d, -1d, 2d * RND.nextDouble() - 1d));
+			case 3:
+				// +Y
+				return localToWorld(new Vector3D(2d * RND.nextDouble() - 1d, +1d, 2d * RND.nextDouble() - 1d));
+			case 4:
+				// -Z
+				return localToWorld(new Vector3D(2d * RND.nextDouble() - 1d, 2d * RND.nextDouble() - 1d, -1d));
+			case 5:
+				// +Z
+				return localToWorld(new Vector3D(2d * RND.nextDouble() - 1d, 2d * RND.nextDouble() - 1d, +1d));
+			}
+		}
 		return localToWorld(
 				new Vector3D(2d * RND.nextDouble() - 1d, 2d * RND.nextDouble() - 1d, 2d * RND.nextDouble() - 1d));
 	}

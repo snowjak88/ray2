@@ -166,11 +166,11 @@ public class Sphere extends Shape {
 	}
 
 	@Override
-	public Vector3D selectPointWithin() {
+	public Vector3D selectPointWithin(boolean selectSurfaceOnly) {
 
 		double theta = FastMath.PI * RND.nextDouble();
 		double phi = 2d * FastMath.PI * RND.nextDouble();
-		double r = 1d * RND.nextDouble();
+		double r = (selectSurfaceOnly ? 1d : 1d * RND.nextDouble());
 		return localToWorld(new Vector3D(r * FastMath.sin(theta) * FastMath.cos(phi),
 				r * FastMath.sin(theta) * FastMath.cos(theta), r * FastMath.cos(theta)));
 	}

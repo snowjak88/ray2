@@ -54,7 +54,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 			RawColor specularLightFromThisEmissive = sampler.execute(emissiveShape.getLocation(), (v) -> {
 				Collection<Vector3D> results = new LinkedList<>();
 				results.add(v);
-				results.addAll(emissiveShape.selectPointsWithin(rayCount));
+				results.addAll(emissiveShape.selectPointsWithin(rayCount, true));
 				return results;
 
 			}, (v) -> {

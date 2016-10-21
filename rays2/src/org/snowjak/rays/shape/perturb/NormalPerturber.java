@@ -181,9 +181,9 @@ public class NormalPerturber extends Shape {
 	}
 
 	@Override
-	public Vector3D selectPointWithin() {
+	public Vector3D selectPointWithin(boolean selectSurfaceOnly) {
 
-		return child.selectPointWithin();
+		return child.selectPointWithin(selectSurfaceOnly);
 	}
 
 }

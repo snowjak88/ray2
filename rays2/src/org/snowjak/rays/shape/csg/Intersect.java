@@ -244,11 +244,11 @@ public class Intersect extends Shape {
 	}
 
 	@Override
-	public Vector3D selectPointWithin() {
+	public Vector3D selectPointWithin(boolean selectSurfaceOnly) {
 
 		Vector3D result;
 		do {
-			result = children.parallelStream().map(s -> s.selectPointWithin()).reduce(Vector3D.ZERO,
+			result = children.parallelStream().map(s -> s.selectPointWithin(selectSurfaceOnly)).reduce(Vector3D.ZERO,
 					(v1, v2) -> v1.add(v2).scalarMultiply(0.5));
 		} while (!isInside(result));
 

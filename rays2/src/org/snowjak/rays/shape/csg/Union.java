@@ -280,8 +280,8 @@ public class Union extends Shape {
 	}
 
 	@Override
-	public Vector3D selectPointWithin() {
+	public Vector3D selectPointWithin(boolean selectSurfaceOnly) {
 
-		return children.get(RND.nextInt(children.size())).selectPointWithin();
+		return children.get(RND.nextInt(children.size())).selectPointWithin(selectSurfaceOnly);
 	}
 }

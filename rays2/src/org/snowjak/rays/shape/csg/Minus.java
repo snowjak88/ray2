@@ -344,11 +344,11 @@ public class Minus extends Shape {
 	}
 
 	@Override
-	public Vector3D selectPointWithin() {
+	public Vector3D selectPointWithin(boolean selectSurfaceOnly) {
 
 		Vector3D result;
 		do {
-			result = minuend.selectPointWithin();
+			result = minuend.selectPointWithin(selectSurfaceOnly);
 		} while (currentlyInAnySubtrahend(result));
 
 		return localToWorld(result);

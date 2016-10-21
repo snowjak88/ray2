@@ -115,9 +115,9 @@ public class Group extends Shape {
 	}
 
 	@Override
-	public Vector3D selectPointWithin() {
+	public Vector3D selectPointWithin(boolean selectSurfaceOnly) {
 
-		return localToWorld(children.get(RND.nextInt(children.size())).selectPointWithin());
+		return localToWorld(children.get(RND.nextInt(children.size())).selectPointWithin(selectSurfaceOnly));
 	}
 
 }

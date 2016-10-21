@@ -41,6 +41,11 @@ public class NullShape extends Shape {
 
 	@Override
 	public Vector3D selectPointWithin() {
+		return selectPointWithin(true);
+	}
+
+	@Override
+	public Vector3D selectPointWithin(boolean selectSurfaceOnly) {
 
 		return localToWorld(Vector3D.ZERO);
 	}

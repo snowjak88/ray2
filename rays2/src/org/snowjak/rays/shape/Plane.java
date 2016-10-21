@@ -219,7 +219,7 @@ public class Plane extends Shape {
 	}
 
 	@Override
-	public Vector3D selectPointWithin() {
+	public Vector3D selectPointWithin(boolean selectSurfaceOnly) {
 
 		return localToWorld(new Vector3D((RND.nextDouble() * 2d - 1d) * World.FAR_AWAY, 0d,
 				(RND.nextDouble() * 2d - 1d) * World.FAR_AWAY));
