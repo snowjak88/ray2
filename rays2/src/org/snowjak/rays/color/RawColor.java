@@ -137,4 +137,16 @@ public class RawColor {
 		return blue;
 	}
 
+	/**
+	 * Calculate this color's luminosity function, as per the
+	 * <a href="https://en.wikipedia.org/wiki/Relative_luminance">Wikipedia
+	 * article on relative luminance</a>.
+	 * 
+	 * @return this RawColor's luminance
+	 */
+	public double getLuminance() {
+
+		return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+	}
+
 }
