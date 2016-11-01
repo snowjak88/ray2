@@ -22,8 +22,10 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.snowjak.rays.light.indirect.PhotonMap;
 import org.snowjak.rays.light.model.AdditiveCompositingLightingModel;
 import org.snowjak.rays.light.model.AmbientLightingModel;
+import org.snowjak.rays.light.model.CausticsPhotonMapLightingModel;
 import org.snowjak.rays.light.model.EmissiveLightingModel;
 import org.snowjak.rays.light.model.EnvironmentMapDecoratingLightingModel;
 import org.snowjak.rays.light.model.FresnelLightingModel;
@@ -78,15 +80,16 @@ public class RaytracerApp extends Application {
 
 		Renderer renderer = new Renderer(new JavaFxPixelDrawer(primaryStage, settings));
 
+		RaytracerContext.getSingleton().setSettings(settings);
+		RaytracerContext.getSingleton().setCurrentRenderer(renderer);
+		RaytracerContext.getSingleton().setCurrentWorld(world);
+
 		renderer.setLightingModel(new EnvironmentMapDecoratingLightingModel(
 				new SphericalEnvironmentMap(new Image("resources/images/spherical-map-field2.jpg")),
 				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
 						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel(),
-						new EmissiveLightingModel()))));
-
-		RaytracerContext.getSingleton().setSettings(settings);
-		RaytracerContext.getSingleton().setCurrentRenderer(renderer);
-		RaytracerContext.getSingleton().setCurrentWorld(world);
+						new EmissiveLightingModel(),
+						new CausticsPhotonMapLightingModel(PhotonMap.build(10000, true, 5, 16, 0.1, 0.2), 16)))));
 
 		primaryStage.setOnCloseRequest((e) -> {
 			RaytracerContext.getSingleton().shutdown();

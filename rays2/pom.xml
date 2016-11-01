@@ -9,6 +9,8 @@
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
+		<testSourceDirectory>test</testSourceDirectory>
+		
 		<resources>
 			<resource>
 				<directory>src/resources/defaults</directory>
@@ -77,6 +79,13 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 			<version>4.2.6.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.2</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
