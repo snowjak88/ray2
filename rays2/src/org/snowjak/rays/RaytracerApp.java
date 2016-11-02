@@ -26,6 +26,7 @@ import org.snowjak.rays.light.indirect.PhotonMap;
 import org.snowjak.rays.light.model.AdditiveCompositingLightingModel;
 import org.snowjak.rays.light.model.AmbientLightingModel;
 import org.snowjak.rays.light.model.CausticsPhotonMapLightingModel;
+import org.snowjak.rays.light.model.DiffuseIndirectPhotonMapLightingModel;
 import org.snowjak.rays.light.model.EmissiveLightingModel;
 import org.snowjak.rays.light.model.EnvironmentMapDecoratingLightingModel;
 import org.snowjak.rays.light.model.FresnelLightingModel;
@@ -89,7 +90,9 @@ public class RaytracerApp extends Application {
 				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
 						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel(),
 						new EmissiveLightingModel(),
-						new CausticsPhotonMapLightingModel(PhotonMap.build(2048, true, 10, 16, 0.1, 0.5), 32)))));
+						new CausticsPhotonMapLightingModel(PhotonMap.build(10000, true, 10d, 16, 0.1, 0.25), 32),
+						new DiffuseIndirectPhotonMapLightingModel(PhotonMap.build(500, false, 10d, 16, 0.1, 0.25), 16,
+								8)))));
 
 		primaryStage.setOnCloseRequest((e) -> {
 			RaytracerContext.getSingleton().shutdown();
