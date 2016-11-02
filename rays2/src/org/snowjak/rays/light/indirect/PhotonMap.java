@@ -53,11 +53,9 @@ public class PhotonMap {
 
 		World world = RaytracerContext.getSingleton().getCurrentWorld();
 
-		double photonsPerUnitRadiance = photonCount / world.getEmissiveShapes()
-				.parallelStream()
+		double photonsPerUnitRadiance = photonCount / world.getEmissiveShapes().parallelStream()
 				.map(s -> s.getEmissive(s.getLocation()).orElse(new RawColor()).getLuminance())
-				.reduce((d1, d2) -> d1 + d2)
-				.orElse(1d);
+				.reduce((d1, d2) -> d1 + d2).orElse(1d);
 
 		PhotonMap photonMap = new PhotonMap();
 
@@ -79,16 +77,27 @@ public class PhotonMap {
 							(int) FastMath.round(photonsPerUnitRadiance
 									* s.getEmissive(s.getLocation()).orElse(new RawColor()).getLuminance()))
 					.mapToObj(i -> {
-						LightSourceMap.Entry selectedEntry = shapeMapEntries.get(RND.nextInt(shapeMapEntries.size()));
 
-						double sampleU = selectedEntry.getU() + RND.nextDouble(),
-								sampleV = selectedEntry.getV() + RND.nextDouble();
-						Coordinates sampleCoordinates = lightSourceMap.new Coordinates(sampleU, sampleV);
-						Vector3D sampleDirection = sampleCoordinates.getUnitVector();
-						Ray sampleRay = new Ray(s.getLocation(), sampleDirection);
+						Ray sampleRay = null;
+						Optional<Intersection<Shape>> testIntersection = null;
+						do {
+							LightSourceMap.Entry selectedEntry = shapeMapEntries
+									.get(RND.nextInt(shapeMapEntries.size()));
 
-						RawColor photonRadiance = s.getEmissive(sampleRay.getOrigin())
-								.orElse(new RawColor())
+							double sampleU = selectedEntry.getU() + RND.nextDouble(),
+									sampleV = selectedEntry.getV() + RND.nextDouble();
+							Coordinates sampleCoordinates = lightSourceMap.new Coordinates(sampleU, sampleV);
+							Vector3D sampleDirection = sampleCoordinates.getUnitVector();
+							sampleRay = new Ray(s.getLocation(), sampleDirection);
+
+							if (isCausticsMap)
+								testIntersection = world.getShapeIntersections(sampleRay).stream().sequential()
+										.filter(inter -> inter.getIntersected() != s).findFirst();
+
+						} while (!isCausticsMap || !isSpecularMaterial(testIntersection.get().getEnteringMaterial(),
+								testIntersection.get().getPoint()));
+
+						RawColor photonRadiance = s.getEmissive(sampleRay.getOrigin()).orElse(new RawColor())
 								.multiplyScalar(photonEnergyScale);
 
 						double weight = 1d;
@@ -105,19 +114,14 @@ public class PhotonMap {
 	private static Collection<PhotonEntry> followPhoton(Shape emittingShape, Ray currentRay, RawColor photonRadiance,
 			double weight, boolean acceptOnlySpecular, double photonCullThreshold, double photonCullProbability) {
 
-		Optional<Intersection<Shape>> closestIntersection = RaytracerContext.getSingleton()
-				.getCurrentWorld()
-				.getShapeIntersections(currentRay)
-				.stream()
-				.sequential()
-				.filter(i -> i.getIntersected() != emittingShape)
-				.findFirst();
+		Optional<Intersection<Shape>> closestIntersection = RaytracerContext.getSingleton().getCurrentWorld()
+				.getShapeIntersections(currentRay).stream().sequential()
+				.filter(i -> i.getIntersected() != emittingShape).findFirst();
 
 		if (!closestIntersection.isPresent())
 			return Collections.emptyList();
 
 		Vector3D intersectionPoint = closestIntersection.get().getPoint();
-		Vector3D intersectionNormal = closestIntersection.get().getNormal();
 
 		Material intersectionMaterial = closestIntersection.get().getEnteringMaterial();
 		if (acceptOnlySpecular && !isSpecularMaterial(intersectionMaterial, intersectionPoint))
@@ -135,7 +139,6 @@ public class PhotonMap {
 		}
 
 		Collection<PhotonEntry> results = new LinkedList<>();
-		results.add(new PhotonEntry(intersectionPoint, currentRay.getVector().negate(), photonRadiance));
 
 		FresnelResult fresnelResult = FresnelLightingModel.calculateFresnelResult(closestIntersection.get());
 		double reflectProbability = fresnelResult.getReflectance() * intersectAlbedo;
@@ -158,6 +161,8 @@ public class PhotonMap {
 			weight *= intersectTransparency;
 
 		} else {
+			results.add(new PhotonEntry(intersectionPoint, currentRay.getVector().negate(), photonRadiance));
+
 			// Do diffuse reflection
 			RawColor diffuseSurfaceColor = closestIntersection.get().getDiffuse(intersectionPoint);
 
@@ -237,16 +242,13 @@ public class PhotonMap {
 				new PhotonEntry(point, Vector3D.ZERO, new RawColor()), photonCount,
 				(Predicate<PhotonEntry>) (p) -> p.getArrivalFromDirection().dotProduct(normal) > 0d);
 
-		double maxDistance = closePhotons.parallelStream()
-				.map(p -> p.getIntersectPoint().distance(point))
-				.max(Double::compare)
-				.orElse(Double.MAX_VALUE);
+		double maxDistance = closePhotons.parallelStream().map(p -> p.getIntersectPoint().distance(point))
+				.max(Double::compare).orElse(Double.MAX_VALUE);
 
 		double radianceScale = 1d / (FastMath.PI * FastMath.pow(maxDistance, 2d));
 
 		return closePhotons.parallelStream()
-				.map(p -> p.getColor()
-						.multiplyScalar(radianceScale)
+				.map(p -> p.getColor().multiplyScalar(radianceScale)
 						.multiplyScalar(p.getArrivalFromDirection().dotProduct(normal)))
 				.reduce(new RawColor(), RawColor::add);
 	}

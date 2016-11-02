@@ -63,6 +63,9 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 	 * @param newPoints
 	 */
 	public void addPoints(Collection<P> newPoints) {
+		
+		if (newPoints.isEmpty())
+			return;
 
 		List<P> pointsSortedAlongDimension = newPoints.stream()
 				.sorted((p1, p2) -> p1.getCoordinate(0).compareTo(p2.getCoordinate(0)))

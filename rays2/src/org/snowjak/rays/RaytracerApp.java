@@ -89,7 +89,7 @@ public class RaytracerApp extends Application {
 				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
 						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel(),
 						new EmissiveLightingModel(),
-						new CausticsPhotonMapLightingModel(PhotonMap.build(10000, true, 5, 16, 0.1, 0.2), 16)))));
+						new CausticsPhotonMapLightingModel(PhotonMap.build(2048, true, 10, 16, 0.1, 0.5), 32)))));
 
 		primaryStage.setOnCloseRequest((e) -> {
 			RaytracerContext.getSingleton().shutdown();

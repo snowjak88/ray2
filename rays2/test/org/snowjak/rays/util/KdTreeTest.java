@@ -39,7 +39,7 @@ public class KdTreeTest extends TestCase {
 		tree.addPoints(testPoints);
 
 		List<TestPoint> closePoints = new LinkedList<>();
-		closePoints.addAll(tree.getNClosestPointsTo(new TestPoint(1, 1), 2, null));
+		closePoints.addAll(tree.getNClosestPointsTo(new TestPoint(1, 1), 2, (p) -> true));
 		assertFalse(closePoints.isEmpty());
 		assertEquals(2, closePoints.size());
 
