@@ -71,7 +71,7 @@ public class FresnelLightingModel implements LightingModel {
 		//
 		//
 		Intersection<Shape> intersect = intersection.get();
-		FresnelResult fresnel = calculateFresnelResult(intersect);
+		FresnelResult fresnel = new FresnelResult(intersect);
 		double reflectance = fresnel.getReflectance();
 		double transmittance = fresnel.getTransmittance();
 
@@ -151,65 +151,9 @@ public class FresnelLightingModel implements LightingModel {
 	}
 
 	/**
-	 * Given an Intersection, calculate the Schlick approximation to the Fresnel
-	 * equations and return a {@link FresnelResult} encapsulating the results of
-	 * that approximation.
-	 * 
-	 * @param intersection
-	 * @return a {@link FresnelResult} describing the resulting reflection &
-	 *         refraction
-	 */
-	public static FresnelResult calculateFresnelResult(Intersection<Shape> intersection) {
-
-		Ray ray = intersection.getRay();
-		Vector3D point = intersection.getPoint();
-		Vector3D i = intersection.getRay().getVector();
-		Vector3D n = intersection.getNormal();
-		double theta_i = Vector3D.angle(i.negate(), n);
-
-		//
-		//
-		//
-		double n1 = intersection.getLeavingMaterial().getRefractiveIndex(point),
-				n2 = intersection.getEnteringMaterial().getRefractiveIndex(point);
-
-		//
-		//
-		// Determine reflected ray
-		Vector3D reflectedVector = getTangentPart(i, n).subtract(getNormalPart(i, n));
-		Ray reflectedRay = new Ray(point, reflectedVector, ray.getRecursiveLevel() + 1);
-
-		//
-		//
-		// Determine refracted ray
-		double sin2_theta_t = pow(n1 / n2, 2d) * (1d - pow(cos(theta_i), 2d));
-		Vector3D refractedVector = i.scalarMultiply(n1 / n2)
-				.add(n.scalarMultiply((n1 / n2) * cos(theta_i) - sqrt(1d - sin2_theta_t)));
-		Ray refractedRay = new Ray(point, refractedVector, ray.getRecursiveLevel() + 1);
-
-		//
-		//
-		// Calculate reflectance and transmittance fractions
-		double reflectance = 1d;
-		//
-		//
-		// Is this *not* a case of Total-Internal Reflection?
-		if (sin2_theta_t <= 1d) {
-			//
-			double cos_theta_t = sqrt(1d - sin2_theta_t);
-			double r_normal = pow((n1 * cos(theta_i) - n2 * cos_theta_t) / (n1 * cos(theta_i) + n2 * cos_theta_t), 2d);
-			double r_tangent = pow((n2 * cos(theta_i) - n1 * cos_theta_t) / (n2 * cos(theta_i) + n1 * cos_theta_t), 2d);
-
-			reflectance = (r_normal + r_tangent) / 2d;
-		}
-
-		return new FresnelResult(reflectance, 1d - reflectance, reflectedRay, refractedRay);
-	}
-
-	/**
-	 * A data-bean describing the results of a Fresnel interaction: the results
-	 * for Fresnel reflectance and transmittance, plus a reflected and a
-	 * refracted Ray
+	 * Calculates the results of a Fresnel interaction (using the Schlick
+	 * approximation): the results for Fresnel reflectance and transmittance,
+	 * plus a reflected and a refracted Ray
 	 * 
 	 * @author snowjak88
 	 *
@@ -217,11 +161,52 @@ public class FresnelLightingModel implements LightingModel {
 	@SuppressWarnings("javadoc")
 	public static class FresnelResult {
 
-		public FresnelResult(double reflectance, double transmittance, Ray reflectedRay, Ray refractedRay) {
-			this.reflectance = reflectance;
-			this.transmittance = transmittance;
-			this.reflectedRay = reflectedRay;
-			this.refractedRay = refractedRay;
+		public FresnelResult(Intersection<Shape> intersection) {
+			Ray ray = intersection.getRay();
+			Vector3D point = intersection.getPoint();
+			Vector3D i = intersection.getRay().getVector();
+			Vector3D n = intersection.getNormal();
+			double theta_i = Vector3D.angle(i.negate(), n);
+
+			//
+			//
+			//
+			double n1 = intersection.getLeavingMaterial().getRefractiveIndex(point),
+					n2 = intersection.getEnteringMaterial().getRefractiveIndex(point);
+
+			//
+			//
+			// Determine reflected ray
+			Vector3D reflectedVector = getTangentPart(i, n).subtract(getNormalPart(i, n));
+			reflectedRay = new Ray(point, reflectedVector, ray.getRecursiveLevel() + 1);
+
+			//
+			//
+			// Determine refracted ray
+			double sin2_theta_t = pow(n1 / n2, 2d) * (1d - pow(cos(theta_i), 2d));
+			Vector3D refractedVector = i.scalarMultiply(n1 / n2)
+					.add(n.scalarMultiply((n1 / n2) * cos(theta_i) - sqrt(1d - sin2_theta_t)));
+			refractedRay = new Ray(point, refractedVector, ray.getRecursiveLevel() + 1);
+
+			//
+			//
+			// Calculate reflectance and transmittance fractions
+			reflectance = 1d;
+			//
+			//
+			// Is this *not* a case of Total-Internal Reflection?
+			if (sin2_theta_t <= 1d) {
+				//
+				double cos_theta_t = sqrt(1d - sin2_theta_t);
+				double r_normal = pow((n1 * cos(theta_i) - n2 * cos_theta_t) / (n1 * cos(theta_i) + n2 * cos_theta_t),
+						2d);
+				double r_tangent = pow((n2 * cos(theta_i) - n1 * cos_theta_t) / (n2 * cos(theta_i) + n1 * cos_theta_t),
+						2d);
+
+				reflectance = (r_normal + r_tangent) / 2d;
+			}
+
+			this.transmittance = 1d - reflectance;
 		}
 
 		private double reflectance, transmittance;

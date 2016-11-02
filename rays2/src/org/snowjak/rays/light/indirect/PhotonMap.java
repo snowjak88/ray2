@@ -19,7 +19,6 @@ import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.indirect.LightSourceMap.Coordinates;
-import org.snowjak.rays.light.model.FresnelLightingModel;
 import org.snowjak.rays.light.model.FresnelLightingModel.FresnelResult;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Shape;
@@ -43,19 +42,64 @@ public class PhotonMap {
 
 	private static final Random RND = new Random();
 
+	/**
+	 * Build a new {@link PhotonMap}. See
+	 * {@link #build(int, boolean, double, int, double, double)} for more
+	 * details.
+	 * 
+	 * <p>
+	 * The map takes default values for:
+	 * <ul>
+	 * <li>Degrees per {@link LightSourceMap} entry = 5</li>
+	 * <li>Sampling ray count per {@link LightSourceMap} entry = 16</li>
+	 * <li>Photon cull threshold = 0.1</li>
+	 * <li>Photon cull probability = 0.2</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param photonCount
+	 * @param isCausticsMap
+	 * @return a new PhotonMap instance
+	 */
 	public static PhotonMap build(int photonCount, boolean isCausticsMap) {
 
-		return build(photonCount, isCausticsMap, 15d, 8, 0.1, 0.2);
+		return build(photonCount, isCausticsMap, 5d, 16, 0.1, 0.2);
 	}
 
+	/**
+	 * Build a new {@link PhotonMap}. A number of photons ({@code photonCount})
+	 * are distributed among all currently-known light-sources and shot towards
+	 * all visible shapes in the world. If {@code isCausticsMap = true}, then
+	 * only shapes with <em>specular properties</em> are considered.
+	 * <p>
+	 * A shape has <em>specular properties</em> if any of the following are
+	 * true:
+	 * <ul>
+	 * <li>albedo > 0</li>
+	 * <li>surface-transparency > 0</li>
+	 * </ul>
+	 * See {@link Material#getAlbedo()},
+	 * {@link Material#getSurfaceTransparency()}.
+	 * </p>
+	 * 
+	 * @param photonCount
+	 * @param isCausticsMap
+	 * @param degreesPerLightSourceMapEntry
+	 * @param rayCountPerLightSourceMapEntry
+	 * @param photonCullThreshold
+	 * @param photonCullProbability
+	 * @return a new PhotonMap instance
+	 */
 	public static PhotonMap build(int photonCount, boolean isCausticsMap, double degreesPerLightSourceMapEntry,
 			int rayCountPerLightSourceMapEntry, double photonCullThreshold, double photonCullProbability) {
 
 		World world = RaytracerContext.getSingleton().getCurrentWorld();
 
-		double photonsPerUnitRadiance = photonCount / world.getEmissiveShapes().parallelStream()
+		double photonsPerUnitRadiance = photonCount / world.getEmissiveShapes()
+				.parallelStream()
 				.map(s -> s.getEmissive(s.getLocation()).orElse(new RawColor()).getLuminance())
-				.reduce((d1, d2) -> d1 + d2).orElse(1d);
+				.reduce((d1, d2) -> d1 + d2)
+				.orElse(1d);
 
 		PhotonMap photonMap = new PhotonMap();
 
@@ -91,13 +135,17 @@ public class PhotonMap {
 							sampleRay = new Ray(s.getLocation(), sampleDirection);
 
 							if (isCausticsMap)
-								testIntersection = world.getShapeIntersections(sampleRay).stream().sequential()
-										.filter(inter -> inter.getIntersected() != s).findFirst();
+								testIntersection = world.getShapeIntersections(sampleRay)
+										.stream()
+										.sequential()
+										.filter(inter -> inter.getIntersected() != s)
+										.findFirst();
 
 						} while (!isCausticsMap || !isSpecularMaterial(testIntersection.get().getEnteringMaterial(),
 								testIntersection.get().getPoint()));
 
-						RawColor photonRadiance = s.getEmissive(sampleRay.getOrigin()).orElse(new RawColor())
+						RawColor photonRadiance = s.getEmissive(sampleRay.getOrigin())
+								.orElse(new RawColor())
 								.multiplyScalar(photonEnergyScale);
 
 						double weight = 1d;
@@ -106,6 +154,7 @@ public class PhotonMap {
 								photonCullProbability);
 					});
 		}).flatMap(cpe -> cpe.stream()).collect(Collectors.toCollection(LinkedList::new));
+
 		photonMap.addAll(photonEntries);
 
 		return photonMap;
@@ -114,9 +163,13 @@ public class PhotonMap {
 	private static Collection<PhotonEntry> followPhoton(Shape emittingShape, Ray currentRay, RawColor photonRadiance,
 			double weight, boolean acceptOnlySpecular, double photonCullThreshold, double photonCullProbability) {
 
-		Optional<Intersection<Shape>> closestIntersection = RaytracerContext.getSingleton().getCurrentWorld()
-				.getShapeIntersections(currentRay).stream().sequential()
-				.filter(i -> i.getIntersected() != emittingShape).findFirst();
+		Optional<Intersection<Shape>> closestIntersection = RaytracerContext.getSingleton()
+				.getCurrentWorld()
+				.getShapeIntersections(currentRay)
+				.stream()
+				.sequential()
+				.filter(i -> i.getIntersected() != emittingShape)
+				.findFirst();
 
 		if (!closestIntersection.isPresent())
 			return Collections.emptyList();
@@ -140,7 +193,7 @@ public class PhotonMap {
 
 		Collection<PhotonEntry> results = new LinkedList<>();
 
-		FresnelResult fresnelResult = FresnelLightingModel.calculateFresnelResult(closestIntersection.get());
+		FresnelResult fresnelResult = new FresnelResult(closestIntersection.get());
 		double reflectProbability = fresnelResult.getReflectance() * intersectAlbedo;
 		double transmitProbability = fresnelResult.getTransmittance() * intersectTransparency;
 
@@ -242,14 +295,18 @@ public class PhotonMap {
 				new PhotonEntry(point, Vector3D.ZERO, new RawColor()), photonCount,
 				(Predicate<PhotonEntry>) (p) -> p.getArrivalFromDirection().dotProduct(normal) > 0d);
 
-		double maxDistance = closePhotons.parallelStream().map(p -> p.getIntersectPoint().distance(point))
-				.max(Double::compare).orElse(Double.MAX_VALUE);
+		double maxDistance = closePhotons.parallelStream()
+				.map(p -> p.getIntersectPoint().distance(point))
+				.max(Double::compare)
+				.orElse(Double.MAX_VALUE);
 
 		double radianceScale = 1d / (FastMath.PI * FastMath.pow(maxDistance, 2d));
 
 		return closePhotons.parallelStream()
-				.map(p -> p.getColor().multiplyScalar(radianceScale)
-						.multiplyScalar(p.getArrivalFromDirection().dotProduct(normal)))
+				.map(p -> p.getColor()
+						.multiplyScalar(radianceScale)
+						.multiplyScalar(p.getArrivalFromDirection().dotProduct(normal))
+						.multiplyScalar(1d - (p.getIntersectPoint().distance(point) / maxDistance)))
 				.reduce(new RawColor(), RawColor::add);
 	}
 }
