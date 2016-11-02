@@ -141,7 +141,7 @@ public class PhotonMap {
 										.filter(inter -> inter.getIntersected() != s)
 										.findFirst();
 
-						} while (!isCausticsMap || !isSpecularMaterial(testIntersection.get().getEnteringMaterial(),
+						} while (isCausticsMap && isSpecularMaterial(testIntersection.get().getEnteringMaterial(),
 								testIntersection.get().getPoint()));
 
 						RawColor photonRadiance = s.getEmissive(sampleRay.getOrigin())
