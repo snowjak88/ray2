@@ -7,7 +7,6 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.Renderer;
@@ -16,8 +15,6 @@ import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.world.World;
-
-import javafx.scene.paint.Color;
 
 /**
  * A {@link LightingModel} that implements the Schlick approximation to the
@@ -56,7 +53,7 @@ public class FresnelLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
+	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
 		if (!intersection.isPresent())
 			return Optional.empty();
@@ -78,76 +75,47 @@ public class FresnelLightingModel implements LightingModel {
 		//
 		//
 		// Now shoot some rays!
-		LightingResult finalResult = new LightingResult();
-		finalResult.setEye(ray);
-		finalResult.setPoint(intersect.getPoint());
-		finalResult.setNormal(intersect.getNormal());
+		RawColor finalColor = new RawColor();
 
 		//
 		//
 		//
-		LightingResult surfaceResult = new LightingResult();
-		surfaceResult.setEye(ray);
-		surfaceResult.setPoint(intersect.getPoint());
-		surfaceResult.setNormal(intersect.getNormal());
-		surfaceResult = surfaceLightingModel.determineRayColor(ray, intersection).orElse(surfaceResult);
-		RawColor surfaceColor = surfaceResult.getRadiance();
+		RawColor surfaceColor = surfaceLightingModel.determineRayColor(ray, intersection).orElse(new RawColor());
 
 		//
 		//
 		//
-		LightingResult reflectedResult, refractedResult;
 		RawColor reflectedColor = new RawColor(), refractedColor = new RawColor();
 		double surfaceTransparency = intersect.getEnteringMaterial().getSurfaceTransparency(intersect.getPoint());
-		double albedo = intersect.getEnteringMaterial().getAlbedo(intersect.getPoint());
-		RawColor reflectedTint = new RawColor(Color.WHITE), refractedTint = new RawColor(Color.WHITE);
 
 		if (reflectance > 0d) {
 			Optional<Intersection<Shape>> reflectedIntersection = world
 					.getClosestShapeIntersection(fresnel.getReflectedRay());
-			reflectedResult = renderer.getLightingModel()
+			reflectedColor = renderer.getLightingModel()
 					.determineRayColor(fresnel.getReflectedRay(), reflectedIntersection)
-					.orElse(new LightingResult());
-			reflectedColor = reflectedResult.getRadiance();
-
-			reflectedTint = Functions.lerp(reflectedTint, intersect.getDiffuse(intersect.getPoint()), 1d - albedo);
-
-			finalResult.getContributingResults().add(new Pair<>(reflectedResult, reflectance));
-
+					.orElse(new RawColor());
 		}
 		if (transmittance > 0d) {
 			//
 			// Get the color of the refracted ray.
 			Optional<Intersection<Shape>> refractedIntersection = world
 					.getClosestShapeIntersection(fresnel.getRefractedRay());
-			refractedResult = renderer.getLightingModel()
+			refractedColor = renderer.getLightingModel()
 					.determineRayColor(fresnel.getRefractedRay(), refractedIntersection)
-					.orElse(new LightingResult());
-			refractedColor = refractedResult.getRadiance();
+					.orElse(new RawColor());
 
 			//
 			//
 			// The refracted color is to be mixed with the surface
 			// color, insofar as the surface is transparent
 
-			//
-			//
-			double finalSurfaceFraction = 1d - surfaceTransparency;
-			double finalRefractedFraction = surfaceTransparency;
-
 			RawColor finalRefractedColor = Functions.lerp(surfaceColor, refractedColor, surfaceTransparency);
-
-			finalResult.getContributingResults().add(new Pair<>(refractedResult, finalRefractedFraction));
-			finalResult.getContributingResults().add(new Pair<>(surfaceResult, finalSurfaceFraction));
-			refractedTint = Functions.lerp(new RawColor(Color.WHITE), intersect.getDiffuse(intersect.getPoint()),
-					1d - surfaceTransparency);
 			refractedColor = finalRefractedColor;
 		}
 
-		finalResult.setRadiance(Functions.lerp(reflectedColor, refractedColor, transmittance));
-		finalResult.setTint(Functions.lerp(reflectedTint, refractedTint, transmittance));
+		finalColor = Functions.lerp(reflectedColor, refractedColor, transmittance);
 
-		return Optional.of(finalResult);
+		return Optional.of(finalColor);
 	}
 
 	/**

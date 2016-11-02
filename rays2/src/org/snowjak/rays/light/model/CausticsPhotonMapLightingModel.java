@@ -37,7 +37,7 @@ public class CausticsPhotonMapLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
+	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
 		if (!intersection.isPresent())
 			return Optional.empty();
@@ -49,12 +49,7 @@ public class CausticsPhotonMapLightingModel implements LightingModel {
 
 		RawColor photonRadiance = causticsMap.getIntensityAt(point, normal, photonCount);
 
-		LightingResult result = new LightingResult();
-		result.setEye(ray);
-		result.setPoint(point);
-		result.setNormal(normal);
-		result.setRadiance(photonRadiance.multiply(diffuseColor));
-		return Optional.of(result);
+		return Optional.of(photonRadiance.multiply(diffuseColor));
 	}
 
 }

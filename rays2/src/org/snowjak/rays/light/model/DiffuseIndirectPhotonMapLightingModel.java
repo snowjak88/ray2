@@ -37,7 +37,7 @@ public class DiffuseIndirectPhotonMapLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
+	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
 		if (!intersection.isPresent())
 			return Optional.empty();
@@ -90,12 +90,7 @@ public class DiffuseIndirectPhotonMapLightingModel implements LightingModel {
 
 		RawColor resultingRadiance = sampledRadiance.multiply(intersect.getDiffuse(point));
 
-		LightingResult result = new LightingResult();
-		result.setEye(ray);
-		result.setPoint(point);
-		result.setNormal(normal);
-		result.setRadiance(resultingRadiance);
-		return Optional.of(result);
+		return Optional.of(resultingRadiance);
 	}
 
 }

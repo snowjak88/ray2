@@ -10,8 +10,8 @@ import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.RaytracerContext;
+import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
-import org.snowjak.rays.light.model.LightingModel.LightingResult;
 import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
@@ -63,7 +63,7 @@ public class Camera implements Transformable {
 	 * @param cameraY
 	 * @return the amount of light reaching the camera at this point
 	 */
-	public Optional<LightingResult> shootRay(double cameraX, double cameraY) {
+	public Optional<RawColor> shootRay(double cameraX, double cameraY) {
 
 		Vector3D location = new Vector3D(cameraX, cameraY, 0.0);
 		Vector3D direction = location.subtract(getEyeLocation()).normalize();

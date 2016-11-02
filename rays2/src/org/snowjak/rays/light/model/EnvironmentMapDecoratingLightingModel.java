@@ -8,7 +8,6 @@ import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
-import org.snowjak.rays.world.World;
 
 /**
  * A {@link LightingModel} that implements an environment map at "infinite"
@@ -38,20 +37,14 @@ public class EnvironmentMapDecoratingLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
+	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		Optional<LightingResult> decoratedColor = decoratedLightingModel.determineRayColor(ray, intersection);
+		Optional<RawColor> decoratedColor = decoratedLightingModel.determineRayColor(ray, intersection);
 
 		if (decoratedColor.isPresent())
 			return decoratedColor;
 
-		LightingResult result = new LightingResult();
-		result.setEye(ray);
-		result.setNormal(ray.getVector().negate());
-		result.setPoint(ray.getVector().scalarMultiply(2d * World.FAR_AWAY));
-		result.setRadiance(environmentMap.getColorAt(environmentMap.convert(ray.getVector())));
-
-		return Optional.of(result);
+		return Optional.of(environmentMap.getColorAt(environmentMap.convert(ray.getVector())));
 	}
 
 	/**

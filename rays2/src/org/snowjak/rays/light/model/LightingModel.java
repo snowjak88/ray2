@@ -32,7 +32,7 @@ public interface LightingModel {
 	 * @param intersection
 	 * @return the resulting Color, if any
 	 */
-	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection);
+	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection);
 
 	/**
 	 * Describes the outcome of executing this LightingModel.

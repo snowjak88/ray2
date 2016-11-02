@@ -79,7 +79,7 @@ public class AntialiasingScreenDecorator implements PixelDrawer {
 			return results;
 
 		}, (v) -> {
-			return (Optional<RawColor>) camera.shootRay(v.getX(), v.getY()).map(lr -> lr.getRadiance());
+			return (Optional<RawColor>) camera.shootRay(v.getX(), v.getY());
 
 		}, (lp) -> {
 			if (aaSetting == AA.OFF)

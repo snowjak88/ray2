@@ -48,7 +48,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
+	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
 		if (!intersection.isPresent())
 			return Optional.empty();
@@ -56,7 +56,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 		return Optional.of(lightIntersection(intersection.get()));
 	}
 
-	private LightingResult lightIntersection(Intersection<Shape> intersection) {
+	private RawColor lightIntersection(Intersection<Shape> intersection) {
 
 		Vector3D point = intersection.getPoint();
 		Vector3D normal = intersection.getNormal();
@@ -136,13 +136,7 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 
 		RawColor pointColor = intersection.getDiffuse(point);
 
-		LightingResult result = new LightingResult();
-		result.setPoint(point);
-		result.setNormal(normal);
-		result.setEye(intersection.getRay());
-		result.setRadiance(pointColor.multiply(totalLightAtPoint));
-
-		return result;
+		return pointColor.multiply(totalLightAtPoint);
 	}
 
 }

@@ -17,7 +17,7 @@ import org.snowjak.rays.shape.Shape;
 public class EmissiveLightingModel implements LightingModel {
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
+	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
 		if (!intersection.isPresent())
 			return Optional.empty();
@@ -28,12 +28,7 @@ public class EmissiveLightingModel implements LightingModel {
 
 		RawColor visibleRadiance = intersection.get().getEmissive(intersection.get().getPoint()).orElse(new RawColor());
 
-		LightingResult result = new LightingResult();
-		result.setEye(ray);
-		result.setPoint(intersection.get().getPoint());
-		result.setNormal(intersection.get().getNormal());
-		result.setRadiance(visibleRadiance);
-		return Optional.of(result);
+		return Optional.of(visibleRadiance);
 	}
 
 }
