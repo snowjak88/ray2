@@ -31,6 +31,7 @@ import org.snowjak.rays.light.model.LambertianDiffuseLightingModel;
 import org.snowjak.rays.light.model.PhongSpecularLightingModel;
 import org.snowjak.rays.light.model.SphericalEnvironmentMap;
 import org.snowjak.rays.ui.impl.JavaFxPixelDrawer;
+import org.snowjak.rays.util.ExecutionTimeTracker;
 import org.snowjak.rays.world.World;
 import org.snowjak.rays.world.importfile.BuilderInvoker;
 import org.snowjak.rays.world.importfile.WorldFileObjectDefinition;
@@ -87,6 +88,9 @@ public class RaytracerApp extends Application {
 		RaytracerContext.getSingleton().setSettings(settings);
 		RaytracerContext.getSingleton().setCurrentRenderer(renderer);
 		RaytracerContext.getSingleton().setCurrentWorld(world);
+
+		System.out.println("Starting execution-time tracker ...");
+		RaytracerContext.getSingleton().getWorkerThreadPool().submit(new ExecutionTimeTracker());
 
 		primaryStage.setOnCloseRequest((e) -> {
 			RaytracerContext.getSingleton().shutdown();

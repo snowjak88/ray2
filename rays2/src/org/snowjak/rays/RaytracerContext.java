@@ -1,10 +1,14 @@
 package org.snowjak.rays;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.math3.util.FastMath;
 import org.snowjak.rays.ui.CanBeShutdown;
+import org.snowjak.rays.util.ExecutionTimeTracker;
+import org.snowjak.rays.util.ExecutionTimeTracker.ExecutionRecord;
 import org.snowjak.rays.world.World;
 
 /**
@@ -26,6 +30,8 @@ public class RaytracerContext implements CanBeShutdown {
 	private int workerThreadCount = FastMath.max(Runtime.getRuntime().availableProcessors() - 1, 1);
 
 	private ThreadPoolExecutor workerThreadPool = null;
+
+	private BlockingQueue<ExecutionTimeTracker.ExecutionRecord> executionRecordQueue = new LinkedBlockingQueue<>(1024);
 
 	protected RaytracerContext() {
 
@@ -113,6 +119,15 @@ public class RaytracerContext implements CanBeShutdown {
 	public Settings getSettings() {
 
 		return settings;
+	}
+
+	/**
+	 * @return the queue used to submit {@link ExecutionRecord}s to the
+	 *         {@link ExecutionTimeTracker}.
+	 */
+	public BlockingQueue<ExecutionTimeTracker.ExecutionRecord> getTimeTrackerQueue() {
+
+		return executionRecordQueue;
 	}
 
 	/**

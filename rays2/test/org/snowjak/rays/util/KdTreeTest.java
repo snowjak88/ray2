@@ -1,7 +1,6 @@
 package org.snowjak.rays.util;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,8 +32,8 @@ public class KdTreeTest extends TestCase {
 
 	public void testGetNClosestPoints() {
 
-		List<TestPoint> testPoints = Arrays.asList(new TestPoint(0, 0), new TestPoint(4, 0), new TestPoint(0, 4), new TestPoint(4, 4),
-				new TestPoint(2, 2));
+		List<TestPoint> testPoints = Arrays.asList(new TestPoint(0, 0), new TestPoint(4, 0), new TestPoint(0, 4),
+				new TestPoint(4, 4), new TestPoint(2, 2));
 		KdTree<TestPoint, Integer> tree = new KdTree<>(2);
 		tree.addPoints(testPoints);
 

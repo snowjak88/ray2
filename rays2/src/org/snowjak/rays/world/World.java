@@ -1,5 +1,6 @@
 package org.snowjak.rays.world;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.DirectionalLight;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.util.ExecutionTimeTracker;
 
 /**
  * <p>
@@ -74,6 +76,8 @@ public class World {
 	 */
 	public boolean isPointVisibleFromEye(Vector3D point, Vector3D eyePoint, Shape... ignoreShapes) {
 
+		Instant start = Instant.now();
+
 		List<Shape> ignoreShapesList = Arrays.asList(ignoreShapes);
 		List<Intersection<Shape>> occludingIntersections = RaytracerContext.getSingleton()
 				.getCurrentWorld()
@@ -81,12 +85,16 @@ public class World {
 
 		double pointDistanceFromEye = eyePoint.distance(point);
 
+		boolean result = true;
+
 		if (!occludingIntersections.isEmpty() && occludingIntersections.parallelStream()
 				.filter(i -> !ignoreShapesList.contains(i.getIntersected()))
 				.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), pointDistanceFromEye) < 0))
-			return false;
+			result = false;
 
-		return true;
+		ExecutionTimeTracker.logExecutionRecord("World.isPointVisibleFromEye", start, Instant.now(), null);
+
+		return result;
 	}
 
 	/**
@@ -100,12 +108,17 @@ public class World {
 	 */
 	public Optional<Intersection<Shape>> getClosestShapeIntersection(Ray ray) {
 
-		return getShapes().parallelStream()
+		Instant start = Instant.now();
+		Optional<Intersection<Shape>> result = getShapes().parallelStream()
 				.map(s -> s.getIntersection(ray))
 				.filter(oi -> oi.isPresent())
 				.map(o -> o.get())
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.findFirst();
+
+		ExecutionTimeTracker.logExecutionRecord("World.getClosestShapeIntersection", start, Instant.now(), null);
+
+		return result;
 	}
 
 	/**
@@ -119,13 +132,19 @@ public class World {
 	 */
 	public List<Intersection<Shape>> getShapeIntersections(Ray ray) {
 
+		Instant start = Instant.now();
+
 		List<Intersection<Shape>> intersections = new LinkedList<>();
 		for (Shape shape : getShapes())
 			intersections.addAll(shape.getIntersections(ray));
 
-		return intersections.stream()
+		intersections = intersections.stream()
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
 				.collect(Collectors.toCollection(LinkedList::new));
+
+		ExecutionTimeTracker.logExecutionRecord("World.getShapeIntersections", start, Instant.now(), null);
+
+		return intersections;
 	}
 
 	/**
