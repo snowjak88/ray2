@@ -15,7 +15,6 @@ import org.snowjak.rays.RaytracerContext;
 import org.snowjak.rays.antialias.SuperSamplingAntialiaser;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
-import org.snowjak.rays.light.model.LightingModel.LightingResult;
 import org.snowjak.rays.shape.Shape;
 
 /**
@@ -38,7 +37,7 @@ public class DepthOfFieldCamera extends Camera {
 
 	private Random rnd = new Random();
 
-	private SuperSamplingAntialiaser<Vector3D, Optional<LightingResult>, Optional<LightingResult>> antialiaser = new SuperSamplingAntialiaser<>();
+	private SuperSamplingAntialiaser<Vector3D, Optional<RawColor>, Optional<RawColor>> antialiaser = new SuperSamplingAntialiaser<>();
 
 	/**
 	 * Construct a new {@link DepthOfFieldCamera}, using a default lens-diameter
@@ -78,7 +77,7 @@ public class DepthOfFieldCamera extends Camera {
 	}
 
 	@Override
-	public Optional<LightingResult> shootRay(double cameraX, double cameraY) {
+	public Optional<RawColor> shootRay(double cameraX, double cameraY) {
 
 		Vector3D eyeLocation = getEyeLocation();
 		Vector3D caxelLocation = new Vector3D(cameraX, cameraY, 0d);
@@ -114,8 +113,7 @@ public class DepthOfFieldCamera extends Camera {
 		}, (lp) -> {
 
 			Pair<Double, RawColor> resultPair = lp.parallelStream()
-					.map(p -> new Pair<>(p.getKey().distance(caxelLocation),
-							p.getValue().map(lr -> lr.getRadiance()).orElse(new RawColor())))
+					.map(p -> new Pair<>(p.getKey().distance(caxelLocation), p.getValue().orElse(new RawColor())))
 					.map(p -> new Pair<>(sampleWeighting.density(p.getKey()), p.getValue()))
 					.map(p -> new Pair<>(p.getKey(), p.getValue().multiplyScalar(p.getKey())))
 					.reduce(new Pair<>(0d, new RawColor()),
@@ -123,9 +121,7 @@ public class DepthOfFieldCamera extends Camera {
 
 			RawColor resultingColor = resultPair.getValue().multiplyScalar(1d / resultPair.getKey());
 
-			LightingResult result = new LightingResult();
-			result.setRadiance(resultingColor);
-			return Optional.of(result);
+			return Optional.of(resultingColor);
 		});
 	}
 

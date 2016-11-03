@@ -3,7 +3,6 @@ package org.snowjak.rays.light.model;
 import java.util.Optional;
 
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.Ray;
 import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
@@ -56,15 +55,11 @@ public class FogDecoratingLightingModel implements LightingModel {
 	}
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
+	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
-		Optional<LightingResult> decoratedLightingResult = decoratedModel.determineRayColor(ray, intersection);
+		Optional<RawColor> decoratedLightingResult = decoratedModel.determineRayColor(ray, intersection);
 
-		RawColor unfoggedColor;
-		if (decoratedLightingResult.isPresent()) {
-			unfoggedColor = decoratedLightingResult.get().getRadiance();
-		} else
-			unfoggedColor = new RawColor();
+		RawColor unfoggedColor = decoratedLightingResult.orElse(new RawColor());
 
 		double colorDistance = 0d;
 		if (!intersection.isPresent())
@@ -75,14 +70,7 @@ public class FogDecoratingLightingModel implements LightingModel {
 		double fogStrength = FastMath.pow(0.5, (colorDistance / halfFogDistance));
 		RawColor foggedColor = unfoggedColor.multiplyScalar(fogStrength).add(fogColor.multiplyScalar(1d - fogStrength));
 
-		LightingResult foggedResult = new LightingResult();
-		foggedResult.setEye(decoratedLightingResult.get().getEye());
-		foggedResult.setNormal(decoratedLightingResult.get().getNormal());
-		foggedResult.setPoint(decoratedLightingResult.get().getPoint());
-		foggedResult.setRadiance(foggedColor);
-		foggedResult.getContributingResults().add(new Pair<>(decoratedLightingResult.get(), 1d));
-
-		return decoratedLightingResult;
+		return Optional.of(foggedColor);
 	}
 
 }

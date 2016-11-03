@@ -64,6 +64,9 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 	 */
 	public void addPoints(Collection<P> newPoints) {
 
+		if (newPoints.isEmpty())
+			return;
+
 		List<P> pointsSortedAlongDimension = newPoints.stream()
 				.sorted((p1, p2) -> p1.getCoordinate(0).compareTo(p2.getCoordinate(0)))
 				.collect(Collectors.toCollection(LinkedList::new));
@@ -214,8 +217,8 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 							.compareTo(p2.getCoordinate(getNodeDimension())))
 					.collect(Collectors.toCollection(LinkedList::new));
 
-			int medianIndex = FastMath.max(pointsSortedAlongDimension.size() / 2,
-					pointsSortedAlongDimension.size() - 1);
+			int medianIndex = FastMath
+					.max(FastMath.min(pointsSortedAlongDimension.size() / 2, pointsSortedAlongDimension.size() - 1), 0);
 
 			this.addPoint(pointsSortedAlongDimension.get(medianIndex));
 			if (medianIndex > 0) {

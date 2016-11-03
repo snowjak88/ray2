@@ -25,7 +25,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 	private SuperSamplingAntialiaser<Vector3D, RawColor, RawColor> sampler = new SuperSamplingAntialiaser<>();
 
 	@Override
-	public Optional<LightingResult> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
+	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
 		if (!intersection.isPresent())
 			return Optional.empty();
@@ -74,13 +74,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 
 		}
 
-		LightingResult result = new LightingResult();
-		result.setEye(ray);
-		result.setNormal(intersect.getNormal());
-		result.setPoint(intersect.getPoint());
-		result.setRadiance(totalSpecular);
-
-		return Optional.of(result);
+		return Optional.of(totalSpecular);
 	}
 
 	private Vector3D getReflection(Vector3D v, Vector3D normal) {
@@ -134,8 +128,7 @@ public class PhongSpecularLightingModel implements LightingModel {
 
 		if (lightExposure > 0d) {
 
-			return calculateSpecularRadiance(intersect, light.getDirection().negate().normalize(),
-					light.getRadiance());
+			return calculateSpecularRadiance(intersect, light.getDirection().negate().normalize(), light.getRadiance());
 
 		}
 		return new RawColor();
