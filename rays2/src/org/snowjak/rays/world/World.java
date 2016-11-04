@@ -78,17 +78,15 @@ public class World {
 
 		Instant start = Instant.now();
 
-		List<Shape> ignoreShapesList = Arrays.asList(ignoreShapes);
 		List<Intersection<Shape>> occludingIntersections = RaytracerContext.getSingleton()
 				.getCurrentWorld()
-				.getShapeIntersections(new Ray(eyePoint, point.subtract(eyePoint)));
+				.getShapeIntersections(new Ray(eyePoint, point.subtract(eyePoint)), ignoreShapes);
 
 		double pointDistanceFromEye = eyePoint.distance(point);
 
 		boolean result = true;
 
 		if (!occludingIntersections.isEmpty() && occludingIntersections.parallelStream()
-				.filter(i -> !ignoreShapesList.contains(i.getIntersected()))
 				.anyMatch(i -> Double.compare(i.getDistanceFromRayOrigin(), pointDistanceFromEye) < 0))
 			result = false;
 
@@ -103,13 +101,20 @@ public class World {
 	 * 
 	 * @param ray
 	 *            the ray to use, expressed in global coordinates
+	 * @param ignoreShapes
 	 * @return the closest Intersection the given Ray produces, according to the
 	 *         distance from the Ray's origin
 	 */
-	public Optional<Intersection<Shape>> getClosestShapeIntersection(Ray ray) {
+	public Optional<Intersection<Shape>> getClosestShapeIntersection(Ray ray, Shape... ignoreShapes) {
+
+		if (ignoreShapes == null)
+			ignoreShapes = new Shape[0];
+
+		final List<Shape> ignoreShapesList = Arrays.asList(ignoreShapes);
 
 		Instant start = Instant.now();
 		Optional<Intersection<Shape>> result = getShapes().parallelStream()
+				.filter(s -> !ignoreShapesList.contains(s))
 				.map(s -> s.getIntersection(ray))
 				.filter(oi -> oi.isPresent())
 				.map(o -> o.get())
@@ -127,16 +132,23 @@ public class World {
 	 * 
 	 * @param ray
 	 *            the ray to use, expressed in global coordinates
+	 * @param ignoreShapes
 	 * @return every single Intersection the given Ray produces, sorted by
 	 *         distance from the Ray's origin
 	 */
-	public List<Intersection<Shape>> getShapeIntersections(Ray ray) {
+	public List<Intersection<Shape>> getShapeIntersections(Ray ray, Shape... ignoreShapes) {
+
+		if (ignoreShapes == null)
+			ignoreShapes = new Shape[0];
+
+		final List<Shape> ignoreShapesList = Arrays.asList(ignoreShapes);
 
 		Instant start = Instant.now();
 
 		List<Intersection<Shape>> intersections = new LinkedList<>();
 		for (Shape shape : getShapes())
-			intersections.addAll(shape.getIntersections(ray));
+			if (!ignoreShapesList.contains(shape))
+				intersections.addAll(shape.getIntersections(ray));
 
 		intersections = intersections.stream()
 				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))

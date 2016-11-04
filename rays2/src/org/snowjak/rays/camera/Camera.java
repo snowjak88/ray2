@@ -18,7 +18,6 @@ import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
 import org.snowjak.rays.ui.BasicScreen;
 import org.snowjak.rays.util.ExecutionTimeTracker;
-import org.snowjak.rays.util.ExecutionTimeTracker.ExecutionRecord;
 import org.snowjak.rays.world.World;
 
 /**

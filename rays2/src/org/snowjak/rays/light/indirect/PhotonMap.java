@@ -127,21 +127,20 @@ public class PhotonMap {
 						Ray sampleRay = null;
 						Optional<Intersection<Shape>> testIntersection = null;
 						do {
-							LightSourceMap.Entry selectedEntry = shapeMapEntries
-									.get(RND.nextInt(shapeMapEntries.size()));
+							do {
+								LightSourceMap.Entry selectedEntry = shapeMapEntries
+										.get(RND.nextInt(shapeMapEntries.size()));
 
-							double sampleU = selectedEntry.getU() + RND.nextDouble(),
-									sampleV = selectedEntry.getV() + RND.nextDouble();
-							Coordinates sampleCoordinates = lightSourceMap.new Coordinates(sampleU, sampleV);
-							Vector3D sampleDirection = sampleCoordinates.getUnitVector();
-							sampleRay = new Ray(s.getLocation(), sampleDirection);
+								double sampleU = selectedEntry.getU() + RND.nextDouble(),
+										sampleV = selectedEntry.getV() + RND.nextDouble();
+								Coordinates sampleCoordinates = lightSourceMap.new Coordinates(sampleU, sampleV);
+								Vector3D sampleDirection = sampleCoordinates.getUnitVector();
+								sampleRay = new Ray(s.getLocation(), sampleDirection);
 
-							if (isCausticsMap)
-								testIntersection = world.getShapeIntersections(sampleRay)
-										.stream()
-										.sequential()
-										.filter(inter -> inter.getIntersected() != s)
-										.findFirst();
+								if (isCausticsMap)
+									testIntersection = world.getClosestShapeIntersection(sampleRay, s);
+
+							} while (isCausticsMap && !testIntersection.isPresent());
 
 						} while (isCausticsMap && !isSpecularMaterial(testIntersection.get().getEnteringMaterial(),
 								testIntersection.get().getPoint()));
@@ -168,11 +167,7 @@ public class PhotonMap {
 
 		Optional<Intersection<Shape>> closestIntersection = RaytracerContext.getSingleton()
 				.getCurrentWorld()
-				.getShapeIntersections(currentRay)
-				.stream()
-				.sequential()
-				.filter(i -> i.getIntersected() != emittingShape)
-				.findFirst();
+				.getClosestShapeIntersection(currentRay, emittingShape);
 
 		if (!closestIntersection.isPresent())
 			return Collections.emptyList();
@@ -232,7 +227,7 @@ public class PhotonMap {
 
 			nextStageRay = new Ray(intersectionPoint, randomDirection);
 			nextStageRadiance = photonRadiance.multiply(diffuseSurfaceColor);
-			weight *= intersectAlbedo;
+			weight *= (intersectAlbedo + photonCullProbability);
 		}
 
 		results.addAll(followPhoton(emittingShape, nextStageRay, nextStageRadiance, weight, false, photonCullThreshold,

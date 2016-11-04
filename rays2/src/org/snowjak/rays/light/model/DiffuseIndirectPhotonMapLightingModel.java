@@ -77,11 +77,7 @@ public class DiffuseIndirectPhotonMapLightingModel implements LightingModel {
 		}, (v) -> {
 			Optional<Intersection<Shape>> sampledIntersection = RaytracerContext.getSingleton()
 					.getCurrentWorld()
-					.getShapeIntersections(new Ray(point, v))
-					.stream()
-					.sequential()
-					.filter(i -> i.getIntersected() != intersected)
-					.findFirst();
+					.getClosestShapeIntersection(new Ray(point, v), intersected);
 			if (!sampledIntersection.isPresent())
 				return Optional.empty();
 

@@ -143,11 +143,7 @@ public class LightSourceMap {
 
 			Optional<Intersection<Shape>> closestIntersection = RaytracerContext.getSingleton()
 					.getCurrentWorld()
-					.getShapeIntersections(sampleRay)
-					.stream()
-					.filter(i -> i.getIntersected() != lightSource)
-					.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-					.findFirst();
+					.getClosestShapeIntersection(sampleRay, lightSource);
 
 			if (closestIntersection.isPresent()) {
 				isShape = true;

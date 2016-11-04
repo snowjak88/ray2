@@ -13,6 +13,7 @@ import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.DirectionalLight;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.world.World;
 
 /**
  * Implements the Phong specular-reflection model.
@@ -89,13 +90,13 @@ public class PhongSpecularLightingModel implements LightingModel {
 
 		Ray toLightRay = new Ray(intersect.getPoint(), toEmissiveVector.normalize());
 
-		Optional<Intersection<Shape>> emissiveSurfaceIntersection = RaytracerContext.getSingleton()
-				.getCurrentWorld()
-				.getShapeIntersections(toLightRay)
-				.parallelStream()
-				.filter(i -> i.getIntersected() == emissiveShape)
-				.sorted((i1, i2) -> Double.compare(i1.getDistanceFromRayOrigin(), i2.getDistanceFromRayOrigin()))
-				.findFirst();
+		World world = RaytracerContext.getSingleton().getCurrentWorld();
+
+		Collection<Shape> allButThisEmissive = world.getEmissiveShapes();
+		allButThisEmissive.remove(emissiveShape);
+
+		Optional<Intersection<Shape>> emissiveSurfaceIntersection = world.getClosestShapeIntersection(toLightRay,
+				allButThisEmissive.toArray(new Shape[0]));
 
 		if (emissiveSurfaceIntersection.isPresent()) {
 
