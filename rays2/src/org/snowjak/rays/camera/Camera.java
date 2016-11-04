@@ -3,6 +3,7 @@ package org.snowjak.rays.camera;
 import static org.apache.commons.math3.util.FastMath.sin;
 import static org.apache.commons.math3.util.FastMath.toRadians;
 
+import java.time.Instant;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Optional;
@@ -16,6 +17,8 @@ import org.snowjak.rays.shape.Shape;
 import org.snowjak.rays.transform.Transformable;
 import org.snowjak.rays.transform.Transformer;
 import org.snowjak.rays.ui.BasicScreen;
+import org.snowjak.rays.util.ExecutionTimeTracker;
+import org.snowjak.rays.util.ExecutionTimeTracker.ExecutionRecord;
 import org.snowjak.rays.world.World;
 
 /**
@@ -69,12 +72,21 @@ public class Camera implements Transformable {
 		Vector3D direction = location.subtract(getEyeLocation()).normalize();
 
 		Ray ray = localToWorld(new Ray(location, direction));
+
+		Instant start = Instant.now();
 		Optional<Intersection<Shape>> intersection = RaytracerContext.getSingleton()
 				.getCurrentWorld()
 				.getClosestShapeIntersection(ray);
+		ExecutionTimeTracker.logExecutionRecord("camera - get intersection", start, Instant.now(), null);
 
-		return RaytracerContext.getSingleton().getCurrentRenderer().getLightingModel().determineRayColor(ray,
-				intersection);
+		start = Instant.now();
+		Optional<RawColor> resultingColor = RaytracerContext.getSingleton()
+				.getCurrentRenderer()
+				.getLightingModel()
+				.determineRayColor(ray, intersection);
+		ExecutionTimeTracker.logExecutionRecord("camera - get resulting color", start, Instant.now(), null);
+
+		return resultingColor;
 
 	}
 

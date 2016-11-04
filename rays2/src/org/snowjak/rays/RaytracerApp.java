@@ -91,17 +91,22 @@ public class RaytracerApp extends Application {
 				new FresnelLightingModel(new AdditiveCompositingLightingModel(new AmbientLightingModel(),
 						new LambertianDiffuseLightingModel(), new PhongSpecularLightingModel(),
 						new EmissiveLightingModel(),
-						new CausticsPhotonMapLightingModel(PhotonMap.build(10000, true, 10d, 16, 0.1, 0.25), 32),
-						new DiffuseIndirectPhotonMapLightingModel(PhotonMap.build(500, false, 10d, 16, 0.1, 0.25), 16,
-								8)))));
+						new CausticsPhotonMapLightingModel(PhotonMap.build(30000, true, 1d, 16, 0.1, 0.25), 32)
+//						,
+//						new DiffuseIndirectPhotonMapLightingModel(PhotonMap.build(1000, false, 30d, 16, 0.1, 0.25), 32,
+//								4)
+						))));
 
 		System.out.println("Starting execution-time tracker ...");
-		RaytracerContext.getSingleton().getWorkerThreadPool().submit(new ExecutionTimeTracker());
+		ExecutionTimeTracker timeTracker = new ExecutionTimeTracker(
+				RaytracerContext.getSingleton().getWorkerThreadCount());
 
 		primaryStage.setOnCloseRequest((e) -> {
 			RaytracerContext.getSingleton().shutdown();
+			timeTracker.shutdown();
 
 			primaryStage.close();
+			System.exit(0);
 		});
 
 		Executors.newSingleThreadExecutor().submit(() -> {

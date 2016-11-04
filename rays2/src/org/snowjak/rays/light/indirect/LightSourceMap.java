@@ -85,11 +85,13 @@ public class LightSourceMap {
 				result.addAll(RaytracerContext.getSingleton().getWorkerThreadPool().submit(() -> {
 
 					List<Entry> r = new LinkedList<>();
+
 					for (int v = 0; v < entries[threadsafe_u].length; v++) {
 						Entry entry = getEntry(threadsafe_u, v);
 						if (predicate.test(entry))
 							result.add(entry);
 					}
+
 					return r;
 
 				}).get());
@@ -160,6 +162,9 @@ public class LightSourceMap {
 
 				if (isNonZeroAlbedo || isNonZeroTransparency)
 					isSpecular = true;
+
+				if (isShape && isSpecular)
+					break;
 			}
 		}
 

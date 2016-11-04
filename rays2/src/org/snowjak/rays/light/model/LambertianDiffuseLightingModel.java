@@ -1,5 +1,6 @@
 package org.snowjak.rays.light.model;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.DirectionalLight;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.util.ExecutionTimeTracker;
 import org.snowjak.rays.world.World;
 
 /**
@@ -50,10 +52,16 @@ public class LambertianDiffuseLightingModel implements LightingModel {
 	@Override
 	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
+		Instant start = Instant.now();
+
 		if (!intersection.isPresent())
 			return Optional.empty();
 
-		return Optional.of(lightIntersection(intersection.get()));
+		RawColor result = lightIntersection(intersection.get());
+
+		ExecutionTimeTracker.logExecutionRecord("LambertianDiffuseLightingModel", start, Instant.now(), null);
+
+		return Optional.of(result);
 	}
 
 	private RawColor lightIntersection(Intersection<Shape> intersection) {

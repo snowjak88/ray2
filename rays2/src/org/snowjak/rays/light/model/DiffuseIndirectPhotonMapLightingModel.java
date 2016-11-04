@@ -1,5 +1,6 @@
 package org.snowjak.rays.light.model;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.indirect.PhotonMap;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.util.ExecutionTimeTracker;
 
 public class DiffuseIndirectPhotonMapLightingModel implements LightingModel {
 
@@ -39,27 +41,33 @@ public class DiffuseIndirectPhotonMapLightingModel implements LightingModel {
 	@Override
 	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
+		Instant start = Instant.now();
+
 		if (!intersection.isPresent())
 			return Optional.empty();
 
 		Intersection<Shape> intersect = intersection.get();
 		Vector3D point = intersect.getPoint();
-		Vector3D normal = intersect.getNormal();
 		Shape intersected = intersect.getIntersected();
 		Material material = intersect.getEnteringMaterial();
 
 		Ray reflectedRay = new FresnelLightingModel.FresnelResult(intersect).getReflectedRay();
 
 		RawColor sampledRadiance = sampler.execute(reflectedRay.getVector(), (v) -> {
+			Vector3D i_basis = v, j_basis = i_basis.orthogonal(), k_basis = i_basis.crossProduct(j_basis);
+
 			Collection<Vector3D> sampleVectors = new LinkedList<>();
 			sampleVectors.add(v);
 			sampleVectors.addAll(IntStream.range(1, samplingRayCount).mapToObj(i -> {
 				Vector3D sampleVector = null;
 				do {
-					double theta = 2d * RND.nextDouble() * FastMath.PI;
-					double phi = 0.5d * RND.nextDouble() * FastMath.PI;
-					sampleVector = new Vector3D(FastMath.cos(theta) * FastMath.cos(phi), FastMath.sin(phi),
-							FastMath.sin(theta) * FastMath.cos(phi));
+					// double theta = 2d * RND.nextDouble() * FastMath.PI;
+					// double phi = 0.5d * RND.nextDouble() * FastMath.PI;
+					// sampleVector = new Vector3D(FastMath.cos(theta) *
+					// FastMath.cos(phi), FastMath.sin(phi),
+					// FastMath.sin(theta) * FastMath.cos(phi));
+					sampleVector = new Vector3D(RND.nextDouble(), i_basis, 2d * RND.nextDouble() - 1d, j_basis,
+							2d * RND.nextDouble() - 1d, k_basis).normalize();
 				} while (FastMath.pow(sampleVector.dotProduct(v), (1d / (1d - material.getAlbedo(point)))) < 0.5);
 
 				return sampleVector;
@@ -89,6 +97,8 @@ public class DiffuseIndirectPhotonMapLightingModel implements LightingModel {
 				.multiplyScalar(1d / (double) cp.size()));
 
 		RawColor resultingRadiance = sampledRadiance.multiply(intersect.getDiffuse(point));
+
+		ExecutionTimeTracker.logExecutionRecord("DiffuseIndirectPhotonMapLightingModel", start, Instant.now(), null);
 
 		return Optional.of(resultingRadiance);
 	}

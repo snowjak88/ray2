@@ -4,6 +4,7 @@ import static org.apache.commons.math3.util.FastMath.cos;
 import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -14,6 +15,7 @@ import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.function.Functions;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.util.ExecutionTimeTracker;
 import org.snowjak.rays.world.World;
 
 /**
@@ -55,6 +57,8 @@ public class FresnelLightingModel implements LightingModel {
 	@Override
 	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
 
+		Instant start = Instant.now();
+
 		if (!intersection.isPresent())
 			return Optional.empty();
 
@@ -71,6 +75,8 @@ public class FresnelLightingModel implements LightingModel {
 		FresnelResult fresnel = new FresnelResult(intersect);
 		double reflectance = fresnel.getReflectance();
 		double transmittance = fresnel.getTransmittance();
+		ExecutionTimeTracker.logExecutionRecord("FresnelLightingModel - compute Fresnel terms", start, Instant.now(), null);
+		start = Instant.now();
 
 		//
 		//
@@ -81,6 +87,9 @@ public class FresnelLightingModel implements LightingModel {
 		//
 		//
 		RawColor surfaceColor = surfaceLightingModel.determineRayColor(ray, intersection).orElse(new RawColor());
+		
+		ExecutionTimeTracker.logExecutionRecord("FresnelLightingModel - get child LightingModel color", start, Instant.now(), null);
+		start = Instant.now();
 
 		//
 		//

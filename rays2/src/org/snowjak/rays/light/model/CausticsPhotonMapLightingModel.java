@@ -1,5 +1,6 @@
 package org.snowjak.rays.light.model;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -8,6 +9,7 @@ import org.snowjak.rays.color.RawColor;
 import org.snowjak.rays.intersect.Intersection;
 import org.snowjak.rays.light.indirect.PhotonMap;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.util.ExecutionTimeTracker;
 
 /**
  * Models caustics illumination by means of a photon-map. The photon-map is
@@ -30,14 +32,19 @@ public class CausticsPhotonMapLightingModel implements LightingModel {
 	 * 
 	 * @param causticsMap
 	 * @param photonCount
+	 * @param maxDistance
 	 */
 	public CausticsPhotonMapLightingModel(PhotonMap causticsMap, int photonCount) {
 		this.causticsMap = causticsMap;
 		this.photonCount = photonCount;
+
+		System.out.println("Photon-map size: " + causticsMap.getSize());
 	}
 
 	@Override
 	public Optional<RawColor> determineRayColor(Ray ray, Optional<Intersection<Shape>> intersection) {
+
+		Instant start = Instant.now();
 
 		if (!intersection.isPresent())
 			return Optional.empty();
@@ -49,7 +56,11 @@ public class CausticsPhotonMapLightingModel implements LightingModel {
 
 		RawColor photonRadiance = causticsMap.getIntensityAt(point, normal, photonCount);
 
-		return Optional.of(photonRadiance.multiply(diffuseColor));
+		RawColor result = photonRadiance.multiply(diffuseColor);
+
+		ExecutionTimeTracker.logExecutionRecord("CausticsPhotonMapLightingModel", start, Instant.now(), null);
+
+		return Optional.of(result);
 	}
 
 }

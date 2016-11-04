@@ -1,5 +1,6 @@
 package org.snowjak.rays.light.indirect;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -22,6 +23,7 @@ import org.snowjak.rays.light.indirect.LightSourceMap.Coordinates;
 import org.snowjak.rays.light.model.FresnelLightingModel.FresnelResult;
 import org.snowjak.rays.material.Material;
 import org.snowjak.rays.shape.Shape;
+import org.snowjak.rays.util.ExecutionTimeTracker;
 import org.snowjak.rays.util.KdTree;
 import org.snowjak.rays.world.World;
 
@@ -113,7 +115,7 @@ public class PhotonMap {
 
 			double shapeEmissiveLuminance = s.getEmissive(s.getLocation()).orElse(new RawColor()).getLuminance();
 			double ratioMapEntriesWithShapes = (double) shapeMapEntries.size() / (double) allMapEntries.size();
-			double photonEnergyScale = 1d / (photonsPerUnitRadiance * shapeEmissiveLuminance)
+			double photonEnergyScale = (1d / (photonsPerUnitRadiance * shapeEmissiveLuminance))
 					* (ratioMapEntriesWithShapes);
 
 			return IntStream
@@ -141,7 +143,7 @@ public class PhotonMap {
 										.filter(inter -> inter.getIntersected() != s)
 										.findFirst();
 
-						} while (isCausticsMap && isSpecularMaterial(testIntersection.get().getEnteringMaterial(),
+						} while (isCausticsMap && !isSpecularMaterial(testIntersection.get().getEnteringMaterial(),
 								testIntersection.get().getPoint()));
 
 						RawColor photonRadiance = s.getEmissive(sampleRay.getOrigin())
@@ -152,6 +154,7 @@ public class PhotonMap {
 
 						return followPhoton(s, sampleRay, photonRadiance, weight, isCausticsMap, photonCullThreshold,
 								photonCullProbability);
+
 					});
 		}).flatMap(cpe -> cpe.stream()).collect(Collectors.toCollection(LinkedList::new));
 
@@ -269,6 +272,11 @@ public class PhotonMap {
 		this.tree.addPoints(entries);
 	}
 
+	public int getSize() {
+
+		return this.tree.getSize();
+	}
+
 	/**
 	 * @return a new PhotonMap, being this map after rebalancing
 	 */
@@ -282,31 +290,44 @@ public class PhotonMap {
 	/**
 	 * Calculate the direct intensity afforded by this photon-map at the given
 	 * {@code point}, given the surface {@code normal}. Gather, at most,
-	 * {@code photonCount} photons.
+	 * {@code photonCount} photons, but consider no photons farther from the
+	 * point than {@code maxDistance}.
 	 * 
 	 * @param point
 	 * @param normal
 	 * @param photonCount
+	 * @param maxDistance
 	 * @return the calculated direct intensity.
 	 */
 	public RawColor getIntensityAt(Vector3D point, Vector3D normal, int photonCount) {
+
+		Instant start = Instant.now();
 
 		Collection<PhotonEntry> closePhotons = tree.getNClosestPointsTo(
 				new PhotonEntry(point, Vector3D.ZERO, new RawColor()), photonCount,
 				(Predicate<PhotonEntry>) (p) -> p.getArrivalFromDirection().dotProduct(normal) > 0d);
 
-		double maxDistance = closePhotons.parallelStream()
+		ExecutionTimeTracker.logExecutionRecord("PhotonMap - getIntensityAt - get close photons", start, Instant.now(),
+				null);
+		start = Instant.now();
+
+		double maxDistanceOfFoundPhotons = closePhotons.parallelStream()
 				.map(p -> p.getIntersectPoint().distance(point))
 				.max(Double::compare)
 				.orElse(Double.MAX_VALUE);
 
-		double radianceScale = 1d / (FastMath.PI * FastMath.pow(maxDistance, 2d));
+		double radianceScale = 1d / (FastMath.PI * FastMath.pow(maxDistanceOfFoundPhotons, 2d));
 
-		return closePhotons.parallelStream()
+		RawColor result = closePhotons.parallelStream()
 				.map(p -> p.getColor()
 						.multiplyScalar(radianceScale)
 						.multiplyScalar(p.getArrivalFromDirection().dotProduct(normal))
-						.multiplyScalar(1d - (p.getIntersectPoint().distance(point) / maxDistance)))
+						.multiplyScalar(1d - (p.getIntersectPoint().distance(point) / maxDistanceOfFoundPhotons)))
 				.reduce(new RawColor(), RawColor::add);
+
+		ExecutionTimeTracker.logExecutionRecord("PhotonMap - getIntensityAt - compute resulting radiance", start,
+				Instant.now(), null);
+
+		return result;
 	}
 }

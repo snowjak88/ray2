@@ -2,23 +2,38 @@ package org.snowjak.rays.util;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import org.apache.commons.math3.util.Pair;
 import org.snowjak.rays.RaytracerContext;
+import org.snowjak.rays.ui.CanBeShutdown;
 
-public class ExecutionTimeTracker implements Runnable {
+public class ExecutionTimeTracker implements CanBeShutdown {
 
-	private BlockingQueue<ExecutionRecord> inputQueue;
+	private ExecutorService trackerThreads = null;
 
-	private Map<String, Duration> durationRecords = new LinkedHashMap<>();
+	private List<Future<Pair<Map<String, Duration>, Map<String, Long>>>> trackerFutures = null;
 
-	private Map<String, Long> executionCount = new LinkedHashMap<>();
+	public ExecutionTimeTracker(int trackerThreadCount) {
+		trackerThreads = Executors.newFixedThreadPool(trackerThreadCount);
 
-	public ExecutionTimeTracker() {
-		this.inputQueue = RaytracerContext.getSingleton().getTimeTrackerQueue();
+		trackerFutures = IntStream.range(0, trackerThreadCount)
+				.mapToObj(i -> trackerThreads.submit(new ExecutionTimeTrackerCallable()))
+				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
 	/**
@@ -36,60 +51,64 @@ public class ExecutionTimeTracker implements Runnable {
 			Consumer<InterruptedException> exceptionConsumer) {
 
 		try {
-			RaytracerContext.getSingleton()
-					.getTimeTrackerQueue()
-					.put(new ExecutionRecord(label, Duration.between(start, end)));
+			RaytracerContext.getSingleton().getTimeTrackerQueue().offer(
+					new ExecutionRecord(label, Duration.between(start, end)), 50, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			if (exceptionConsumer != null)
 				exceptionConsumer.accept(e);
 		}
 	}
 
-	@Override
-	public void run() {
+	private static class ExecutionTimeTrackerCallable
+			implements Callable<Pair<Map<String, Duration>, Map<String, Long>>> {
 
-		while (!Thread.interrupted()) {
+		private BlockingQueue<ExecutionRecord> inputQueue;
 
-			try {
-				ExecutionRecord currentRecord = inputQueue.take();
+		private Map<String, Duration> durationRecords = new LinkedHashMap<>();
 
-				if (durationRecords.containsKey(currentRecord.getLabel())) {
+		private Map<String, Long> executionCounts = new LinkedHashMap<>();
 
-					String executionName = currentRecord.getLabel();
-					Duration executionDuration = currentRecord.getDuration();
+		public ExecutionTimeTrackerCallable() {
+			this.inputQueue = RaytracerContext.getSingleton().getTimeTrackerQueue();
+		}
 
-					durationRecords.put(executionName, durationRecords.get(executionName).plus(executionDuration));
+		@Override
+		public Pair<Map<String, Duration>, Map<String, Long>> call() {
 
-				} else {
-					durationRecords.put(currentRecord.getLabel(), currentRecord.getDuration());
+			while (!Thread.interrupted()) {
+
+				try {
+					ExecutionRecord currentRecord = inputQueue.take();
+
+					if (durationRecords.containsKey(currentRecord.getLabel())) {
+
+						String executionName = currentRecord.getLabel();
+						Duration executionDuration = currentRecord.getDuration();
+
+						durationRecords.put(executionName, durationRecords.get(executionName).plus(executionDuration));
+
+					} else {
+						durationRecords.put(currentRecord.getLabel(), currentRecord.getDuration());
+					}
+
+					if (executionCounts.containsKey(currentRecord.getLabel())) {
+
+						String executionName = currentRecord.getLabel();
+
+						executionCounts.put(executionName, executionCounts.get(executionName) + 1);
+
+					} else {
+						executionCounts.put(currentRecord.getLabel(), 1l);
+					}
+
+				} catch (InterruptedException e) {
+					break;
 				}
 
-				if (executionCount.containsKey(currentRecord.getLabel())) {
-
-					String executionName = currentRecord.getLabel();
-
-					executionCount.put(executionName, executionCount.get(executionName) + 1);
-
-				} else {
-					executionCount.put(currentRecord.getLabel(), 1l);
-				}
-
-			} catch (InterruptedException e) {
-				break;
 			}
 
+			return new Pair<>(durationRecords, executionCounts);
 		}
-
-		System.out.println("-=-=-=-=-=- Measured execution durations -=-=-=-=-=-");
-		for (String executionName : durationRecords.keySet()) {
-
-			System.out.println(executionName + " (" + executionCount.getOrDefault(executionName, -1l)
-					+ " -=- " + durationRecords.get(executionName).toString() + " (avg " + durationRecords
-							.get(executionName).dividedBy(executionCount.getOrDefault(executionName, 1l)).toString()
-					+ ")");
-
-		}
-		System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
 	}
 
 	/**
@@ -120,6 +139,59 @@ public class ExecutionTimeTracker implements Runnable {
 
 			return duration;
 		}
+	}
+
+	@Override
+	public void shutdown() {
+
+		trackerThreads.shutdownNow();
+
+		Map<String, Duration> durationRecords = new HashMap<>();
+		Map<String, Long> executionCounts = new HashMap<>();
+
+		List<Pair<Map<String, Duration>, Map<String, Long>>> trackedRecords = new LinkedList<>();
+		for (Future<Pair<Map<String, Duration>, Map<String, Long>>> f : trackerFutures) {
+			try {
+				trackedRecords.add(f.get());
+			} catch (InterruptedException | ExecutionException e) {
+				System.err.println("Cannot finish building execution-time tracker results -- " + e.getMessage());
+			}
+		}
+
+		trackedRecords.parallelStream().forEach(p -> {
+			// Combine duration records
+			for (String executionName : p.getKey().keySet()) {
+				if (durationRecords.containsKey(executionName))
+					durationRecords.put(executionName,
+							durationRecords.get(executionName).plus(p.getKey().get(executionName)));
+				else
+					durationRecords.put(executionName, p.getKey().get(executionName));
+
+			}
+
+			// Combine execution-count records
+			for (String executionName : p.getValue().keySet()) {
+				if (executionCounts.containsKey(executionName))
+					executionCounts.put(executionName,
+							executionCounts.get(executionName) + p.getValue().get(executionName));
+				else
+					executionCounts.put(executionName, p.getValue().get(executionName));
+			}
+		});
+
+		System.out.println("-=-=-=-=-=- Measured execution durations -=-=-=-=-=-");
+		for (String executionName : durationRecords.keySet()
+				.stream()
+				.sorted()
+				.collect(Collectors.toCollection(LinkedList::new))) {
+
+			System.out.println(executionName + " (" + executionCounts.getOrDefault(executionName, -1l)
+					+ " -=- " + durationRecords.get(executionName).toString() + " (avg " + durationRecords
+							.get(executionName).dividedBy(executionCounts.getOrDefault(executionName, 1l)).toString()
+					+ ")");
+
+		}
+		System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
 	}
 
 }

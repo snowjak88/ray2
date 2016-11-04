@@ -31,7 +31,7 @@ public class RaytracerContext implements CanBeShutdown {
 
 	private ThreadPoolExecutor workerThreadPool = null;
 
-	private BlockingQueue<ExecutionTimeTracker.ExecutionRecord> executionRecordQueue = new LinkedBlockingQueue<>(1024);
+	private BlockingQueue<ExecutionTimeTracker.ExecutionRecord> executionRecordQueue = new LinkedBlockingQueue<>();
 
 	protected RaytracerContext() {
 

@@ -30,6 +30,8 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 
 	private KdNode<P, N> root = null;
 
+	private int size = -1;
+
 	/**
 	 * Construct a new Kd-tree of dimensionality {@code k}.
 	 * 
@@ -55,6 +57,8 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 
 		else
 			root.addPoint(newPoint);
+
+		this.size = -1;
 	}
 
 	/**
@@ -78,15 +82,19 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 			root.addPoints(pointsSortedAlongDimension.subList(0, medianIndex));
 		if (medianIndex < pointsSortedAlongDimension.size() - 1)
 			root.addPoints(pointsSortedAlongDimension.subList(medianIndex + 1, pointsSortedAlongDimension.size()));
+
+		this.size = -1;
 	}
 
 	/**
 	 * Get the {@code n} points stored in the kd-tree that are closest to the
-	 * given {@code point}. If the kd-tree contains fewer than {@code n} points,
-	 * then this method returns all points currently stored in this tree.
+	 * given {@code point} (and no farther than {@code maxDistance}). If the
+	 * kd-tree contains fewer than {@code n} points, then this method returns
+	 * all points currently stored in this tree.
 	 * 
 	 * @param point
 	 * @param n
+	 * @param maxDistance
 	 * @param predicate
 	 * @return a collection of points that are closest to the given point
 	 */
@@ -97,12 +105,14 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 
 	/**
 	 * Get the {@code n} points stored in the kd-tree that are closest to the
-	 * given {@code point} and fulfill {@code additionalPredicate}. If the
+	 * given {@code point} (and no farther from the point than
+	 * {@code maxDistance}) and fulfill {@code additionalPredicate}. If the
 	 * kd-tree contains fewer than {@code n} such points, then this method
 	 * returns all points currently stored in this tree.
 	 * 
 	 * @param point
 	 * @param n
+	 * @param maxDistance
 	 * @param additionalPredicate
 	 * @param predicate
 	 * @return a collection of points that are closest to the given point
@@ -121,6 +131,15 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 	public KdNode<P, N> getRoot() {
 
 		return root;
+	}
+
+	public int getSize() {
+
+		if (root == null)
+			return 0;
+		if (size < 0)
+			size = root.getSize();
+		return size;
 	}
 
 	/**
@@ -157,6 +176,8 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 		private int k;
 
 		private int nodeLevel;
+
+		private int size = -1;
 
 		private Optional<KdNode<P, N>> leftBranch = Optional.empty(), rightBranch = Optional.empty();
 
@@ -200,6 +221,8 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 				else
 					setRightBranch(new KdNode<>(getK(), getNodeLevel() + 1, newPoint));
 			}
+
+			this.size = -1;
 		}
 
 		/**
@@ -231,13 +254,17 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 						pointsSortedAlongDimension.size());
 				rightBranch.orElse(this).addPoints(rightPoints);
 			}
+
+			this.size = -1;
 		}
 
 		/**
 		 * @param point
 		 * @param n
+		 * @param maxDistance
 		 * @return the {@code n} points in the tree which are closest to the
-		 *         given {@code point}
+		 *         given {@code point} and at most {@code maxDistance} from that
+		 *         point
 		 */
 		public Collection<P> getNClosestPointsTo(P point, int n) {
 
@@ -247,6 +274,7 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 		/**
 		 * @param point
 		 * @param n
+		 * @param maxDistance
 		 * @param additionalPredicate
 		 * @return the {@code n} points in the tree which are closest to the
 		 *         given {@code point} and which satisfy the given
@@ -259,6 +287,9 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 
 			double distance_best;
 			Collection<P> points_best = new LinkedList<>();
+
+			if (Thread.interrupted())
+				return points_best;
 
 			N coordinate_thisNode = this.point.getCoordinate(getNodeDimension());
 			N coordinate_point = point.getCoordinate(getNodeDimension());
@@ -354,6 +385,15 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 					.sorted((p1, p2) -> Double.compare(point.getDistance(p1), point.getDistance(p2)))
 					.limit(n)
 					.collect(Collectors.toCollection(LinkedList::new));
+		}
+
+		public int getSize() {
+
+			if (size < 0)
+				size = 1 + (leftBranch.isPresent() ? leftBranch.get().getSize() : 0)
+						+ (rightBranch.isPresent() ? rightBranch.get().getSize() : 0);
+
+			return size;
 		}
 
 		/**
