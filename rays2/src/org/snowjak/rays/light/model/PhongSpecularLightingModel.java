@@ -50,24 +50,25 @@ public class PhongSpecularLightingModel implements LightingModel {
 		// the lights in the world ...
 		int rayCount = RaytracerContext.getSingleton().getSettings().getDistributedRayCount();
 
-		for (Shape emissiveShape : RaytracerContext.getSingleton().getCurrentWorld().getEmissiveShapes()) {
+		RawColor totalLightFromEmissives = RaytracerContext.getSingleton()
+				.getCurrentWorld()
+				.getEmissiveShapes()
+				.parallelStream()
+				.map(s -> sampler.execute(s.getLocation(), (v) -> {
+					Collection<Vector3D> results = new LinkedList<>();
+					results.add(v);
+					results.addAll(s.selectPointsWithin(rayCount, true));
+					return results;
 
-			RawColor specularLightFromThisEmissive = sampler.execute(emissiveShape.getLocation(), (v) -> {
-				Collection<Vector3D> results = new LinkedList<>();
-				results.add(v);
-				results.addAll(emissiveShape.selectPointsWithin(rayCount, true));
-				return results;
+				}, (v) -> {
+					if (RaytracerContext.getSingleton().getCurrentWorld().isPointVisibleFromEye(v, point, s))
+						return calculatePhongSpecularityForEmissive(intersect, s);
+					else
+						return new RawColor();
 
-			}, (v) -> {
-				if (RaytracerContext.getSingleton().getCurrentWorld().isPointVisibleFromEye(v, point, emissiveShape))
-					return calculatePhongSpecularityForEmissive(intersect, emissiveShape);
-				else
-					return new RawColor();
-
-			}, (cp) -> cp.parallelStream().map(p -> p.getValue()).reduce(new RawColor(), (c1, c2) -> c1.add(c2)));
-
-			totalSpecular = totalSpecular.add(specularLightFromThisEmissive);
-		}
+				}, (cp) -> cp.parallelStream().map(p -> p.getValue()).reduce(new RawColor(), (c1, c2) -> c1.add(c2))))
+				.reduce(new RawColor(), RawColor::add);
+		totalSpecular = totalSpecular.add(totalLightFromEmissives);
 
 		for (DirectionalLight light : RaytracerContext.getSingleton().getCurrentWorld().getDirectionalLights()) {
 
@@ -92,7 +93,8 @@ public class PhongSpecularLightingModel implements LightingModel {
 
 		World world = RaytracerContext.getSingleton().getCurrentWorld();
 
-		Collection<Shape> allButThisEmissive = world.getEmissiveShapes();
+		Collection<Shape> allButThisEmissive = new LinkedList<>();
+		allButThisEmissive.addAll(world.getEmissiveShapes());
 		allButThisEmissive.remove(emissiveShape);
 
 		Optional<Intersection<Shape>> emissiveSurfaceIntersection = world.getClosestShapeIntersection(toLightRay,
