@@ -133,6 +133,9 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 		return root;
 	}
 
+	/**
+	 * @return this tree's "size" -- i.e., the count of nodes stored in it
+	 */
 	public int getSize() {
 
 		if (root == null)
@@ -283,7 +286,8 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 		public Collection<P> getNClosestPointsTo(P point, int n, Predicate<P> additionalPredicate) {
 
 			if (!leftBranch.isPresent() && !rightBranch.isPresent())
-				return Arrays.asList(this.point);
+				if (additionalPredicate.test(this.point))
+					return Arrays.asList(this.point);
 
 			double distance_best;
 			Collection<P> points_best = new LinkedList<>();
@@ -387,6 +391,10 @@ public class KdTree<P extends HasCoordinates<N>, N extends Number & Comparable<N
 					.collect(Collectors.toCollection(LinkedList::new));
 		}
 
+		/**
+		 * @return this node's "size" -- i.e., 1 + the sizes of this node's two
+		 *         branches (if they are populated)
+		 */
 		public int getSize() {
 
 			if (size < 0)
